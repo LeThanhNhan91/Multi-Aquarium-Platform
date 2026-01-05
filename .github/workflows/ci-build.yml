@@ -1,0 +1,42 @@
+name: Multi-Store Aquarium CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Checking Backend .NET
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+    - name: Restore dependencies
+      run: dotnet restore src/backend/MultiStoreAquarium.sln
+    - name: Build
+      run: dotnet build src/backend/MultiStoreAquarium.sln --no-restore
+
+  # Checking Frontend Next.js
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.11.0'
+        cache: 'npm'
+        cache-dependency-path: src/frontend/package-lock.json
+    - name: Install dependencies
+      run: |
+        cd src/frontend
+        npm install
+    - name: Build
+      run: |
+        cd src/frontend
+        npm run build
