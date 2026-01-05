@@ -1,47 +1,105 @@
-System Architecture - Multi-Store Aquarium E-Commerce
-1. Overview
-Dự án này là một nền tảng thương mại điện tử đa cửa hàng chuyên biệt cho hàng sống (cá cảnh) và phụ kiện thủy sinh. Hệ thống được thiết kế để đảm bảo tính mở rộng cao, cô lập dữ liệu tuyệt đối giữa các cửa hàng và xử lý giao dịch thời gian thực.
+# System Architecture - Multi-Store Aquarium E-Commerce
 
+---
 
-2. Backend Architecture (Clean Architecture)
-Backend được xây dựng bằng .NET 10 tuân thủ nguyên tắc tách biệt các mối quan tâm (Separation of Concerns):
+## Overview
 
-Aquarium.Domain: Lớp lõi chứa các thực thể nghiệp vụ (Entities) như User, Store, Product, Order và các quy tắc nghiệp vụ cơ bản. Lớp này không phụ thuộc vào bất kỳ thư viện bên ngoài nào.
+This project is a **multi-store e-commerce platform** specialized for **live goods (ornamental fish)** and **aquarium accessories**.  
+The system is designed to ensure **high scalability**, **strict data isolation between stores**, and **real-time transaction processing**.
 
-Aquarium.Application: Chứa logic nghiệp vụ chi tiết (Use Cases), Interfaces cho Repositories, DTOs và các lệnh Command/Query. Đây là nơi thực thi các luồng công việc như "Phê duyệt cửa hàng" hay "Đặt hàng".
+---
 
-Aquarium.Infrastructure: Triển khai chi tiết kỹ thuật như cấu hình EF Core, kết nối SQL Server, lưu trữ Media (Cloudinary/S3) và hệ thống gửi tin nhắn SignalR.
+## Backend Architecture (Clean Architecture)
 
-Aquarium.Api: Lớp trình diễn (Presentation) xử lý các HTTP Request, quản lý JWT Authentication và phân quyền dựa trên Policy.
+The backend is built with **.NET 10**, following the **Separation of Concerns** principle:
 
+### Aquarium.Domain
+The core layer containing business entities such as `User`, `Store`, `Product`, `Order`, and fundamental business rules.  
+This layer does **not depend on any external libraries or frameworks**.
 
-3. Multi-Store Data Isolation
-Đây là cơ chế quan trọng nhất để đảm bảo an toàn dữ liệu trên nền tảng:
+### Aquarium.Application
+Contains detailed business logic (**Use Cases**), repository interfaces, DTOs, and **Command / Query** definitions.  
+This is where workflows such as **"Store Approval"** and **"Place Order"** are executed.
 
-Tenant Identification: StoreId được giải quyết từ JWT Claims (đối với Staff/Owner) hoặc qua StoreSlug trên URL (đối với khách hàng).
+### Aquarium.Infrastructure
+Implements technical details including:
+- Entity Framework Core configuration  
+- SQL Server connectivity  
+- Media storage (Cloudinary / S3)  
+- SignalR messaging system  
 
-Query Filtering: Tất cả các truy vấn dữ liệu liên quan đến sản phẩm, đơn hàng, tồn kho đều bắt buộc phải lọc theo StoreId.
+### Aquarium.Api
+The presentation layer responsible for handling HTTP requests, managing **JWT authentication**, and **policy-based authorization**.
 
-Security Rule: Hệ thống không bao giờ tin tưởng StoreId gửi trực tiếp từ Client.
+---
 
-4. Frontend Architecture (Next.js)
-Frontend sử dụng Next.js 14+ App Router với các chiến lược rendering tối ưu:
+## Multi-Store Data Isolation
 
-SSR (Server Side Rendering): Dùng cho trang danh sách sản phẩm và chi tiết cửa hàng để tối ưu SEO.
+This is the **most critical mechanism** to ensure data security across the platform:
 
-ISR (Incremental Static Regeneration): Dùng cho các trang thông tin tĩnh của cửa hàng để đạt hiệu năng cao nhất.
+### Tenant Identification
+`StoreId` is resolved from:
+- **JWT Claims** (for Staff / Owner)  
+- **StoreSlug in the URL** (for Customers)
 
-TanStack Query: Quản lý trạng thái dữ liệu từ Server, hỗ trợ caching và đồng bộ hóa thời gian thực.
+### Query Filtering
+All data queries related to:
+- Products  
+- Orders  
+- Inventory  
 
-5. Key Business Features
+**must be filtered by `StoreId`.**
 
-Inventory Management: Tách biệt QuantityAvailable (Sẵn sàng bán) và QuantityReserved (Đã giữ chỗ) để xử lý đặc thù của hàng sống.
+### Security Rule
+> The system **never trusts `StoreId` sent directly from the client**.
 
-Real-time Interaction: Hệ thống Chat SignalR giúp kết nối trực tiếp khách hàng và cửa hàng để tư vấn kỹ thuật nuôi cá.
+---
 
-Social Feed: Cho phép các cửa hàng đăng bài giới thiệu sản phẩm dưới dạng mạng xã hội để tăng tương tác.
+## Frontend Architecture (Next.js)
 
-6. Tech Stack
-Backend: .NET 10, Entity Framework Core, SQL Server, SignalR.
-Frontend: Next.js (App Router), Tailwind CSS, TanStack Query.
-DevOps: GitHub Actions (CI/CD), Docker Compose.
+The frontend is built with **Next.js 14+ App Router**, using optimized rendering strategies:
+
+### SSR (Server-Side Rendering)
+Used for product listing pages and store detail pages to optimize SEO.
+
+### ISR (Incremental Static Regeneration)
+Used for static store information pages to achieve the highest performance.
+
+### TanStack Query
+Manages server-side data state, supports caching, and enables real-time synchronization.
+
+---
+
+## Key Business Features
+
+### Inventory Management
+Separates:
+- `QuantityAvailable` (Available for sale)  
+- `QuantityReserved` (Reserved)  
+
+to properly handle the nature of live goods.
+
+### Real-Time Interaction
+The SignalR-based chat system enables direct communication between customers and stores for aquarium care consultation.
+
+### Social Feed
+Allows stores to publish product introductions in a social-feed-style format to increase engagement.
+
+---
+
+## Tech Stack
+
+**Backend**
+- .NET 10  
+- Entity Framework Core  
+- SQL Server  
+- SignalR  
+
+**Frontend**
+- Next.js (App Router)  
+- Tailwind CSS  
+- TanStack Query  
+
+**DevOps**
+- GitHub Actions (CI/CD)  
+- Docker Compose
