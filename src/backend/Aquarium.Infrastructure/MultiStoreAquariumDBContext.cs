@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
+using Aquarium.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aquarium.Infrastructure.Persistence;

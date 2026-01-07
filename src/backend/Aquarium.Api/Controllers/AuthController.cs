@@ -1,49 +1,50 @@
 ﻿using Aquarium.Application.DTOs;
 using Aquarium.Application.Interfaces;
-using Aquarium.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
-namespace Aquarium.Api.Controllers
+namespace Aquarium.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    private readonly IAuthService _authService;
+
+    public AuthController(IAuthService authService)
     {
-        private readonly MultiStoreAquariumDBContext _context;
-        private readonly IPasswordHasher _passwordHasher;
+        _authService = authService;
+    }
 
-        public AuthController(MultiStoreAquariumDBContext context, IPasswordHasher passwordHasher)
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        if (!ModelState.IsValid)
         {
-            _context = context;
-            _passwordHasher = passwordHasher;
+            return BadRequest(ModelState);
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequest request)
+        var result = await _authService.RegisterAsync(request);
+
+        if (!result)
         {
-            // 1. Check if user already exists
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+            return BadRequest(new
             {
-                return BadRequest(new { message = "Email is already registered." });
-            }
-
-            // 2. Create new user with hashed password
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                Email = request.Email,
-                PasswordHash = _passwordHasher.HashPassword(request.Password),
-                FullName = request.FullName,
-                PhoneNumber = request.PhoneNumber,
-                Status = "Active",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Registration successful!" });
+                message = "Registration failed. Email might already be in use."
+            });
         }
+
+        return Ok(new
+        {
+            message = "User registered successfully! You can now log in."
+        });
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var response = await _authService.LoginAsync(request);
+        if (response == null) return Unauthorized(new { message = "Invalid email or password" });
+
+        return Ok(response);
     }
 }

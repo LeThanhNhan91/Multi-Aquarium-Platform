@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Aquarium.Infrastructure.Persistence;
+namespace Aquarium.Domain.Entities;
 
 public partial class User
 {
