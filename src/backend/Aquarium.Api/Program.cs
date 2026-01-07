@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Services;
 using Aquarium.Infrastructure.Persistence;
@@ -7,6 +8,7 @@ using Aquarium.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,29 +42,79 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!))
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+                var result = JsonSerializer.Serialize(new
+                {
+                    message = "unauthorized",
+                    errorCode = "MA40101"
+                });
+                return context.Response.WriteAsync(result);
+            },
+            OnForbidden = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+                var result = JsonSerializer.Serialize(new
+                {
+                    message = "forbidden",
+                    errorCode = "MA40301"
+                });
+                return context.Response.WriteAsync(result);
+            }
+        };
     });
 
 // Support Controller and OpenAPI
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Multi-Store Aquarium API", Version = "v1" });
+
+    // Security Scheme
+    var securityScheme = new OpenApiSecurityScheme
+    {
+        Name = "JWT Authentication",
+        Description = "Enter your JWT token: Bearer {your_token}",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Reference = new OpenApiReference
+        {
+            Id = JwtBearerDefaults.AuthenticationScheme,
+            Type = ReferenceType.SecurityScheme
+        }
+    };
+
+    c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        { securityScheme, Array.Empty<string>() }
+    });
+});
 
 var app = builder.Build();
 
 // 4. Configure the HTTP processing pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
 
-app.MapControllers();
-
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();

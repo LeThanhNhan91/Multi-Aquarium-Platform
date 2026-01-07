@@ -24,6 +24,7 @@ namespace Aquarium.Infrastructure.Security
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("fullName", user.FullName),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Secret"]!));
