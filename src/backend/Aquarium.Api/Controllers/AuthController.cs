@@ -43,21 +43,13 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var response = await _authService.LoginAsync(request);
-        if (response == null) return Unauthorized(new { message = "Invalid email or password" });
-
         return Ok(response);
     }
 
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
     {
-        var result = await _authService.RefreshTokenAsync(request);
-
-        if (result == null)
-        {
-            return BadRequest("Invalid Refresh Token or Token Expired.");
-        }
-
-        return Ok(result);
+        var response = await _authService.RefreshTokenAsync(request);
+        return Ok(response);
     }
 }

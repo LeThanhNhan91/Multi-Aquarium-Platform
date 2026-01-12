@@ -2,6 +2,7 @@
 using Aquarium.Application.DTOs;
 using Aquarium.Application.Interfaces;
 using Aquarium.Domain.Entities;
+using Aquarium.Domain.Exceptions;
 
 namespace Aquarium.Application.Services;
 
@@ -42,7 +43,10 @@ public class AuthService : IAuthService
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
         var user = await _userRepository.GetByEmailAsync(request.Email);
-        if (user == null || !_passwordHasher.verifyPassword(request.Password, user.PasswordHash)) return null;
+        if (user == null || !_passwordHasher.verifyPassword(request.Password, user.PasswordHash))
+        {
+            throw new UnauthorizedException("Invalid email or password.");
+        }
 
         var accessToken = _jwtTokenGenerator.GenerateToken(user);
 
@@ -59,21 +63,24 @@ public class AuthService : IAuthService
     {
         // Decode old access token to get Principal
         var principal = _jwtTokenGenerator.GetPrincipalFromExpiredToken(request.AccessToken);
-        if (principal == null) return null;
+        if (principal == null) throw new UnauthorizedException("Invalid access token format.");
 
         // Get userId from claims
         var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier) ?? principal.FindFirst("sub");
-        if (userIdClaim == null) return null;
+        if (userIdClaim == null) throw new UnauthorizedException("Access token does not contain User Id.");
 
         var userId = Guid.Parse(userIdClaim.Value);
 
         var user = await _userRepository.GetByIdAsync(userId);
 
-        if (user == null ||
-        user.RefreshToken != request.RefreshToken ||
-        user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        if (user == null || user.RefreshToken != request.RefreshToken)
         {
-            return null;
+            throw new UnauthorizedException("Invalid Refresh Token.");
+        }
+
+        if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        {
+            throw new UnauthorizedException("Refresh Token has expired. Please login again.");
         }
 
         var newAccessToken = _jwtTokenGenerator.GenerateToken(user);

@@ -51,8 +51,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 context.Response.ContentType = "application/json";
                 var result = JsonSerializer.Serialize(new
                 {
-                    message = "unauthorized",
-                    errorCode = "MA40101"
+                    statusCode = 401,
+                    message = "You are not authorized to access this resource."
                 });
                 return context.Response.WriteAsync(result);
             },
@@ -62,8 +62,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 context.Response.ContentType = "application/json";
                 var result = JsonSerializer.Serialize(new
                 {
-                    message = "forbidden",
-                    errorCode = "MA40301"
+                    statusCode = 403,
+                    message = "You do not have permission to perform this action."
                 });
                 return context.Response.WriteAsync(result);
             }
@@ -102,6 +102,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+app.UseMiddleware<Aquarium.Api.Middleware.ExceptionMiddleware>();
 
 // 4. Configure the HTTP processing pipeline
 if (app.Environment.IsDevelopment())
