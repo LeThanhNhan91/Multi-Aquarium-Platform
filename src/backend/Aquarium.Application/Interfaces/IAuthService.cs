@@ -8,6 +8,7 @@ namespace Aquarium.Application.Interfaces
     public interface IAuthService
     {
         Task<bool> RegisterAsync(RegisterRequest request);
-        Task<AuthResponse> LoginAsync(LoginRequest request);
+        Task<AuthResponse?> LoginAsync(LoginRequest request);
+        Task<AuthResponse?> RefreshTokenAsync(RefreshTokenRequest request);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Aquarium.Application.DTOs;
+﻿using System.Security.Claims;
+using Aquarium.Application.DTOs;
 using Aquarium.Application.Interfaces;
 using Aquarium.Domain.Entities;
 
@@ -43,7 +44,45 @@ public class AuthService : IAuthService
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null || !_passwordHasher.verifyPassword(request.Password, user.PasswordHash)) return null;
 
-        var token = _jwtTokenGenerator.GenerateToken(user);
-        return new AuthResponse(token, user.FullName);
+        var accessToken = _jwtTokenGenerator.GenerateToken(user);
+
+        var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
+
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        await _userRepository.SaveChangesAsync();
+
+        return new AuthResponse(accessToken, refreshToken ,user.FullName);
+    }
+
+    public async Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest request)
+    {
+        // Decode old access token to get Principal
+        var principal = _jwtTokenGenerator.GetPrincipalFromExpiredToken(request.AccessToken);
+        if (principal == null) return null;
+
+        // Get userId from claims
+        var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier) ?? principal.FindFirst("sub");
+        if (userIdClaim == null) return null;
+
+        var userId = Guid.Parse(userIdClaim.Value);
+
+        var user = await _userRepository.GetByIdAsync(userId);
+
+        if (user == null ||
+        user.RefreshToken != request.RefreshToken ||
+        user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        {
+            return null;
+        }
+
+        var newAccessToken = _jwtTokenGenerator.GenerateToken(user);
+        var newRefreshToken = _jwtTokenGenerator.GenerateRefreshToken();
+
+        user.RefreshToken = newRefreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        await _userRepository.SaveChangesAsync();
+
+        return new AuthResponse(newAccessToken, newRefreshToken, user.FullName);
     }
 }

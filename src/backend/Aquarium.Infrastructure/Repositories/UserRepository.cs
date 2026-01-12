@@ -19,5 +19,10 @@ namespace Aquarium.Infrastructure.Repositories
         public async Task AddAsync(User user) => await _context.Users.AddAsync(user);
 
         public async Task<bool> SaveChangesAsync() => await _context.SaveChangesAsync() > 0;
+
+        public async Task<User?> GetByIdAsync(Guid id)
+        {
+            return await _context.Users.FindAsync(id);
+        }
     }
 }
