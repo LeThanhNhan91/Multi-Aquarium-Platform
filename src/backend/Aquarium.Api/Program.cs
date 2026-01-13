@@ -25,9 +25,11 @@ builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
 // Dependency Injection for Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IStoreRepository, StoreRepository>();
 
 // Dependency Injection for Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IStoreService, StoreService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
