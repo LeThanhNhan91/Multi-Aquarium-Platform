@@ -11,5 +11,6 @@ namespace Aquarium.Application.Interfaces
         Task AddAsync(Store store);
         Task AddStoreUserAsync(StoreUser storeUser);
         Task<bool> SaveChangesAsync();
+        Task<Store?> GetByIdAsync(Guid storeId);
     }
 }

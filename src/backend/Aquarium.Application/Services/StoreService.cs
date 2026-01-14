@@ -65,5 +65,42 @@ namespace Aquarium.Application.Services
 
             return new StoreResponse(newStore.Id, newStore.Name, newStore.Slug, newStore.Status, storeUser.Role);
         }
+
+        public async Task UpdateStoreStatusAsync(Guid storeId, UpdateStoreStatusRequest request)
+        {
+            var store = await _storeRepository.GetByIdAsync(storeId);
+
+            if (store == null)
+            {
+                throw new NotFoundException("Store not found!", storeId);
+            }
+
+            // Business Rule: Approval/rejection is only allowed when the store is pending.
+
+            // Or the Admin may want to suspend an active store (to be expanded later).
+            if (store.Status == request.Status)
+            {
+                return; // Do nothing if the state is exactly the same as before
+            }
+
+            switch (request.Status)
+            {
+                case "Active":
+                    store.Status = "Active";
+                    //Cou can send an email notification: "Congratulations on your shop going public!" (do later)
+                    break;
+
+                case "Rejected":
+                    store.Status = "Rejected";
+                    // Log the reason for rejection into the Audit Log system (to be done later).
+                    // var reason = request.Reason; 
+                    break;
+
+                default:
+                    throw new BadRequestException("Invalid status provided.");
+            }
+
+            await _storeRepository.SaveChangesAsync();
+        }
     }
 }

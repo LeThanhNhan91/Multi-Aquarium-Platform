@@ -30,6 +30,11 @@ namespace Aquarium.Infrastructure.Repositories
             return await _context.Stores.AnyAsync(s => s.Slug == slug);
         }
 
+        public async Task<Store?> GetByIdAsync(Guid storeId)
+        {
+            return await _context.Stores.FirstOrDefaultAsync(s => s.Id == storeId);
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

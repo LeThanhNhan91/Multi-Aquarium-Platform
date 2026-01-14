@@ -8,5 +8,6 @@ namespace Aquarium.Application.Interfaces
     public interface IStoreService
     {
         Task<StoreResponse> CreateStoreAsync(CreateStoreRequest request, Guid userId);
+        Task UpdateStoreStatusAsync(Guid storeId, UpdateStoreStatusRequest request);
     }
 }
