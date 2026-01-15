@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Aquarium.Application.DTOs.Store;
+using Aquarium.Application.DTOs.StoreMember;
 using Aquarium.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,22 @@ namespace Aquarium.Api.Controllers
         public StoresController(IStoreService storeService)
         {
             _storeService = storeService;
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetStores([FromQuery] GetStoresFilter filter)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var currentUserId = userIdClaim != null ? Guid.Parse(userIdClaim.Value) : Guid.Empty;
+
+            if (currentUserId == Guid.Empty && string.IsNullOrEmpty(filter.Status) && filter.StoreId == null)
+            {
+                filter.Status = "Active";
+            }
+
+            var stores = await _storeService.GetStoresAsync(filter, currentUserId);
+            return Ok(stores);
         }
 
         [HttpPost]
@@ -37,6 +54,30 @@ namespace Aquarium.Api.Controllers
         {
             await _storeService.UpdateStoreStatusAsync(storeId, request);
             return Ok(new { message = $"Store status updated to '{request.Status}' successfully." });
+        }
+
+        [HttpGet("{storeId}/members")]
+        public async Task<IActionResult> GetMembers(Guid storeId)
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var members = await _storeService.GetStoreMembersAsync(storeId, userId);
+            return Ok(members);
+        }
+
+        [HttpPost("{storeId}/members")]
+        public async Task<IActionResult> AddMember(Guid storeId, [FromBody] AddStoreMemberRequest request)
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            await _storeService.AddMemberAsync(storeId, userId, request);
+            return Ok(new { message = "Member added successfully." });
+        }
+
+        [HttpDelete("{storeId}/members/{memberId}")]
+        public async Task<IActionResult> RemoveMember(Guid storeId, Guid memberId)
+        {
+            var currentUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            await _storeService.RemoveMemberAsync(storeId, currentUserId, memberId);
+            return Ok(new { message = "Member removed successfully." });
         }
     }
 }
