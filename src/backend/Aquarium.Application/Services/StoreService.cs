@@ -87,11 +87,18 @@ namespace Aquarium.Application.Services
             {
                 case "Active":
                     store.Status = "Active";
+                    store.RejetionReason = null;
                     //Cou can send an email notification: "Congratulations on your shop going public!" (do later)
                     break;
 
                 case "Rejected":
+                    if (string.IsNullOrWhiteSpace(request.Reason))
+                    {
+                        throw new BadRequestException("Reason is required when rejecting a store.");
+                    }
+
                     store.Status = "Rejected";
+                    store.RejetionReason = request.Reason;
                     // Log the reason for rejection into the Audit Log system (to be done later).
                     // var reason = request.Reason; 
                     break;

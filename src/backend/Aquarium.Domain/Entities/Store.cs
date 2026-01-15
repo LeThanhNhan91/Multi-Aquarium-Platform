@@ -18,6 +18,7 @@ public partial class Store
     public string DeliveryArea { get; set; }
 
     public string Status { get; set; }
+    public string? RejetionReason { get; set; }
 
     public string LogoUrl { get; set; }
 
