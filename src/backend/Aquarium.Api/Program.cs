@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Aquarium.Application.Interfaces;
+using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Services;
 using Aquarium.Infrastructure.Persistence;
 using Aquarium.Infrastructure.Repositories;
@@ -26,10 +27,12 @@ builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 // Dependency Injection for Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStoreRepository, StoreRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 // Dependency Injection for Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
