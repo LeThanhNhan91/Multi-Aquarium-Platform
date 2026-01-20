@@ -1,7 +1,9 @@
 using System.Text;
 using System.Text.Json;
+using Aquarium.Api.Middleware;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Products;
+using Aquarium.Application.Interfaces.Store;
 using Aquarium.Application.Services;
 using Aquarium.Infrastructure.Persistence;
 using Aquarium.Infrastructure.Repositories;
@@ -106,6 +108,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddScoped<IStoreContext, StoreContext>();
+
 var app = builder.Build();
 
 app.UseMiddleware<Aquarium.Api.Middleware.ExceptionMiddleware>();
@@ -121,6 +125,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<StoreContextMiddleware>();
 
 app.MapControllers();
 

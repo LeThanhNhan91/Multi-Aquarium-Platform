@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Aquarium.Application.DTOs.Store;
+using Aquarium.Application.DTOs.Stores;
 using Aquarium.Application.Interfaces;
 using Aquarium.Domain.Entities;
 using Aquarium.Infrastructure.Persistence;

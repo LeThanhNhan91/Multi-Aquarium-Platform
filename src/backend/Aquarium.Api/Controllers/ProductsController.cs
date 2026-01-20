@@ -45,7 +45,7 @@ namespace Aquarium.Api.Controllers
         public async Task<IActionResult> CreateProduct(Guid storeId, [FromBody] CreateProductRequest request)
         {
             var userId = GetCurrentUserId();
-            var response = await _productService.CreateProductAsync(storeId, request, userId);
+            var response = await _productService.CreateProductAsync(request, userId);
             return CreatedAtAction(nameof(GetProductById), new { id = response.Id }, response);
         }
 

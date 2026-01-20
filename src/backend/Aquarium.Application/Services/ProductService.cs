@@ -4,6 +4,7 @@ using System.Text;
 using Aquarium.Application.DTOs.Products;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Products;
+using Aquarium.Application.Interfaces.Store;
 using Aquarium.Domain.Entities;
 using Aquarium.Domain.Exceptions;
 
@@ -13,11 +14,13 @@ namespace Aquarium.Application.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly IStoreRepository _storeRepository;
+        private readonly IStoreContext _storeContext;
 
-        public ProductService(IProductRepository productRepository, IStoreRepository storeRepository)
+        public ProductService(IProductRepository productRepository, IStoreRepository storeRepository, IStoreContext storeContext)
         {
             _productRepository = productRepository;
             _storeRepository = storeRepository;
+            _storeContext = storeContext;
         }
 
         //Author Helper
@@ -48,14 +51,21 @@ namespace Aquarium.Application.Services
             );
         }
 
-        public async Task<ProductResponse> CreateProductAsync(Guid storeId, CreateProductRequest request, Guid userId)
+        public async Task<ProductResponse> CreateProductAsync(CreateProductRequest request, Guid userId)
         {
-            await EnsureStoreAccessAsync(storeId, userId);
+            var currentStoreId = _storeContext.StoreId;
+
+            if (!currentStoreId.HasValue)
+            {
+                throw new BadRequestException("The store that performed this action is unknown.");
+            }
+
+            await EnsureStoreAccessAsync(currentStoreId.Value, userId);
 
             var product = new Product
             {
                 Id = Guid.NewGuid(),
-                StoreId = storeId,
+                StoreId = currentStoreId.Value,
                 CategoryId = request.CategoryId,
                 Name = request.Name,
                 Slug = Helper.GenerateSlug(request.Name),

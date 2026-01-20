@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using Aquarium.Application.DTOs.Store;
+using Aquarium.Application.DTOs.Stores;
 using Aquarium.Application.DTOs.StoreMember;
 using Aquarium.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
