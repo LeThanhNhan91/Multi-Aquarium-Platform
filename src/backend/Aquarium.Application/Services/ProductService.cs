@@ -94,7 +94,11 @@ namespace Aquarium.Application.Services
             await _productRepository.AddAsync(product);
             await _productRepository.SaveChangesAsync();
 
-            return MapToResponse(product);
+            var fullProduct = await _productRepository.GetByIdAsync(product.Id);
+
+            if (fullProduct == null) throw new Exception("Error creating product.");
+
+            return MapToResponse(fullProduct);
         }
 
         public async Task DeleteProductAsync(Guid productId, Guid userId)
