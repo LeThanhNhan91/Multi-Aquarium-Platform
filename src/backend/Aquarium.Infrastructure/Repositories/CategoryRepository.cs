@@ -49,6 +49,16 @@ namespace Aquarium.Infrastructure.Repositories
             return await _context.Products.AnyAsync(p => p.CategoryId == categoryId);
         }
 
+        public async Task<bool> HasSubCategoriesAsync(Guid categoryId)
+        {
+            return await _context.Categories.AnyAsync(c => c.ParentId == categoryId);
+        }
+
+        public async Task<bool> ExistsCategoryParentAsync(Guid id)
+        {
+            return await _context.Categories.AnyAsync(c => c.Id == id);
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

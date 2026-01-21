@@ -13,6 +13,8 @@ namespace Aquarium.Application.Interfaces.Categories
         Task UpdateAsync(Category category);
         Task DeleteAsync(Category category);
         Task<bool> HasProductsAsync(Guid categoryId);
+        Task<bool> HasSubCategoriesAsync(Guid categoryId);
+        Task<bool> ExistsCategoryParentAsync(Guid id);
         Task<bool> SaveChangesAsync();
     }
 }

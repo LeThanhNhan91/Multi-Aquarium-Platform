@@ -25,6 +25,14 @@ public class CategoriesController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("tree")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetTree()
+    {
+        var result = await _categoryService.GetCategoryTreeAsync();
+        return Ok(result);
+    }
+
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid id)

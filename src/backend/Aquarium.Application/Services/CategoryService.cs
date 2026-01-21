@@ -34,6 +34,15 @@ namespace Aquarium.Application.Services
 
         public async Task<CategoryResponse> CreateCategoryAsync(CreateCategoryRequest request)
         {
+            if (request.ParentId.HasValue)
+            {
+                bool parentExists = await _categoryRepository.ExistsCategoryParentAsync(request.ParentId.Value);
+                if (!parentExists)
+                {
+                    throw new NotFoundException("Parent Category", request.ParentId.Value);
+                }
+            }
+
             var slug = Helper.GenerateSlug(request.Name);
 
             var newCategory = new Category
@@ -41,7 +50,8 @@ namespace Aquarium.Application.Services
                 Id = Guid.NewGuid(),
                 Name = request.Name,
                 Slug = slug,
-                Description = request.Description
+                Description = request.Description,
+                ParentId = request.ParentId
             };
 
             await _categoryRepository.AddAsync(newCategory);
@@ -61,8 +71,37 @@ namespace Aquarium.Application.Services
                 throw new BadRequestException($"Cannot delete category '{category.Name}' because it contains products. Please delete or move products first.");
             }
 
+            if (await _categoryRepository.HasSubCategoriesAsync(id))
+                throw new BadRequestException("Cannot delete because it has sub-categories. Please delete children first.");
+
             await _categoryRepository.DeleteAsync(category);
             await _categoryRepository.SaveChangesAsync();
+        }
+
+        public async Task<List<CategoryTreeResponse>> GetCategoryTreeAsync()
+        {
+            // 1. Get all categories (Flat list)
+            var allCategories = await _categoryRepository.GetAllAsync();
+
+            // 2. Filter out the original categories. (Level 1 - ParentId == null)
+            var rootCategories = allCategories.Where(c => c.ParentId == null).ToList();
+
+            // 3. Use recursion to map children to each parent.
+            return rootCategories.Select(c => MapToTreeResponse(c, allCategories)).ToList();
+        }
+
+        private CategoryTreeResponse MapToTreeResponse(Category cat, List<Category> allCats)
+        {
+            return new CategoryTreeResponse(
+                cat.Id,
+                cat.Name,
+                cat.Slug,
+                // Find the offspring of the current category in the total list.
+                allCats
+                    .Where(child => child.ParentId == cat.Id)
+                    .Select(child => MapToTreeResponse(child, allCats))
+                    .ToList()
+            );
         }
     }
 }
