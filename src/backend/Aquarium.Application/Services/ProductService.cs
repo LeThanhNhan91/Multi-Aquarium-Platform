@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Products;
 using Aquarium.Application.Interfaces;
+using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Store;
 using Aquarium.Domain.Entities;
@@ -15,12 +16,14 @@ namespace Aquarium.Application.Services
         private readonly IProductRepository _productRepository;
         private readonly IStoreRepository _storeRepository;
         private readonly IStoreContext _storeContext;
+        private readonly IMediaService _mediaService;
 
-        public ProductService(IProductRepository productRepository, IStoreRepository storeRepository, IStoreContext storeContext)
+        public ProductService(IProductRepository productRepository, IStoreRepository storeRepository, IStoreContext storeContext, IMediaService mediaService)
         {
             _productRepository = productRepository;
             _storeRepository = storeRepository;
             _storeContext = storeContext;
+            _mediaService = mediaService;
         }
 
         //Author Helper
@@ -77,16 +80,17 @@ namespace Aquarium.Application.Services
             };
 
             // Handle Image (Mapping list string -> ProductMedia entities)
-            if (request.ImageUrls != null)
+            if (request.Images != null && request.Images.Any())
             {
-                foreach (var url in request.ImageUrls)
+                foreach (var img in request.Images)
                 {
                     product.ProductMedia.Add(new ProductMedia
                     {
                         Id = Guid.NewGuid(),
-                        MediaUrl = url,
+                        MediaUrl = img.Url,
+                        PublicId = img.PublicId,
                         MediaType = "Image",
-                        IsPrimary = false // Logic set cover image will be implemented later
+                        IsPrimary = img.IsPrimary
                     });
                 }
             }
@@ -109,6 +113,18 @@ namespace Aquarium.Application.Services
                 throw new NotFoundException("Product", productId);
 
             await EnsureStoreAccessAsync(product.StoreId, userId);
+
+            if (product.ProductMedia != null)
+            {
+                foreach (var media in product.ProductMedia)
+                {
+                    if (!string.IsNullOrEmpty(media.PublicId))
+                    {
+                        // Fire-and-forget (only await if want 100% sure)
+                        await _mediaService.DeleteMediaAsync(media.PublicId);
+                    }
+                }
+            }
 
             await _productRepository.DeleteAsync(product);
             await _productRepository.SaveChangesAsync();

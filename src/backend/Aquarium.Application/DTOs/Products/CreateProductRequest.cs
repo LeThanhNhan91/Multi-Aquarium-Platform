@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using Aquarium.Application.DTOs.Media;
 
 namespace Aquarium.Application.DTOs.Products
 {
@@ -18,6 +19,6 @@ namespace Aquarium.Application.DTOs.Products
         [Required]
         public Guid CategoryId { get; set; }
 
-        public List<string>? ImageUrls { get; set; }
+        public List<MediaItem>? Images { get; set; }
     }
 }

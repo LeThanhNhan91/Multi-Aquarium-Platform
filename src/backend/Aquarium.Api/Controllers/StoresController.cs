@@ -48,6 +48,14 @@ namespace Aquarium.Api.Controllers
             return CreatedAtAction(nameof(CreateStore), new { id = response.Id }, response);
         }
 
+        [HttpPut("{id}/info")]
+        [Authorize(Roles = "StoreOwner,Manager")]
+        public async Task<IActionResult> UpdateStoreInfo(Guid id, [FromBody] UpdateStoreInfoRequest request)
+        {
+            await _storeService.UpdateStoreInfoAsync(id, request);
+            return Ok(new { message = "Store info updated successfully." });
+        }
+
         [HttpPatch("{storeId}/status")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateStoreStatus(Guid storeId, [FromBody] UpdateStoreStatusRequest request)

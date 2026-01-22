@@ -11,6 +11,7 @@ namespace Aquarium.Application.Interfaces
     {
         Task<bool> ExistsBySlugAsync(string slug);
         Task AddAsync(StoreEntity store);
+        Task UpdateAsync(StoreEntity store);
         Task AddStoreUserAsync(StoreUser storeUser);
         Task<bool> SaveChangesAsync();
         Task<StoreEntity?> GetByIdAsync(Guid storeId);

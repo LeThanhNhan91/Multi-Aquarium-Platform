@@ -4,6 +4,7 @@ using Aquarium.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Aquarium.Infrastructure.Migrations
 {
     [DbContext(typeof(MultiStoreAquariumDBContext))]
-    partial class MultiStoreAquariumDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260122160127_AddMediaFieldsToStoreAndProduct")]
+    partial class AddMediaFieldsToStoreAndProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -650,7 +653,6 @@ namespace Aquarium.Infrastructure.Migrations
                     b.HasOne("Aquarium.Domain.Entities.Product", "Product")
                         .WithMany("ProductMedia")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_ProductMedias_Products");
 

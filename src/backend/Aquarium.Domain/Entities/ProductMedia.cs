@@ -13,6 +13,8 @@ public partial class ProductMedia
 
     public string MediaUrl { get; set; }
 
+    public string? PublicId { get; set; }
+
     public string MediaType { get; set; }
 
     public bool? IsPrimary { get; set; }

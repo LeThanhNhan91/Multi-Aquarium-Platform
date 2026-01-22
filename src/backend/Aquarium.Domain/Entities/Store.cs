@@ -20,9 +20,13 @@ public partial class Store
     public string Status { get; set; }
     public string? RejetionReason { get; set; }
 
-    public string LogoUrl { get; set; }
+    public string? LogoUrl { get; set; }
 
-    public string CoverImageUrl { get; set; }
+    public string? LogoPublicId { get; set; }
+
+    public string? CoverUrl { get; set; }
+
+    public string? CoverPublicId { get; set; }
 
     public string VideoIntroUrl { get; set; }
 

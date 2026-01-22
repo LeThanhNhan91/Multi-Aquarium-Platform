@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
-using Aquarium.Application.DTOs.Stores;
 using Aquarium.Application.DTOs.StoreMember;
+using Aquarium.Application.DTOs.Stores;
 using Aquarium.Application.Interfaces;
+using Aquarium.Application.Interfaces.Media;
 using Aquarium.Domain.Entities;
 using Aquarium.Domain.Exceptions;
 
@@ -14,11 +15,13 @@ namespace Aquarium.Application.Services
     {
         private readonly IStoreRepository _storeRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IMediaService _mediaService;
 
-        public StoreService (IStoreRepository storeRepository, IUserRepository userRepository)
+        public StoreService (IStoreRepository storeRepository, IUserRepository userRepository, IMediaService mediaService)
         {
             _storeRepository = storeRepository;
             _userRepository = userRepository;
+            _mediaService = mediaService;
         }
 
         public async Task<StoreResponse> CreateStoreAsync(CreateStoreRequest request, Guid userId)
@@ -38,7 +41,7 @@ namespace Aquarium.Application.Services
                 DeliveryArea = request.DeliveryArea,
                 Description = request.Description ?? string.Empty,
                 LogoUrl = null,
-                CoverImageUrl = null,
+                CoverUrl = null,
                 VideoIntroUrl = null,
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow
@@ -65,6 +68,39 @@ namespace Aquarium.Application.Services
             await _storeRepository.SaveChangesAsync();
 
             return new StoreResponse(newStore.Id, newStore.Name, newStore.Slug, newStore.Status, storeUser.Role);
+        }
+
+        public async Task UpdateStoreInfoAsync(Guid storeId, UpdateStoreInfoRequest request)
+        {
+            var store = await _storeRepository.GetByIdAsync(storeId);
+            if (store == null) throw new NotFoundException("Store", storeId);
+
+            if (!string.IsNullOrEmpty(request.Description)) store.Description = request.Description;
+
+            if (request.Logo != null)
+            {
+                if (!string.IsNullOrEmpty(store.LogoPublicId))
+                {
+                    await _mediaService.DeleteMediaAsync(store.LogoPublicId);
+                }
+
+                store.LogoUrl = request.Logo.Url;
+                store.LogoPublicId = request.Logo.PublicId;
+            }
+
+            if (request.Cover != null)
+            {
+                if (!string.IsNullOrEmpty(store.CoverPublicId))
+                {
+                    await _mediaService.DeleteMediaAsync(store.CoverPublicId);
+                }
+
+                store.CoverUrl = request.Cover.Url;
+                store.CoverPublicId = request.Cover.PublicId;
+            }
+
+            await _storeRepository.UpdateAsync(store);
+            await _storeRepository.SaveChangesAsync();
         }
 
         public async Task UpdateStoreStatusAsync(Guid storeId, UpdateStoreStatusRequest request)

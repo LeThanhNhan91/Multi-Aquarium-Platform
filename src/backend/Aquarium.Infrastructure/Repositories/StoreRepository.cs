@@ -21,6 +21,12 @@ namespace Aquarium.Infrastructure.Repositories
             await _context.Stores.AddAsync(store);
         }
 
+        public async Task UpdateAsync(Aquarium.Domain.Entities.Store store)
+        {
+            _context.Stores.Update(store);
+            await Task.CompletedTask;
+        }
+
         public async Task AddStoreUserAsync(StoreUser storeUser)
         {
             await _context.StoreUsers.AddAsync(storeUser);
