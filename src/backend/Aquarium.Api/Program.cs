@@ -3,12 +3,15 @@ using System.Text.Json;
 using Aquarium.Api.Middleware;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Categories;
+using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Store;
 using Aquarium.Application.Services;
+using Aquarium.Infrastructure.Config;
 using Aquarium.Infrastructure.Persistence;
 using Aquarium.Infrastructure.Repositories;
 using Aquarium.Infrastructure.Security;
+using Aquarium.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -22,6 +25,8 @@ builder.Services.AddDbContext<MultiStoreAquariumDBContext>(options =>
 
 var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection String: {connString}");
+
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 // 2. Register for services (Dependency Injection)
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -38,6 +43,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IMediaService, CloudinaryMediaService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
