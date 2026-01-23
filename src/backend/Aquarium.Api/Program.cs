@@ -3,6 +3,7 @@ using System.Text.Json;
 using Aquarium.Api.Middleware;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Categories;
+using Aquarium.Application.Interfaces.Inventory;
 using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Store;
@@ -37,6 +38,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStoreRepository, StoreRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 
 // Dependency Injection for Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -44,6 +46,7 @@ builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IMediaService, CloudinaryMediaService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {

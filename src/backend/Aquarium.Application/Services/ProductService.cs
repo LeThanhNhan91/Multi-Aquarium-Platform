@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Products;
 using Aquarium.Application.Interfaces;
+using Aquarium.Application.Interfaces.Inventory;
 using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Store;
@@ -17,13 +18,15 @@ namespace Aquarium.Application.Services
         private readonly IStoreRepository _storeRepository;
         private readonly IStoreContext _storeContext;
         private readonly IMediaService _mediaService;
+        private readonly IInventoryService _inventoryService;
 
-        public ProductService(IProductRepository productRepository, IStoreRepository storeRepository, IStoreContext storeContext, IMediaService mediaService)
+        public ProductService(IProductRepository productRepository, IStoreRepository storeRepository, IStoreContext storeContext, IMediaService mediaService, IInventoryService inventoryService)
         {
             _productRepository = productRepository;
             _storeRepository = storeRepository;
             _storeContext = storeContext;
             _mediaService = mediaService;
+            _inventoryService = inventoryService;
         }
 
         //Author Helper
@@ -97,6 +100,8 @@ namespace Aquarium.Application.Services
 
             await _productRepository.AddAsync(product);
             await _productRepository.SaveChangesAsync();
+
+            await _inventoryService.InitInventoryAsync(product.Id);
 
             var fullProduct = await _productRepository.GetByIdAsync(product.Id);
 

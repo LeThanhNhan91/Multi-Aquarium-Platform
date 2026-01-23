@@ -87,6 +87,8 @@ public partial class MultiStoreAquariumDBContext : DbContext
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.LastUpdated).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.RowVersion)
+                .IsRowVersion();
 
             entity.HasOne(d => d.Product).WithOne(p => p.Inventory)
                 .HasForeignKey<Inventory>(d => d.ProductId)

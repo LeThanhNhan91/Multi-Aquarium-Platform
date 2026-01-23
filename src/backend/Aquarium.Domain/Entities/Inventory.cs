@@ -2,6 +2,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Aquarium.Domain.Entities;
 
@@ -11,11 +12,16 @@ public partial class Inventory
 
     public Guid ProductId { get; set; }
 
-    public int QuantityAvailable { get; set; }
+    public int Quantity { get; set; }
 
     public int QuantityReserved { get; set; }
 
+    public int AvailableStock => Quantity - QuantityReserved;
+
     public DateTime LastUpdated { get; set; }
+
+    [Timestamp]
+    public byte[] RowVersion { get; set; }
 
     public virtual Product Product { get; set; }
 }
