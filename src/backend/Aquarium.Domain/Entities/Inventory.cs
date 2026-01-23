@@ -24,4 +24,6 @@ public partial class Inventory
     public byte[] RowVersion { get; set; }
 
     public virtual Product Product { get; set; }
+
+    public virtual ICollection<InventoryHistory> Histories { get; set; } = new List<InventoryHistory>();
 }

@@ -19,6 +19,8 @@ public partial class MultiStoreAquariumDBContext : DbContext
 
     public virtual DbSet<Inventory> Inventories { get; set; }
 
+    public virtual DbSet<InventoryHistory> InventoryHistories { get; set; }
+
     public virtual DbSet<Message> Messages { get; set; }
 
     public virtual DbSet<Order> Orders { get; set; }
@@ -94,6 +96,15 @@ public partial class MultiStoreAquariumDBContext : DbContext
                 .HasForeignKey<Inventory>(d => d.ProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Inventories_Products");
+        });
+
+        modelBuilder.Entity<InventoryHistory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.HasOne(d => d.Inventory).WithMany(p => p.Histories)
+                .HasForeignKey(d => d.InventoryId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Message>(entity =>

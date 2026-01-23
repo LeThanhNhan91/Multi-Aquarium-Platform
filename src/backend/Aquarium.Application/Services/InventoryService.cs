@@ -71,21 +71,26 @@ namespace Aquarium.Application.Services
                 await _inventoryRepository.AddAsync(inventory);
             }
 
+            int quantityChange = 0;
+
             switch (request.Type)
             {
                 case "Import":
                     inventory.Quantity += request.Amount;
+                    quantityChange = request.Amount;
                     break;
 
                 case "Export":
                     if (inventory.Quantity < request.Amount)
                         throw new BadRequestException("Insufficient stock for cancellation..");
                     inventory.Quantity -= request.Amount;
+                    quantityChange = -request.Amount;
                     break;
 
                 case "Adjust":
                     if (request.Amount < inventory.QuantityReserved)
                         throw new BadRequestException($"Cannot set quantity less than current quantity ({inventory.QuantityReserved}).");
+                    quantityChange = request.Amount - inventory.Quantity;
                     inventory.Quantity = request.Amount;
                     break;
 
@@ -95,9 +100,23 @@ namespace Aquarium.Application.Services
 
             inventory.LastUpdated = DateTime.UtcNow;
 
+            var history = new InventoryHistory
+            {
+                Id = Guid.NewGuid(),
+                InventoryId = inventory.Id,
+                ActionType = request.Type,       // Import/Export/Adjust
+                QuantityChange = quantityChange,
+                RemainingQuantity = inventory.Quantity,
+                Note = request.Note,
+                CreatedBy = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+
             try
             {
                 await _inventoryRepository.UpdateAsync(inventory);
+                await _inventoryRepository.AddHistoryAsync(history);
+
                 await _inventoryRepository.SaveChangesAsync();
             }
             catch (ConcurrencyDomainException)

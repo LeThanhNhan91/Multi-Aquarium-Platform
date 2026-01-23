@@ -34,6 +34,11 @@ namespace Aquarium.Infrastructure.Repositories
             await Task.CompletedTask;
         }
 
+        public async Task AddHistoryAsync(InventoryHistory history)
+        {
+            await _context.InventoryHistories.AddAsync(history);
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             try
