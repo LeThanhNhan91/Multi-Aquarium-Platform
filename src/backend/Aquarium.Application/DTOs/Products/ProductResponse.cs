@@ -14,6 +14,8 @@ namespace Aquarium.Application.DTOs.Products
     Guid StoreId,
     string CategoryName,
     List<string> Images,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    int Quantity,
+    int AvailableStock
     );
 }

@@ -124,5 +124,27 @@ namespace Aquarium.Application.Services
                 throw new ConflictException("Inventory data has been changed by another transaction. Please reload the page.");
             }
         }
+
+        public async Task<List<InventoryHistoryResponse>> GetHistoryAsync(Guid productId, Guid userId)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null) throw new NotFoundException("Product", productId);
+
+            var member = await _storeRepository.GetStoreUserAsync(product.StoreId, userId);
+            if (member == null || (member.Role != "Owner" && member.Role != "Manager"))
+                throw new ForbiddenException("You have no permission to check Inventory history.");
+
+            var histories = await _inventoryRepository.GetHistoryByProductIdAsync(productId);
+
+            return histories.Select(h => new InventoryHistoryResponse(
+                h.Id,
+                h.ActionType,
+                h.QuantityChange,
+                h.RemainingQuantity,
+                h.Note,
+                h.CreatedAt,
+                h.CreatedBy
+            )).ToList();
+        }
     }
 }

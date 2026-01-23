@@ -39,6 +39,16 @@ namespace Aquarium.Infrastructure.Repositories
             await _context.InventoryHistories.AddAsync(history);
         }
 
+        public async Task<List<InventoryHistory>> GetHistoryByProductIdAsync(Guid productId)
+        {
+            return await _context.InventoryHistories
+                .Include(h => h.Inventory)
+                .Where(h => h.Inventory.ProductId == productId)
+                .OrderByDescending(h => h.CreatedAt)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             try

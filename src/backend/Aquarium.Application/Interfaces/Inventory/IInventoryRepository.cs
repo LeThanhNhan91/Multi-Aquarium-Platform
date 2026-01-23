@@ -12,6 +12,7 @@ namespace Aquarium.Application.Interfaces.Inventory
         Task AddAsync(InventoryEntity inventory);
         Task UpdateAsync(InventoryEntity inventory);
         Task AddHistoryAsync(InventoryHistory history);
+        Task<List<InventoryHistory>> GetHistoryByProductIdAsync(Guid productId);
         Task<bool> SaveChangesAsync();
     }
 }

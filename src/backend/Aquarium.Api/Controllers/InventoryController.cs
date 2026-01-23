@@ -34,6 +34,15 @@ namespace Aquarium.Api.Controllers
             return Ok(new { message = "Stock updated successfully." });
         }
 
+        [HttpGet("history")]
+        [Authorize]
+        public async Task<IActionResult> GetHistory(Guid productId)
+        {
+            var userId = GetCurrentUserId();
+            var history = await _inventoryService.GetHistoryAsync(productId, userId);
+            return Ok(history);
+        }
+
         private Guid GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
