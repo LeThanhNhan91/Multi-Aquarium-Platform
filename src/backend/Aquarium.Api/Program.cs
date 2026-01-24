@@ -8,11 +8,14 @@ using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Store;
 using Aquarium.Application.Services;
+using Aquarium.Application.Validators;
 using Aquarium.Infrastructure.Config;
 using Aquarium.Infrastructure.Persistence;
 using Aquarium.Infrastructure.Repositories;
 using Aquarium.Infrastructure.Security;
 using Aquarium.Infrastructure.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -91,6 +94,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Support Controller and OpenAPI
 builder.Services.AddControllers();
+
+builder.Services.AddFluentValidationAutoValidation(); // automatically validate
+//builder.Services.AddFluentValidationClientsideAdapters(); Support frontend (if using MVC)
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateStockRequestValidator>(); // Scan all Validators in this assembly.
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
