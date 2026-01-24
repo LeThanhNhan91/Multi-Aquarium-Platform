@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Aquarium.Application.Common;
 using Aquarium.Application.DTOs.Products;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Inventory;
@@ -147,10 +148,18 @@ namespace Aquarium.Application.Services
             return MapToResponse(product);
         }
 
-        public async Task<List<ProductResponse>> GetProductsAsync(GetProductsFilter filter)
+        public async Task<PagedResult<ProductResponse>> GetProductsAsync(GetProductsFilter filter)
         {
-            var products = await _productRepository.GetProductsByFilterAsync(filter);
-            return products.Select(MapToResponse).ToList();
+            var pagedData = await _productRepository.GetProductsByFilterAsync(filter);
+
+            var productResponses = pagedData.Items.Select(p => MapToResponse(p)).ToList();
+
+            return new PagedResult<ProductResponse>(
+                productResponses,
+                pagedData.TotalCount,
+                pagedData.PageIndex,
+                pagedData.PageSize
+            );
         }
     }
 }

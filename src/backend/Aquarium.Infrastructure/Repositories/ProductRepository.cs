@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Aquarium.Application.Common;
 using Aquarium.Application.DTOs.Products;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Domain.Entities;
@@ -44,26 +45,61 @@ namespace Aquarium.Infrastructure.Repositories
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<List<Product>> GetProductsByFilterAsync(GetProductsFilter filter)
+        public async Task<PagedResult<Product>> GetProductsByFilterAsync(GetProductsFilter filter)
         {
             var query = _context.Products
                 .Include(p => p.Store)
                 .Include(p => p.Category)
-                .Include(p => p.ProductMedia)
+                .Include(p => p.Inventory)
+                .Include(p => p.ProductMedia.Where(m => m.IsPrimary == true))
+                .AsNoTracking()
                 .AsQueryable();
 
-            if (filter.StoreId.HasValue) query = query.Where(p => p.StoreId == filter.StoreId);
+            // 2. Apply Filters
 
-            if (filter.CategoryId.HasValue) query = query.Where(p => p.CategoryId == filter.CategoryId);
+            if (!string.IsNullOrEmpty(filter.Keyword))
+            {
+                query = query.Where(p => p.Name.Contains(filter.Keyword) ||
+                                         p.Description.Contains(filter.Keyword));
+            }
 
-            if (filter.MinPrice.HasValue) query = query.Where(p => p.BasePrice >= filter.MinPrice);
+            if (filter.CategoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == filter.CategoryId.Value);
+            }
 
-            if (filter.MaxPrice.HasValue) query = query.Where(p => p.BasePrice <= filter.MaxPrice);
+            if (filter.StoreId.HasValue)
+            {
+                query = query.Where(p => p.StoreId == filter.StoreId.Value);
+            }
 
-            if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
-                query = query.Where(p => p.Name.Contains(filter.SearchTerm));
+            if (filter.MinPrice.HasValue)
+                query = query.Where(p => p.BasePrice >= filter.MinPrice.Value);
 
-            return await query.ToListAsync();
+            if (filter.MaxPrice.HasValue)
+                query = query.Where(p => p.BasePrice <= filter.MaxPrice.Value);
+
+            query = query.Where(p => p.Status == "Active");
+
+            query = filter.SortBy?.ToLower() switch
+            {
+                "price" => filter.IsDescending
+                    ? query.OrderByDescending(p => p.BasePrice)
+                    : query.OrderBy(p => p.BasePrice),
+                "name" => filter.IsDescending
+                    ? query.OrderByDescending(p => p.Name)
+                    : query.OrderBy(p => p.Name),
+                _ => query.OrderByDescending(p => p.CreatedAt)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((filter.PageIndex - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
+
+            return new PagedResult<Product>(items, totalCount, filter.PageIndex, filter.PageSize);
         }
 
         public async Task<bool> SaveChangesAsync()

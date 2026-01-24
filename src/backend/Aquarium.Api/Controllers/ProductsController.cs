@@ -40,6 +40,15 @@ namespace Aquarium.Api.Controllers
             return Ok(product);
         }
 
+        [HttpGet("stores/{storeId}/products")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetStoreProducts(Guid storeId, [FromQuery] GetProductsFilter filter)
+        {
+            filter.StoreId = storeId;
+            var result = await _productService.GetProductsAsync(filter);
+            return Ok(result);
+        }
+
         [HttpPost("stores/{storeId}/products")]
         [Authorize]
         public async Task<IActionResult> CreateProduct(Guid storeId, [FromBody] CreateProductRequest request)

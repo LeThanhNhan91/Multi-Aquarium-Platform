@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Aquarium.Application.Common;
 using Aquarium.Application.DTOs.Products;
 
 namespace Aquarium.Application.Interfaces.Products
@@ -9,7 +10,7 @@ namespace Aquarium.Application.Interfaces.Products
     {
         Task<ProductResponse> CreateProductAsync(CreateProductRequest request, Guid userId);
         Task<ProductResponse> GetProductByIdAsync(Guid id);
-        Task<List<ProductResponse>> GetProductsAsync(GetProductsFilter filter);
+        Task<PagedResult<ProductResponse>> GetProductsAsync(GetProductsFilter filter);
         Task DeleteProductAsync(Guid productId, Guid userId);
     }
 }
