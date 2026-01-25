@@ -102,6 +102,14 @@ namespace Aquarium.Infrastructure.Repositories
             return new PagedResult<Product>(items, totalCount, filter.PageIndex, filter.PageSize);
         }
 
+        //Functions for System Admin (not limited by StoreContext)
+        public async Task<List<Product>> GetAllProductsAnyStoreAsync()
+        {
+            return await _context.Products
+                .IgnoreQueryFilters()
+                .ToListAsync();
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

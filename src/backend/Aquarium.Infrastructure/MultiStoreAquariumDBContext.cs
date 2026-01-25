@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
+using Aquarium.Application.Interfaces.Store;
 using Aquarium.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +9,12 @@ namespace Aquarium.Infrastructure.Persistence;
 
 public partial class MultiStoreAquariumDBContext : DbContext
 {
-    public MultiStoreAquariumDBContext(DbContextOptions<MultiStoreAquariumDBContext> options)
-        : base(options)
+    private readonly IStoreContext _storeContext;
+    public MultiStoreAquariumDBContext(
+        DbContextOptions<MultiStoreAquariumDBContext> options,
+        IStoreContext storeContext) : base(options)
     {
+        _storeContext = storeContext;
     }
 
     public virtual DbSet<Category> Categories { get; set; }
@@ -43,6 +47,27 @@ public partial class MultiStoreAquariumDBContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+        // 1. Filter for Product: only get products of current Store
+        modelBuilder.Entity<Product>().HasQueryFilter(p =>
+            !_storeContext.StoreId.HasValue || 
+            p.StoreId == _storeContext.StoreId);
+
+        // 2. Filter for Order: only get order of current Store
+        modelBuilder.Entity<Order>().HasQueryFilter(o =>
+            !_storeContext.StoreId.HasValue ||
+            o.StoreId == _storeContext.StoreId);
+
+        // 3. Filter for StorePost
+        modelBuilder.Entity<StorePost>().HasQueryFilter(p =>
+            !_storeContext.StoreId.HasValue ||
+            p.StoreId == _storeContext.StoreId);
+
+        // 4. Filter for Conversation (Chat)
+        modelBuilder.Entity<Conversation>().HasQueryFilter(c =>
+            !_storeContext.StoreId.HasValue ||
+            c.StoreId == _storeContext.StoreId);
+
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Categori__3214EC077BE9A047");
