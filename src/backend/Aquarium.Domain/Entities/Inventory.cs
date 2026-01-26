@@ -18,6 +18,14 @@ public partial class Inventory
 
     public int AvailableStock => Quantity - QuantityReserved;
 
+    public bool CanPurchase(int amount) => AvailableStock >= amount;
+
+    public void ReserveStock(int amount)
+    {
+        if (!CanPurchase(amount)) throw new InvalidOperationException("Not enough stock.");
+        QuantityReserved += amount;
+    }
+
     public DateTime LastUpdated { get; set; }
 
     [Timestamp]

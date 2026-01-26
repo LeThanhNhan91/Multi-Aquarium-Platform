@@ -44,8 +44,8 @@ namespace Aquarium.Application.Services
         // Helper Mapping
         private ProductResponse MapToResponse(Product p)
         {
-            int quantity = p.Inventory?.Quantity ?? 0;
-            int available = p.Inventory?.AvailableStock ?? 0;
+            int totalQuantity = p.Inventory?.Quantity ?? 0;
+            int availableToSell = p.Inventory?.AvailableStock ?? 0;
 
             return new ProductResponse(
                 p.Id,
@@ -58,8 +58,8 @@ namespace Aquarium.Application.Services
                 p.Category?.Name ?? "Uncategorized",
                 p.ProductMedia.Select(m => m.MediaUrl).ToList(),
                 p.CreatedAt,
-                quantity,
-                available
+                totalQuantity,
+                availableToSell
             );
         }
 
