@@ -8,5 +8,6 @@ namespace Aquarium.Application.Interfaces.Orders
     public interface IOrderService
     {
         Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request, Guid customerId);
+        Task<OrderDetailResponse> GetOrderByIdAsync(Guid orderId, Guid userId);
     }
 }

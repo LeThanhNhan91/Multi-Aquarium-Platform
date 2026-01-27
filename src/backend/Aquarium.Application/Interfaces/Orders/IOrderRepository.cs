@@ -8,6 +8,8 @@ namespace Aquarium.Application.Interfaces.Orders
     public interface IOrderRepository
     {
         Task AddAsync(Order order);
+        Task<Order?> GetByIdWithDetailsAsync(Guid id);
+        Task<IDatabaseTransaction> BeginTransactionAsync();
         Task<bool> SaveChangesAsync();
     }
 }
