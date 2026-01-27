@@ -15,6 +15,8 @@ public partial class OrderItem
 
     public int Quantity { get; set; }
 
+    // Snapshot Data (The value is fixed at the time of purchase.)
+    public string ProductName { get; set; } = string.Empty;
     public decimal PriceAtPurchase { get; set; }
 
     public virtual Order Order { get; set; }

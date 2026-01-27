@@ -110,6 +110,14 @@ namespace Aquarium.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Product>> GetByIdsAsync(List<Guid> ids)
+        {
+            return await _context.Products
+                .Include(p => p.Inventory)
+                .Where(p => ids.Contains(p.Id) && p.Status == "Active")
+                .ToListAsync();
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

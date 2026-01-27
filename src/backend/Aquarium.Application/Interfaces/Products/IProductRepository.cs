@@ -14,6 +14,7 @@ namespace Aquarium.Application.Interfaces.Products
         Task DeleteAsync(Product product);
         Task<Product?> GetByIdAsync(Guid id);
         Task<PagedResult<Product>> GetProductsByFilterAsync(GetProductsFilter filter);
+        Task<List<Product>> GetByIdsAsync(List<Guid> ids);
         Task<bool> SaveChangesAsync();
     }
 }

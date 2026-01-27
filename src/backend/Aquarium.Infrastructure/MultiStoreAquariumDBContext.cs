@@ -171,7 +171,7 @@ public partial class MultiStoreAquariumDBContext : DbContext
 
             entity.HasOne(d => d.Store).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.StoreId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_Orders_Stores");
         });
 
