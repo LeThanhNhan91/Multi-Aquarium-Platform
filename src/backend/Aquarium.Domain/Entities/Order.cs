@@ -2,6 +2,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using Aquarium.Domain.Constants;
 
 namespace Aquarium.Domain.Entities;
 
@@ -13,7 +14,7 @@ public partial class Order
 
     public Guid CustomerId { get; set; }
 
-    public string Status { get; set; }
+    public string Status { get; set; } = OrderStatus.Pending;
 
     public decimal TotalAmount { get; set; }
 
@@ -23,7 +24,11 @@ public partial class Order
 
     public string? Note { get; set; }
 
-    public string PaymentStatus { get; set; } = "Unpaid";
+    public string PaymentStatus { get; set; } = PaymentsStatus.Unpaid;
+
+    public string? PaymentMethod { get; set; } // e.g., "COD", "VNPay", "Wallet"
+    public string? TransactionId { get; set; } // ID from Payment Gateway
+    public DateTime? PaidAt { get; set; }
 
     public virtual User Customer { get; set; }
 

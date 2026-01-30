@@ -6,6 +6,7 @@ using Aquarium.Application.Interfaces.Categories;
 using Aquarium.Application.Interfaces.Inventory;
 using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Orders;
+using Aquarium.Application.Interfaces.Payments;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Store;
 using Aquarium.Application.Services;
@@ -15,6 +16,7 @@ using Aquarium.Infrastructure.Persistence;
 using Aquarium.Infrastructure.Repositories;
 using Aquarium.Infrastructure.Security;
 using Aquarium.Infrastructure.Services;
+using Aquarium.Infrastructure.Services.Payments;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -36,6 +38,7 @@ builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection(
 // 2. Register for services (Dependency Injection)
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<IPaymentGateway, VnPayService>();
 
 // Dependency Injection for Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();

@@ -26,6 +26,20 @@ public partial class Inventory
         QuantityReserved += amount;
     }
 
+    public void ReleaseStock(int quantity)
+    {
+        if (QuantityReserved < quantity)
+        {
+            // safety check
+            QuantityReserved = 0;
+        }
+        else
+        {
+            QuantityReserved -= quantity;
+        }
+        LastUpdated = DateTime.UtcNow;
+    }
+
     public DateTime LastUpdated { get; set; }
 
     [Timestamp]
