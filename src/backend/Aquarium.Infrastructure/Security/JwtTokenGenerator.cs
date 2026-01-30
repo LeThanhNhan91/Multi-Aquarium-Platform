@@ -17,7 +17,7 @@ namespace Aquarium.Infrastructure.Security
 
         public JwtTokenGenerator(IConfiguration config) => _config = config;
 
-        public string GenerateToken(User user)
+        public string GenerateToken(User user, Guid? storeId = null)
         {
             var claims = new List<Claim>
             {
@@ -27,6 +27,11 @@ namespace Aquarium.Infrastructure.Security
                 new Claim("fullName", user.FullName),
                 new Claim(ClaimTypes.Role, user.Role)
             };
+
+            if (storeId.HasValue)
+            {
+                claims.Add(new Claim("storeId", storeId.Value.ToString()));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Secret"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

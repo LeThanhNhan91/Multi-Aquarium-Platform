@@ -11,12 +11,14 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
+    private readonly IStoreRepository _storeRepository;
 
-    public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtTokenGenerator tokenGenerator)
+    public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtTokenGenerator tokenGenerator, IStoreRepository storeRepository)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _jwtTokenGenerator = tokenGenerator;
+        _storeRepository = storeRepository;
     }
 
     public async Task<bool> RegisterAsync(RegisterRequest request)
@@ -48,7 +50,10 @@ public class AuthService : IAuthService
             throw new UnauthorizedException("Invalid email or password.");
         }
 
-        var accessToken = _jwtTokenGenerator.GenerateToken(user);
+        Guid? storeId = null;
+        storeId = await _storeRepository.GetStoreIdByUserIdAsync(user.Id);
+
+        var accessToken = _jwtTokenGenerator.GenerateToken(user, storeId);
 
         var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
 

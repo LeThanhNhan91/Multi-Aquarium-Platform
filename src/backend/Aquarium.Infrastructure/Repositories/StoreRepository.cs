@@ -112,6 +112,14 @@ namespace Aquarium.Infrastructure.Repositories
             await Task.CompletedTask;
         }
 
+        public async Task<Guid?> GetStoreIdByUserIdAsync(Guid userId)
+        {
+            var storeUser = await _context.StoreUsers
+                .FirstOrDefaultAsync(x => x.UserId == userId);
+
+            return storeUser?.StoreId;
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

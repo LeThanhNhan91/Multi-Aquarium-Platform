@@ -22,7 +22,7 @@ namespace Aquarium.Api.Hubs
             var userId = Context.UserIdentifier;
             await Groups.AddToGroupAsync(Context.ConnectionId, $"User_{userId}");
 
-            var storeIdClaim = Context.User?.FindFirst("StoreId")?.Value;
+            var storeIdClaim = Context.User?.FindFirst("storeId")?.Value;
             if (!string.IsNullOrEmpty(storeIdClaim))
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"Store_{storeIdClaim}");
