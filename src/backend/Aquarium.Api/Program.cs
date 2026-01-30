@@ -1,8 +1,10 @@
 using System.Text;
 using System.Text.Json;
+using Aquarium.Api.Hubs;
 using Aquarium.Api.Middleware;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Categories;
+using Aquarium.Application.Interfaces.Chat;
 using Aquarium.Application.Interfaces.Inventory;
 using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Orders;
@@ -26,6 +28,21 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder
+                // Replace with the Frontend URL (e.g., http://127.0.0.1:5500 or http://localhost:3000)
+                // If running the HTML file directly, you may need to enable all permissions (but SignalR requires specific permissions for Credentials)
+                .WithOrigins("http://127.0.0.1:5500", "http://localhost:3000", "null")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
+});
+
 // 1. Config DbContext
 builder.Services.AddDbContext<MultiStoreAquariumDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -47,6 +64,7 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
 
 // Dependency Injection for Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -56,8 +74,15 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IMediaService, CloudinaryMediaService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IChatService, ChatService>();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddSignalR();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
     .AddJwtBearer(options => {
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -72,6 +97,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
         options.Events = new JwtBearerEvents
         {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            },
+
             OnChallenge = context =>
             {
                 context.HandleResponse();
@@ -149,10 +186,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowSpecificOrigin");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseMiddleware<StoreContextMiddleware>();
+
+app.MapHub<ChatHub>("/chatHub");
 
 app.MapControllers();
 

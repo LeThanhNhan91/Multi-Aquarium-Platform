@@ -95,14 +95,16 @@ public partial class MultiStoreAquariumDBContext : DbContext
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.LastMessageAt).HasDefaultValueSql("(getdate())");
 
+            entity.HasIndex(c => new { c.StoreId, c.CustomerId }).IsUnique();
+
             entity.HasOne(d => d.Customer).WithMany(p => p.Conversations)
                 .HasForeignKey(d => d.CustomerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_Conversations_Users");
 
             entity.HasOne(d => d.Store).WithMany(p => p.Conversations)
                 .HasForeignKey(d => d.StoreId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_Conversations_Stores");
         });
 
@@ -143,7 +145,7 @@ public partial class MultiStoreAquariumDBContext : DbContext
 
             entity.HasOne(d => d.Conversation).WithMany(p => p.Messages)
                 .HasForeignKey(d => d.ConversationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Messages_Conversations");
         });
 

@@ -17,7 +17,9 @@ public partial class Message
 
     public bool? IsRead { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
+    public string Type { get; set; } = "Text"; //Type (Text, Image, ProductLink...)
+
+    public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
 
     public virtual Conversation Conversation { get; set; }
 }
