@@ -12,7 +12,16 @@ namespace Aquarium.Application.Interfaces.Chat
         Task<Conversation?> GetConversationByIdAsync(Guid conversationId);
 
         Task AddConversationAsync(Conversation conversation);
+
         Task AddMessageAsync(Message message);
+
+        Task<List<Conversation>> GetCustomerConversationsAsync(Guid customerId);
+
+        Task<List<Conversation>> GetStoreConversationsAsync(Guid storeId);
+
+        Task<List<Message>> GetMessagesByConversationIdAsync(Guid conversationId);
+
+        Task MarkMessagesAsReadAsync(Guid conversationId, Guid readerId);
 
         Task<bool> SaveChangesAsync();
     }

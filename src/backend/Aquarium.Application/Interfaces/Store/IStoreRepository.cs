@@ -21,6 +21,7 @@ namespace Aquarium.Application.Interfaces
         Task<bool> IsUserInStoreAsync(Guid storeId, Guid userId);
         Task<StoreUser?> GetStoreUserAsync(Guid storeId, Guid userId);
         Task RemoveMemberAsync(StoreUser storeUser);
+        Task<List<Guid>> GetStoreStaffIdsAsync(Guid storeId);
         Task<Guid?> GetStoreIdByUserIdAsync(Guid userId);
     }
 }

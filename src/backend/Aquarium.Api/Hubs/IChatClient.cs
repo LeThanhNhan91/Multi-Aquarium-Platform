@@ -7,5 +7,7 @@
         Task ReceiveNewConversation(string conversationId, string customerName, string lastMessage);
 
         Task ReceiveError(string message);
+
+        Task ReceiveReadNotification(string conversationId, string readerId);
     }
 }

@@ -43,6 +43,53 @@ namespace Aquarium.Infrastructure.Repositories
             await _context.Messages.AddAsync(message);
         }
 
+        public async Task<List<Conversation>> GetCustomerConversationsAsync(Guid customerId)
+        {
+            return await _context.Conversations
+                .Include(c => c.Store)
+                .Include(c => c.Messages) // Load messages to calculate unread count
+                .Where(c => c.CustomerId == customerId)
+                .OrderByDescending(c => c.LastMessageAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<Conversation>> GetStoreConversationsAsync(Guid storeId)
+        {
+            return await _context.Conversations
+                .Include(c => c.Customer)
+                .Include(c => c.Messages)
+                .Where(c => c.StoreId == storeId)
+                .OrderByDescending(c => c.LastMessageAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<Message>> GetMessagesByConversationIdAsync(Guid conversationId)
+        {
+            return await _context.Messages
+                .Where(m => m.ConversationId == conversationId)
+                .OrderBy(m => m.CreatedAt) // Order oldest -> newest
+                .ToListAsync();
+        }
+
+        public async Task MarkMessagesAsReadAsync(Guid conversationId, Guid readerId)
+        {
+            // Find all messages in this conversation
+            // BUT: Not read (IsRead = false) AND Sender is NOT the reader (SenderId != readerId)
+            var unreadMessages = await _context.Messages
+                .Where(m => m.ConversationId == conversationId
+                            && m.IsRead == false
+                            && m.SenderId != readerId)
+                .ToListAsync();
+
+            if (unreadMessages.Any())
+            {
+                foreach (var msg in unreadMessages)
+                {
+                    msg.IsRead = true;
+                }
+            }
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

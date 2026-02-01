@@ -120,6 +120,14 @@ namespace Aquarium.Infrastructure.Repositories
             return storeUser?.StoreId;
         }
 
+        public async Task<List<Guid>> GetStoreStaffIdsAsync(Guid storeId)
+        {
+            return await _context.StoreUsers
+                .Where(x => x.StoreId == storeId)
+                .Select(x => x.UserId)
+                .ToListAsync();
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;
