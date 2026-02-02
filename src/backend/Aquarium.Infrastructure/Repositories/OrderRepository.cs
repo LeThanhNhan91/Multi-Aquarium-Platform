@@ -39,6 +39,12 @@ namespace Aquarium.Infrastructure.Repositories
             return new EfDatabaseTransaction(transaction);
         }
 
+        public async Task<Order?> GetByIdempotencyKeyAsync(Guid idempotencyKey)
+        {
+            return await _context.Orders
+                .FirstOrDefaultAsync(o => o.IdempotencyKey == idempotencyKey);
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

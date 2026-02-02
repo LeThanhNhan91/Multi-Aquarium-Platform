@@ -25,5 +25,7 @@ namespace Aquarium.Application.DTOs.Orders
         public string ShippingAddress { get; set; } = string.Empty;
 
         public string? Note { get; set; }
+
+        public Guid? IdempotencyKey { get; set; }
     }
 }

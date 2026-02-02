@@ -27,7 +27,11 @@ public partial class Order
     public string PaymentStatus { get; set; } = PaymentsStatus.Unpaid;
 
     public string? PaymentMethod { get; set; } // e.g., "COD", "VNPay", "Wallet"
+
     public string? TransactionId { get; set; } // ID from Payment Gateway
+
+    public Guid? IdempotencyKey { get; set; }
+
     public DateTime? PaidAt { get; set; }
 
     public virtual User Customer { get; set; }

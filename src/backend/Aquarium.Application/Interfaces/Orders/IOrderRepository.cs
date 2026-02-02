@@ -10,6 +10,7 @@ namespace Aquarium.Application.Interfaces.Orders
         Task AddAsync(Order order);
         Task<Order?> GetByIdWithDetailsAsync(Guid id);
         Task<IDatabaseTransaction> BeginTransactionAsync();
+        Task<Order?> GetByIdempotencyKeyAsync(Guid idempotencyKey);
         Task<bool> SaveChangesAsync();
     }
 }

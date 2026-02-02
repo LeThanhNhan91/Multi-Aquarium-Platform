@@ -38,6 +38,28 @@ namespace Aquarium.Application.Services
 
         public async Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request, Guid customerId)
         {
+            {
+                // Check if this order has been processed before.
+                var existingOrder = await _orderRepository.GetByIdempotencyKeyAsync(request.IdempotencyKey.Value);
+
+                if (existingOrder != null)
+                {
+                    _logger.LogInformation($"Idempotency check: Order {existingOrder.Id} already exists for key {request.IdempotencyKey}.");
+
+                    // Return the old result immediately without creating a new order or deducting inventory again.
+                    var existingStore = await _storeRepository.GetByIdAsync(existingOrder.StoreId);
+                    return new OrderResponse(
+                        existingOrder.Id,
+                        existingOrder.StoreId,
+                        existingStore?.Name ?? "Unknown Store",
+                        existingOrder.TotalAmount,
+                        existingOrder.Status,
+                        existingOrder.ShippingAddress,
+                        existingOrder.CreatedAt
+                    );
+                }
+            }
+
             // This ensures that if Inventory update fails, the Order is not created, and vice versa.
             using var transaction = await _orderRepository.BeginTransactionAsync();
 
@@ -61,6 +83,7 @@ namespace Aquarium.Application.Services
                     ShippingAddress = request.ShippingAddress,
                     Note = request.Note,
                     Status = "Pending",
+                    IdempotencyKey = request.IdempotencyKey,
                     CreatedAt = DateTime.UtcNow
                 };
 
