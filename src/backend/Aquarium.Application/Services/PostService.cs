@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Aquarium.Application.DTOs.Media;
 using Aquarium.Application.DTOs.Posts;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Media;
@@ -116,6 +117,10 @@ namespace Aquarium.Application.Services
 
             foreach (var media in post.PostMedia)
             {
+                if (!string.IsNullOrEmpty(media.PublicId))
+                {
+                    await _mediaService.DeleteMediaAsync(media.PublicId);
+                }
             }
 
             await _postRepository.DeleteAsync(post);
@@ -125,11 +130,11 @@ namespace Aquarium.Application.Services
         public async Task<PostResponse> UpdatePostAsync(Guid postId, UpdatePostRequest request, Guid userId)
         {
             var post = await _postRepository.GetByIdWithMediaAsync(postId);
-            if (post == null) throw new KeyNotFoundException("Bài viết không tồn tại.");
+            if (post == null) throw new KeyNotFoundException("No Post Exist.");
 
             var member = await _storeRepository.GetStoreUserAsync(post.StoreId, userId);
             if (member == null || !StoreRoles.AllRoles.Contains(member.Role))
-                throw new UnauthorizedAccessException("Không có quyền sửa bài viết này.");
+                throw new UnauthorizedAccessException("You have no permission to edit this post.");
 
             post.Content = request.Content;
 
@@ -149,26 +154,27 @@ namespace Aquarium.Application.Services
             {
                 foreach (var file in request.NewMediaFiles)
                 {
-                    string url, type;
+                    MediaUploadResult uploadResult;
+                    string mediaType;
+
                     if (file.ContentType.ToLower().Contains("video"))
                     {
-                        var result = await _mediaService.UploadVideoAsync(file);
-                        url = result.Url;
-                        type = "Video";
+                        uploadResult = await _mediaService.UploadVideoAsync(file);
+                        mediaType = "Video";
                     }
                     else
                     {
-                        var result = await _mediaService.UploadImageAsync(file);
-                        url = result.Url;
-                        type = "Image";
+                        uploadResult = await _mediaService.UploadImageAsync(file);
+                        mediaType = "Image";
                     }
 
                     post.PostMedia.Add(new PostMedia
                     {
                         Id = Guid.NewGuid(),
                         PostId = post.Id,
-                        MediaUrl = url,
-                        MediaType = type
+                        MediaUrl = uploadResult.Url,
+                        MediaType = mediaType,
+                        PublicId = uploadResult.PublicId
                     });
                 }
             }

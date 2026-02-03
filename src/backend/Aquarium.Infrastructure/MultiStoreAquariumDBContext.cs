@@ -205,9 +205,12 @@ public partial class MultiStoreAquariumDBContext : DbContext
                 .HasMaxLength(20);
             entity.Property(e => e.MediaUrl).IsRequired();
 
+            entity.Property(e => e.PublicId)
+                .HasMaxLength(255);
+
             entity.HasOne(d => d.Post).WithMany(p => p.PostMedia)
                 .HasForeignKey(d => d.PostId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_PostMedias_StorePosts");
         });
 

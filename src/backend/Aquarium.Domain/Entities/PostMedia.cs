@@ -15,5 +15,7 @@ public partial class PostMedia
 
     public string MediaType { get; set; }
 
+    public string PublicId { get; set; }
+
     public virtual StorePost Post { get; set; }
 }
