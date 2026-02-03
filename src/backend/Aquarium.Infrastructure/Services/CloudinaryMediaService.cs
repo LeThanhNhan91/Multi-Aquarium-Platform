@@ -63,7 +63,11 @@ namespace Aquarium.Infrastructure.Services
                 var uploadParams = new VideoUploadParams
                 {
                     File = new FileDescription(file.FileName, stream),
-                    Folder = "aquarium-videos"
+                    Folder = "aquarium-videos",
+                    EagerTransforms = new List<Transformation>()
+                    {
+                        new EagerTransformation().Width(300).Height(300).Crop("pad")
+                    }
                 };
 
                 uploadResult = await _cloudinary.UploadAsync(uploadParams);

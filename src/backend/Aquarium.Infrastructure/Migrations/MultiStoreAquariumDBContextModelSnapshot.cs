@@ -53,7 +53,7 @@ namespace Aquarium.Infrastructure.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.Conversation", b =>
@@ -88,7 +88,7 @@ namespace Aquarium.Infrastructure.Migrations
                     b.HasIndex(new[] { "StoreId", "CustomerId" }, "IX_Conversations_StoreId_CustomerId")
                         .HasDatabaseName("IX_Conversations_StoreId_CustomerId1");
 
-                    b.ToTable("Conversations");
+                    b.ToTable("Conversations", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.Inventory", b =>
@@ -123,7 +123,7 @@ namespace Aquarium.Infrastructure.Migrations
                     b.HasIndex(new[] { "ProductId" }, "UQ__Inventor__B40CC6CC0D6FBCF5")
                         .IsUnique();
 
-                    b.ToTable("Inventories");
+                    b.ToTable("Inventories", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.InventoryHistory", b =>
@@ -159,7 +159,7 @@ namespace Aquarium.Infrastructure.Migrations
 
                     b.HasIndex("InventoryId");
 
-                    b.ToTable("InventoryHistories");
+                    b.ToTable("InventoryHistories", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.Message", b =>
@@ -197,7 +197,7 @@ namespace Aquarium.Infrastructure.Migrations
 
                     b.HasIndex("ConversationId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.Order", b =>
@@ -258,7 +258,7 @@ namespace Aquarium.Infrastructure.Migrations
 
                     b.HasIndex(new[] { "StoreId" }, "IX_Orders_StoreId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.OrderItem", b =>
@@ -290,7 +290,7 @@ namespace Aquarium.Infrastructure.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.PostMedia", b =>
@@ -317,7 +317,7 @@ namespace Aquarium.Infrastructure.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("PostMedias");
+                    b.ToTable("PostMedias", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.Product", b =>
@@ -371,7 +371,7 @@ namespace Aquarium.Infrastructure.Migrations
 
                     b.HasIndex(new[] { "StoreId" }, "IX_Products_StoreId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.ProductMedia", b =>
@@ -406,7 +406,7 @@ namespace Aquarium.Infrastructure.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductMedias");
+                    b.ToTable("ProductMedias", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.Store", b =>
@@ -472,7 +472,7 @@ namespace Aquarium.Infrastructure.Migrations
                     b.HasIndex(new[] { "Slug" }, "UQ__Stores__BC7B5FB647EF07E1")
                         .IsUnique();
 
-                    b.ToTable("Stores");
+                    b.ToTable("Stores", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.StorePost", b =>
@@ -498,7 +498,7 @@ namespace Aquarium.Infrastructure.Migrations
 
                     b.HasIndex(new[] { "StoreId" }, "IX_StorePosts_StoreId");
 
-                    b.ToTable("StorePosts");
+                    b.ToTable("StorePosts", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.StoreUser", b =>
@@ -531,7 +531,7 @@ namespace Aquarium.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("StoreUsers");
+                    b.ToTable("StoreUsers", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.User", b =>
@@ -585,7 +585,7 @@ namespace Aquarium.Infrastructure.Migrations
                     b.HasIndex(new[] { "Email" }, "UQ__Users__A9D105343AF58608")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Aquarium.Domain.Entities.Category", b =>

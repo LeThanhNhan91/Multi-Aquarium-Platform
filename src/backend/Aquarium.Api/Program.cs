@@ -9,6 +9,7 @@ using Aquarium.Application.Interfaces.Inventory;
 using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Orders;
 using Aquarium.Application.Interfaces.Payments;
+using Aquarium.Application.Interfaces.Posts;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Store;
 using Aquarium.Application.Services;
@@ -22,6 +23,7 @@ using Aquarium.Infrastructure.Services.Payments;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -65,6 +67,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
 
 // Dependency Injection for Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -75,6 +78,7 @@ builder.Services.AddScoped<IMediaService, CloudinaryMediaService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IPostService, PostService>();
 
 builder.Services.AddSignalR();
 
@@ -169,6 +173,16 @@ builder.Services.AddSwaggerGen(c =>
     {
         { securityScheme, Array.Empty<string>() }
     });
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100MB
+});
+
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 100 * 1024 * 1024; // 100MB
 });
 
 builder.Services.AddScoped<IStoreContext, StoreContext>();
