@@ -18,4 +18,8 @@ public partial class StorePost
     public virtual ICollection<PostMedia> PostMedia { get; set; } = new List<PostMedia>();
 
     public virtual Store Store { get; set; }
+
+    public virtual ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
+
+    public virtual ICollection<PostComment> Comments { get; set; } = new List<PostComment>();
 }

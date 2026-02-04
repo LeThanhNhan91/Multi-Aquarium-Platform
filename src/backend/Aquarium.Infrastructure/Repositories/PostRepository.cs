@@ -34,6 +34,50 @@ namespace Aquarium.Infrastructure.Repositories
             _context.StorePosts.Remove(post);
         }
 
+        public async Task<List<StorePost>> GetNewsFeedAsync(int pageIndex, int pageSize)
+        {
+            return await _context.StorePosts
+                .Include(p => p.Store)
+                .Include(p => p.PostMedia)
+                .Include(p => p.Likes)
+                .Include(p => p.Comments)
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<PostLike?> GetLikeAsync(Guid postId, Guid userId)
+        {
+            return await _context.PostLikes.FindAsync(postId, userId);
+        }
+
+        public async Task AddLikeAsync(PostLike like)
+        {
+            await _context.PostLikes.AddAsync(like);
+        }
+
+        public async Task RemoveLikeAsync(PostLike like)
+        {
+            _context.PostLikes.Remove(like);
+        }
+
+        public async Task AddCommentAsync(PostComment comment)
+        {
+            await _context.PostComments.AddAsync(comment);
+        }
+
+        public async Task<List<PostComment>> GetCommentsAsync(Guid postId, int pageIndex, int pageSize)
+        {
+            return await _context.PostComments
+                .Include(c => c.User) 
+                .Where(c => c.PostId == postId)
+                .OrderByDescending(c => c.CreatedAt)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

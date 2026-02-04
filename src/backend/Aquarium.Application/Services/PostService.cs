@@ -16,15 +16,18 @@ namespace Aquarium.Application.Services
         private readonly IPostRepository _postRepository;
         private readonly IMediaService _mediaService;
         private readonly IStoreRepository _storeRepository;
+        private readonly IUserRepository _userRepository;
 
         public PostService(
             IPostRepository postRepository,
             IMediaService mediaService,
-            IStoreRepository storeRepository)
+            IStoreRepository storeRepository,
+            IUserRepository userRepository)
         {
             _postRepository = postRepository;
             _mediaService = mediaService;
             _storeRepository = storeRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<PostResponse> CreatePostAsync(CreatePostRequest request, Guid userId)
@@ -189,6 +192,86 @@ namespace Aquarium.Application.Services
                 CreatedAt = post.CreatedAt ?? DateTime.UtcNow,
                 Media = post.PostMedia.Select(m => new PostMediaDto { Url = m.MediaUrl, Type = m.MediaType }).ToList()
             };
+        }
+
+        public async Task<List<PostFeedDto>> GetNewsFeedAsync(int pageIndex, int pageSize, Guid currentUserId)
+        {
+            var posts = await _postRepository.GetNewsFeedAsync(pageIndex, pageSize);
+
+            return posts.Select(p => new PostFeedDto
+            {
+                Id = p.Id,
+                StoreId = p.StoreId,
+                StoreName = p.Store.Name,
+                Content = p.Content,
+                CreatedAt = p.CreatedAt ?? DateTime.UtcNow,
+                Media = p.PostMedia.Select(m => new PostMediaDto { Url = m.MediaUrl, Type = m.MediaType }).ToList(),
+
+                // Stats
+                LikeCount = p.Likes.Count,
+                CommentCount = p.Comments.Count,
+
+                IsLikedByCurrentUser = p.Likes.Any(l => l.UserId == currentUserId)
+            }).ToList();
+        }
+
+        public async Task<bool> ToggleLikeAsync(Guid postId, Guid userId)
+        {
+            var existingLike = await _postRepository.GetLikeAsync(postId, userId);
+
+            if (existingLike != null)
+            {
+                await _postRepository.RemoveLikeAsync(existingLike);
+                await _postRepository.SaveChangesAsync();
+                return false; // New status: Unliked
+            }
+            else
+            {
+                var newLike = new PostLike { PostId = postId, UserId = userId };
+                await _postRepository.AddLikeAsync(newLike);
+                await _postRepository.SaveChangesAsync();
+                return true; // New status: Liked
+            }
+        }
+
+        public async Task<CommentDto> AddCommentAsync(Guid postId, string content, Guid userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            var comment = new PostComment
+            {
+                Id = Guid.NewGuid(),
+                PostId = postId,
+                UserId = userId,
+                Content = content,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _postRepository.AddCommentAsync(comment);
+            await _postRepository.SaveChangesAsync();
+
+            return new CommentDto
+            {
+                Id = comment.Id,
+                UserId = userId,
+                UserName = user?.FullName ?? "Unknown",
+                Content = comment.Content,
+                CreatedAt = comment.CreatedAt
+            };
+        }
+
+        public async Task<List<CommentDto>> GetCommentsAsync(Guid postId, int pageIndex, int pageSize)
+        {
+            var comments = await _postRepository.GetCommentsAsync(postId, pageIndex, pageSize);
+
+            return comments.Select(c => new CommentDto
+            {
+                Id = c.Id,
+                UserId = c.UserId,
+                UserName = c.User?.FullName ?? "Unknown",
+                Content = c.Content,
+                CreatedAt = c.CreatedAt
+            }).ToList();
         }
     }
 }
