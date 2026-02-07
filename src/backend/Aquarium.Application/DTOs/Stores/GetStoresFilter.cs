@@ -11,5 +11,7 @@ namespace Aquarium.Application.DTOs.Stores
         public string? Slug { get; set; }
         public string? SearchTerm { get; set; } 
         public string? Status { get; set; }
+        public int PageIndex { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
     }
 }

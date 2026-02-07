@@ -1,5 +1,6 @@
 import { baseQueryWithReauth } from "@/libs/redux/baseApi";
 import { AuthResponse, LoginRequest, RegisterRequest } from "@/types/auth.type";
+import { ApiResponse } from "@/types/baseModel";
 import { createApi } from "@reduxjs/toolkit/query/react";
 
 export const authApi = createApi({
@@ -7,7 +8,7 @@ export const authApi = createApi({
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
     // Endpoint Login
-    login: builder.mutation<AuthResponse, LoginRequest>({
+    login: builder.mutation<ApiResponse<AuthResponse>, LoginRequest>({
       query: (credentials) => ({
         url: "/auth/login",
         method: "POST",

@@ -6,6 +6,7 @@ using Aquarium.Application.DTOs.StoreMember;
 using Aquarium.Application.DTOs.Stores;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Media;
+using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Entities;
 using Aquarium.Domain.Exceptions;
 
@@ -154,24 +155,21 @@ namespace Aquarium.Application.Services
             if (membership == null || membership.Role != "Owner") throw new ForbiddenException("You are not the owner of this store!");
         }
 
-        public async Task<List<StoreResponse>> GetStoresAsync(GetStoresFilter filter, Guid currentUserId)
+        public async Task<PagedResult<StoreResponse>> GetStoresAsync(GetStoresFilter filter, Guid currentUserId)
         {
-            var stores = await _storeRepository.GetStoresByFilterAsync(filter);
+            var pagedData = await _storeRepository.GetStoresByFilterAsync(filter);
 
             var response = new List<StoreResponse>();
-
-            var storeIds = stores.Select(s => s.Id).ToList();
+            var storeIds = pagedData.Items.Select(s => s.Id).ToList();
 
             var myRoles = await _storeRepository.GetUserRolesInStoresAsync(currentUserId, storeIds);
 
-            foreach (var store in stores)
+            foreach (var store in pagedData.Items)
             {
                 string role = myRoles.ContainsKey(store.Id) ? myRoles[store.Id] : "Guest";
-
                 response.Add(new StoreResponse(store.Id, store.Name, store.Slug, store.Status, role));
             }
-
-            return response;
+            return new PagedResult<StoreResponse>(response, pagedData.TotalCount, pagedData.PageIndex, pagedData.PageSize);
         }
 
         public async Task AddMemberAsync(Guid storeId, Guid currentUserId, AddStoreMemberRequest request)

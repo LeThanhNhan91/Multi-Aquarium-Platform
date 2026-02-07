@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Aquarium.Application.Common;
 using Aquarium.Application.DTOs.Products;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Inventory;
 using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Store;
+using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Entities;
 using Aquarium.Domain.Exceptions;
 

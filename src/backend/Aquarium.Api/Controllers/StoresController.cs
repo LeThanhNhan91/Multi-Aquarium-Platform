@@ -1,7 +1,11 @@
-﻿using System.Security.Claims;
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Aquarium.Application.DTOs.Stores;
 using Aquarium.Application.DTOs.StoreMember;
 using Aquarium.Application.Interfaces;
+using Aquarium.Application.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,8 +35,8 @@ namespace Aquarium.Api.Controllers
                 filter.Status = "Active";
             }
 
-            var stores = await _storeService.GetStoresAsync(filter, currentUserId);
-            return Ok(stores);
+            var pagedResult = await _storeService.GetStoresAsync(filter, currentUserId);
+            return Ok(new ApiResponse<PagedResult<StoreResponse>>(pagedResult));
         }
 
         [HttpPost]
@@ -45,7 +49,11 @@ namespace Aquarium.Api.Controllers
 
             var response = await _storeService.CreateStoreAsync(request, userId);
 
-            return CreatedAtAction(nameof(CreateStore), new { id = response.Id }, response);
+            return CreatedAtAction(
+                nameof(CreateStore),
+                new { id = response.Id },
+                new ApiResponse<StoreResponse>(response, "Store created successfully")
+            );
         }
 
         [HttpPut("{id}/info")]
@@ -53,7 +61,7 @@ namespace Aquarium.Api.Controllers
         public async Task<IActionResult> UpdateStoreInfo(Guid id, [FromBody] UpdateStoreInfoRequest request)
         {
             await _storeService.UpdateStoreInfoAsync(id, request);
-            return Ok(new { message = "Store info updated successfully." });
+            return Ok(new ApiResponse<object>(null, "Store info updated successfully."));
         }
 
         [HttpPatch("{storeId}/status")]
@@ -61,7 +69,7 @@ namespace Aquarium.Api.Controllers
         public async Task<IActionResult> UpdateStoreStatus(Guid storeId, [FromBody] UpdateStoreStatusRequest request)
         {
             await _storeService.UpdateStoreStatusAsync(storeId, request);
-            return Ok(new { message = $"Store status updated to '{request.Status}' successfully." });
+            return Ok(new ApiResponse<object>(null, $"Store status updated to '{request.Status}' successfully."));
         }
 
         [HttpGet("{storeId}/members")]
@@ -69,7 +77,8 @@ namespace Aquarium.Api.Controllers
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var members = await _storeService.GetStoreMembersAsync(storeId, userId);
-            return Ok(members);
+
+            return Ok(new ApiResponse<List<StoreMemberResponse>>(members));
         }
 
         [HttpPost("{storeId}/members")]
@@ -77,7 +86,7 @@ namespace Aquarium.Api.Controllers
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             await _storeService.AddMemberAsync(storeId, userId, request);
-            return Ok(new { message = "Member added successfully." });
+            return Ok(new ApiResponse<object>(null, "Member added successfully."));
         }
 
         [HttpDelete("{storeId}/members/{memberId}")]
@@ -85,7 +94,7 @@ namespace Aquarium.Api.Controllers
         {
             var currentUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             await _storeService.RemoveMemberAsync(storeId, currentUserId, memberId);
-            return Ok(new { message = "Member removed successfully." });
+            return Ok(new ApiResponse<object>(null, "Member removed successfully."));
         }
     }
 }

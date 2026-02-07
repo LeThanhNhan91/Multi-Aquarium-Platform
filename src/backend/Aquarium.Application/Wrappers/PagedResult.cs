@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Aquarium.Application.Common
+namespace Aquarium.Application.Wrappers
 {
     public class PagedResult<T>
     {

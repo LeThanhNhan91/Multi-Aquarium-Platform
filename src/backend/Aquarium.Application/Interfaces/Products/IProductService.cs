@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Aquarium.Application.Common;
 using Aquarium.Application.DTOs.Products;
+using Aquarium.Application.Wrappers;
 
 namespace Aquarium.Application.Interfaces.Products
 {

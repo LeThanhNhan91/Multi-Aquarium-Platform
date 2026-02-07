@@ -4,6 +4,7 @@ using System.Text;
 using Aquarium.Application.DTOs.Stores;
 using StoreEntity = Aquarium.Domain.Entities.Store;
 using Aquarium.Domain.Entities;
+using Aquarium.Application.Wrappers;
 
 namespace Aquarium.Application.Interfaces
 {
@@ -15,7 +16,7 @@ namespace Aquarium.Application.Interfaces
         Task AddStoreUserAsync(StoreUser storeUser);
         Task<bool> SaveChangesAsync();
         Task<StoreEntity?> GetByIdAsync(Guid storeId);
-        Task<List<StoreEntity>> GetStoresByFilterAsync(GetStoresFilter filter);
+        Task<PagedResult<StoreEntity>> GetStoresByFilterAsync(GetStoresFilter filter);
         Task<Dictionary<Guid, string>> GetUserRolesInStoresAsync(Guid userId, List<Guid> storeIds);
         Task<List<StoreUser>> GetMembersAsync(Guid storeId);
         Task<bool> IsUserInStoreAsync(Guid storeId, Guid userId);

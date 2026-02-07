@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Aquarium.Application.DTOs.Products;
 using Aquarium.Application.Interfaces.Products;
+using Aquarium.Application.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,8 +29,9 @@ namespace Aquarium.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetProducts([FromQuery] GetProductsFilter filter)
         {
-            var products = await _productService.GetProductsAsync(filter);
-            return Ok(products);
+            var pagedData = await _productService.GetProductsAsync(filter);
+
+            return Ok(new ApiResponse<PagedResult<ProductResponse>>(pagedData));
         }
 
         [HttpGet("products/{id}")]
@@ -37,7 +39,7 @@ namespace Aquarium.Api.Controllers
         public async Task<IActionResult> GetProductById(Guid id)
         {
             var product = await _productService.GetProductByIdAsync(id);
-            return Ok(product);
+            return Ok(new ApiResponse<ProductResponse>(product));
         }
 
         [HttpGet("stores/{storeId}/products")]
@@ -45,8 +47,9 @@ namespace Aquarium.Api.Controllers
         public async Task<IActionResult> GetStoreProducts(Guid storeId, [FromQuery] GetProductsFilter filter)
         {
             filter.StoreId = storeId;
-            var result = await _productService.GetProductsAsync(filter);
-            return Ok(result);
+            var pagedData = await _productService.GetProductsAsync(filter);
+
+            return Ok(new ApiResponse<PagedResult<ProductResponse>>(pagedData));
         }
 
         [HttpPost("stores/{storeId}/products")]
@@ -55,7 +58,11 @@ namespace Aquarium.Api.Controllers
         {
             var userId = GetCurrentUserId();
             var response = await _productService.CreateProductAsync(request, userId);
-            return CreatedAtAction(nameof(GetProductById), new { id = response.Id }, response);
+            return CreatedAtAction(
+                nameof(GetProductById),
+                new { id = response.Id },
+                new ApiResponse<ProductResponse>(response, "Product created successfully")
+            );
         }
 
         [HttpDelete("products/{id}")]
@@ -64,7 +71,7 @@ namespace Aquarium.Api.Controllers
         {
             var userId = GetCurrentUserId();
             await _productService.DeleteProductAsync(id, userId);
-            return NoContent();
+            return Ok(new ApiResponse<object>(null, "Product deleted successfully"));
         }
     }
 }

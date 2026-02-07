@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Stores;
 using Aquarium.Application.Interfaces;
+using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Entities;
 using Aquarium.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -54,7 +55,7 @@ namespace Aquarium.Infrastructure.Repositories
                 .ToDictionaryAsync(su => su.StoreId, su => su.Role);
         }
 
-        public async Task<List<Store>> GetStoresByFilterAsync(GetStoresFilter filter)
+        public async Task<PagedResult<Store>> GetStoresByFilterAsync(GetStoresFilter filter)
         {
             var query = _context.Stores.AsQueryable();
 
@@ -84,7 +85,14 @@ namespace Aquarium.Infrastructure.Repositories
                                          (s.Description != null && s.Description.Contains(filter.SearchTerm)));
             }
 
-            return await query.ToListAsync();
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((filter.PageIndex - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
+
+            return new PagedResult<Store>(items, totalCount, filter.PageIndex, filter.PageSize);
         }
 
         public async Task<List<StoreUser>> GetMembersAsync(Guid storeId)
