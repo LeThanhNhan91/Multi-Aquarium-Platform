@@ -9,7 +9,7 @@ import { logout } from "./features/authSlice";
 import { toast } from "sonner";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://localhost:5001/api",
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://localhost:7100/api",
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.token;
     if (token) {

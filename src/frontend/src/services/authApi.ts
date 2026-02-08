@@ -7,7 +7,7 @@ export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
-    // Endpoint Login
+    // Login Endpoint
     login: builder.mutation<ApiResponse<AuthResponse>, LoginRequest>({
       query: (credentials) => ({
         url: "/auth/login",
@@ -16,7 +16,7 @@ export const authApi = createApi({
       }),
     }),
 
-    // Endpoint Register
+    // Register Endpoint
     register: builder.mutation<AuthResponse, RegisterRequest>({
       query: (data) => ({
         url: "/auth/register",
@@ -31,6 +31,5 @@ export const authApi = createApi({
   }),
 });
 
-// Export hooks auto-generated (dùng trong component)
 export const { useLoginMutation, useRegisterMutation, useGetProfileQuery } =
   authApi;

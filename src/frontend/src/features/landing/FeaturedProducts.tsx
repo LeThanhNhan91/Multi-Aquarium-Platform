@@ -1,91 +1,31 @@
-"use client"
+"use client";
 
-import { Star, Heart, ShoppingCart } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Star, Heart, ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
-} from "@/components/ui/carousel"
+} from "@/components/ui/carousel";
+import { ProductItem } from "@/types/product.type";
+import { useGetAllProductsQuery } from "@/services/productApi";
+import { formatToVND } from "@/helper/formatter";
 
-const products = [
-  {
-    name: "Betta Halfmoon Galaxy",
-    shop: "Saigon Aquatics",
-    price: "350,000",
-    originalPrice: "450,000",
-    rating: 4.9,
-    reviews: 128,
-    image: "/images/product-betta.jpg",
-    tag: "Best Seller",
-  },
-  {
-    name: "ADA 60P Glass Tank",
-    shop: "Nature Aquarium VN",
-    price: "2,800,000",
-    originalPrice: null,
-    rating: 4.8,
-    reviews: 86,
-    image: "/images/product-tank.jpg",
-    tag: "Premium",
-  },
-  {
-    name: "Discus Blue Diamond",
-    shop: "Hanoi Fish World",
-    price: "1,200,000",
-    originalPrice: "1,500,000",
-    rating: 4.7,
-    reviews: 64,
-    image: "/images/product-discus.jpg",
-    tag: "New",
-  },
-  {
-    name: "CO2 Diffuser Pro Kit",
-    shop: "AquaScape Studio",
-    price: "890,000",
-    originalPrice: null,
-    rating: 4.6,
-    reviews: 42,
-    image: "/images/product-co2.jpg",
-    tag: null,
-  },
-  {
-    name: "Koi Showa Premium",
-    shop: "Koi Garden Center",
-    price: "5,500,000",
-    originalPrice: "6,200,000",
-    rating: 5.0,
-    reviews: 31,
-    image: "/images/product-koi.jpg",
-    tag: "Premium",
-  },
-  {
-    name: "LED Aquarium Light RGB",
-    shop: "Tech Aqua Store",
-    price: "1,650,000",
-    originalPrice: null,
-    rating: 4.5,
-    reviews: 97,
-    image: "/images/product-light.jpg",
-    tag: "Popular",
-  },
-]
-
-function ProductCard({ product }: { product: typeof products[0] }) {
+function ProductCard({ product }: { product: ProductItem }) {
   return (
     <div className="group relative flex flex-col rounded-2xl border border-border/50 bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <img
-          src={product.image || "/placeholder.svg"}
+          src={product.images[0] || "/placeholder.svg"}
           alt={product.name}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        {product.tag && (
+        {product.categoryName && (
           <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground border-0">
-            {product.tag}
+            {product.categoryName}
           </Badge>
         )}
         <button className="absolute top-3 right-3 h-9 w-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors">
@@ -97,34 +37,58 @@ function ProductCard({ product }: { product: typeof products[0] }) {
 
       <div className="flex flex-1 flex-col gap-3 p-5">
         <div>
-          <p className="text-xs text-muted-foreground">{product.shop}</p>
-          <h3 className="mt-1 text-base font-semibold text-foreground line-clamp-1">{product.name}</h3>
+          <p className="text-xs text-muted-foreground">{product.storeName}</p>
+          <h3 className="mt-1 text-base font-semibold text-foreground line-clamp-1">
+            {product.name}
+          </h3>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        {/* <div className="flex items-center gap-1.5">
           <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-          <span className="text-sm font-medium text-foreground">{product.rating}</span>
-          <span className="text-xs text-muted-foreground">({product.reviews})</span>
-        </div>
+          <span className="text-sm font-medium text-foreground">
+            {product.rating}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            ({product.reviews})
+          </span>
+        </div> */}
 
         <div className="flex items-center justify-between mt-auto pt-2">
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-primary">{product.price}d</span>
-            {product.originalPrice && (
-              <span className="text-sm text-muted-foreground line-through">{product.originalPrice}d</span>
-            )}
+            <span className="text-lg font-bold text-primary">
+              {formatToVND(product.basePrice)}
+            </span>
+            {/* {product.originalPrice && (
+              <span className="text-sm text-muted-foreground line-through">
+                {product.originalPrice}d
+              </span>
+            )} */}
           </div>
-          <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 w-9 p-0">
+          <Button
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 w-9 p-0"
+          >
             <ShoppingCart className="h-4 w-4" />
             <span className="sr-only">Add to cart</span>
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function FeaturedProducts() {
+  const { data: productData, isLoading } = useGetAllProductsQuery({
+    pageIndex: 1,
+    pageSize: 10,
+  });
+
+  const products = productData?.data.items ?? [];
+
+  if (isLoading) return <div>Loading...</div>;
+
+  if (products.length === 0) return <div>No products found</div>;
+
   return (
     <section id="products" className="py-24 bg-secondary/30">
       <div className="mx-auto max-w-7xl px-6">
@@ -137,7 +101,10 @@ export function FeaturedProducts() {
               Trending This Week
             </h2>
           </div>
-          <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/5 bg-transparent">
+          <Button
+            variant="outline"
+            className="border-primary/30 text-primary hover:bg-primary/5 bg-transparent"
+          >
             View All Products
           </Button>
         </div>
@@ -151,7 +118,10 @@ export function FeaturedProducts() {
         >
           <CarouselContent className="-ml-4">
             {products.map((product) => (
-              <CarouselItem key={product.name} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+              <CarouselItem
+                key={product.name}
+                className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3"
+              >
                 <ProductCard product={product} />
               </CarouselItem>
             ))}
@@ -163,5 +133,5 @@ export function FeaturedProducts() {
         </Carousel>
       </div>
     </section>
-  )
+  );
 }
