@@ -6,6 +6,7 @@ using Aquarium.Application.DTOs.Posts;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Posts;
+using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Constants;
 using Aquarium.Domain.Entities;
 
@@ -194,11 +195,11 @@ namespace Aquarium.Application.Services
             };
         }
 
-        public async Task<List<PostFeedDto>> GetNewsFeedAsync(int pageIndex, int pageSize, Guid currentUserId)
+        public async Task<PagedResult<PostFeedDto>> GetNewsFeedAsync(int pageIndex, int pageSize, Guid currentUserId)
         {
-            var posts = await _postRepository.GetNewsFeedAsync(pageIndex, pageSize);
+            var (posts, totalCount) = await _postRepository.GetNewsFeedAsync(pageIndex, pageSize);
 
-            return posts.Select(p => new PostFeedDto
+            var items = posts.Select(p => new PostFeedDto
             {
                 Id = p.Id,
                 StoreId = p.StoreId,
@@ -213,6 +214,8 @@ namespace Aquarium.Application.Services
 
                 IsLikedByCurrentUser = p.Likes.Any(l => l.UserId == currentUserId)
             }).ToList();
+
+            return new PagedResult<PostFeedDto>(items, totalCount, pageIndex, pageSize);
         }
 
         public async Task<bool> ToggleLikeAsync(Guid postId, Guid userId)
@@ -260,11 +263,11 @@ namespace Aquarium.Application.Services
             };
         }
 
-        public async Task<List<CommentDto>> GetCommentsAsync(Guid postId, int pageIndex, int pageSize)
+        public async Task<PagedResult<CommentDto>> GetCommentsAsync(Guid postId, int pageIndex, int pageSize)
         {
-            var comments = await _postRepository.GetCommentsAsync(postId, pageIndex, pageSize);
+            var (comments, totalCount) = await _postRepository.GetCommentsAsync(postId, pageIndex, pageSize);
 
-            return comments.Select(c => new CommentDto
+            var items = comments.Select(c => new CommentDto
             {
                 Id = c.Id,
                 UserId = c.UserId,
@@ -272,6 +275,8 @@ namespace Aquarium.Application.Services
                 Content = c.Content,
                 CreatedAt = c.CreatedAt
             }).ToList();
+
+            return new PagedResult<CommentDto>(items, totalCount, pageIndex, pageSize);
         }
     }
 }

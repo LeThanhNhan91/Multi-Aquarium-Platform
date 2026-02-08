@@ -34,17 +34,23 @@ namespace Aquarium.Infrastructure.Repositories
             _context.StorePosts.Remove(post);
         }
 
-        public async Task<List<StorePost>> GetNewsFeedAsync(int pageIndex, int pageSize)
+        public async Task<(List<StorePost> posts, int totalCount)> GetNewsFeedAsync(int pageIndex, int pageSize)
         {
-            return await _context.StorePosts
+            var query = _context.StorePosts
                 .Include(p => p.Store)
                 .Include(p => p.PostMedia)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
-                .OrderByDescending(p => p.CreatedAt)
+                .OrderByDescending(p => p.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var posts = await query
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+
+            return (posts, totalCount);
         }
 
         public async Task<PostLike?> GetLikeAsync(Guid postId, Guid userId)
@@ -67,15 +73,21 @@ namespace Aquarium.Infrastructure.Repositories
             await _context.PostComments.AddAsync(comment);
         }
 
-        public async Task<List<PostComment>> GetCommentsAsync(Guid postId, int pageIndex, int pageSize)
+        public async Task<(List<PostComment> comments, int totalCount)> GetCommentsAsync(Guid postId, int pageIndex, int pageSize)
         {
-            return await _context.PostComments
+            var query = _context.PostComments
                 .Include(c => c.User) 
                 .Where(c => c.PostId == postId)
-                .OrderByDescending(c => c.CreatedAt)
+                .OrderByDescending(c => c.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var comments = await query
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+
+            return (comments, totalCount);
         }
 
         public async Task<bool> SaveChangesAsync()

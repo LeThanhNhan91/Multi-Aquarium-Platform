@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Aquarium.Application.DTOs.Orders;
 using Aquarium.Application.Interfaces.Orders;
+using Aquarium.Application.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +31,7 @@ namespace Aquarium.Api.Controllers
         {
             var userId = GetCurrentUserId();
             var response = await _orderService.GetOrderByIdAsync(id, userId);
-            return Ok(response);
+            return Ok(new ApiResponse<OrderDetailResponse>(response));
         }
 
         [HttpPost]
@@ -40,7 +41,11 @@ namespace Aquarium.Api.Controllers
             var userId = GetCurrentUserId();
             var response = await _orderService.CreateOrderAsync(request, userId);
 
-            return CreatedAtAction(nameof(GetOrderById), new { id = response.Id }, response);
+            return CreatedAtAction(
+                nameof(GetOrderById), 
+                new { id = response.Id }, 
+                new ApiResponse<OrderResponse>(response, "Order created successfully")
+            );
         }
     }
 }

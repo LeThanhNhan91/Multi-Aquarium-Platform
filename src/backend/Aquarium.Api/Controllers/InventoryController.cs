@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Aquarium.Application.DTOs.Inventory;
 using Aquarium.Application.Interfaces.Inventory;
+using Aquarium.Application.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +23,7 @@ namespace Aquarium.Api.Controllers
         public async Task<IActionResult> GetStock(Guid productId)
         {
             var stock = await _inventoryService.GetStockAsync(productId);
-            return Ok(stock);
+            return Ok(new ApiResponse<object>(stock));
         }
 
         [HttpPost("update")]
@@ -31,7 +32,7 @@ namespace Aquarium.Api.Controllers
         {
             var userId = GetCurrentUserId();
             await _inventoryService.UpdateStockAsync(productId, request, userId);
-            return Ok(new { message = "Stock updated successfully." });
+            return Ok(new ApiResponse<object>(null, "Stock updated successfully"));
         }
 
         [HttpGet("history")]
@@ -40,7 +41,7 @@ namespace Aquarium.Api.Controllers
         {
             var userId = GetCurrentUserId();
             var history = await _inventoryService.GetHistoryAsync(productId, userId);
-            return Ok(history);
+            return Ok(new ApiResponse<object>(history));
         }
 
         private Guid GetCurrentUserId()

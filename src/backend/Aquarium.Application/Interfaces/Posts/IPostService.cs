@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Posts;
+using Aquarium.Application.Wrappers;
 
 namespace Aquarium.Application.Interfaces.Posts
 {
@@ -10,9 +11,9 @@ namespace Aquarium.Application.Interfaces.Posts
         Task<PostResponse> CreatePostAsync(CreatePostRequest request, Guid userId);
         Task DeletePostAsync(Guid postId, Guid userId);
         Task<PostResponse> UpdatePostAsync(Guid postId, UpdatePostRequest request, Guid userId);
-        Task<List<PostFeedDto>> GetNewsFeedAsync(int pageIndex, int pageSize, Guid currentUserId);
+        Task<PagedResult<PostFeedDto>> GetNewsFeedAsync(int pageIndex, int pageSize, Guid currentUserId);
         Task<bool> ToggleLikeAsync(Guid postId, Guid userId); // True = Liked, False = Unliked
         Task<CommentDto> AddCommentAsync(Guid postId, string content, Guid userId);
-        Task<List<CommentDto>> GetCommentsAsync(Guid postId, int pageIndex, int pageSize);
+        Task<PagedResult<CommentDto>> GetCommentsAsync(Guid postId, int pageIndex, int pageSize);
     }
 }

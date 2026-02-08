@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Aquarium.Application.Interfaces.Chat;
+using Aquarium.Application.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +23,7 @@ namespace Aquarium.Api.Controllers
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var result = await _chatService.GetConversationsForUserAsync(userId);
-            return Ok(result);
+            return Ok(new ApiResponse<object>(result));
         }
 
         [HttpGet("store/{storeId}/conversations")]
@@ -31,14 +32,14 @@ namespace Aquarium.Api.Controllers
             // TODO: Validate User is Owner of this Store (Add logic check here)
             var userId = GetCurrentUserId();
             var result = await _chatService.GetConversationsForStoreAsync(storeId, userId);
-            return Ok(result);
+            return Ok(new ApiResponse<object>(result));
         }
 
         [HttpGet("conversations/{id}/messages")]
         public async Task<IActionResult> GetMessages(Guid id)
         {
             var result = await _chatService.GetMessageHistoryAsync(id);
-            return Ok(result);
+            return Ok(new ApiResponse<object>(result));
         }
 
         private Guid GetCurrentUserId()

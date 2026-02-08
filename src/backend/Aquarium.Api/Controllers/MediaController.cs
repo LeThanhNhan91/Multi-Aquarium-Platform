@@ -1,4 +1,5 @@
 ﻿using Aquarium.Application.Interfaces.Media;
+using Aquarium.Application.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,24 +25,24 @@ namespace Aquarium.Api.Controllers
             var extension = Path.GetExtension(file.FileName).ToLower();
 
             if (!allowedExtensions.Contains(extension))
-                return BadRequest("Invalid image format. Allowed: jpg, jpeg, png, webp");
+                return BadRequest(new ApiResponse<object>("Invalid image format. Allowed: jpg, jpeg, png, webp"));
 
             var result = await _mediaService.UploadImageAsync(file);
-            return Ok(result);
+            return Ok(new ApiResponse<object>(result, "Image uploaded successfully"));
         }
 
         [HttpPost("upload-video")]
         public async Task<IActionResult> UploadVideo(IFormFile file)
         {
             var result = await _mediaService.UploadVideoAsync(file);
-            return Ok(result);
+            return Ok(new ApiResponse<object>(result, "Video uploaded successfully"));
         }
 
         [HttpDelete("{publicId}")]
         public async Task<IActionResult> DeleteMedia(string publicId)
         {
             await _mediaService.DeleteMediaAsync(publicId);
-            return Ok(new { message = "Deleted successfully" });
+            return Ok(new ApiResponse<object>(null, "Media deleted successfully"));
         }
     }
 }
