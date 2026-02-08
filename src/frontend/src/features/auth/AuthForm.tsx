@@ -11,11 +11,15 @@ import {
   Lock,
   User,
   Store,
+  Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/utils/utils";
+import { useLoginMutation, useRegisterMutation } from "@/services/authApi";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 type Mode = "login" | "register";
 type UserType = "buyer" | "seller";
@@ -24,6 +28,168 @@ export default function AuthForm() {
   const [mode, setMode] = useState<Mode>("login");
   const [userType, setUserType] = useState<UserType>("buyer");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [errors, setErrors] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  // API mutations
+  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
+  const [register, { isLoading: isRegisterLoading }] = useRegisterMutation();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  // Handle input changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+    // Clear error when user starts typing
+    setErrors((prev) => ({ ...prev, [id]: "" }));
+  };
+
+  // Validate form
+  const validateForm = (): boolean => {
+    const newErrors = {
+      fullName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+    };
+
+    let isValid = true;
+
+    if (mode === "register") {
+      if (!formData.fullName.trim()) {
+        newErrors.fullName = "Full name is required";
+        isValid = false;
+      }
+
+      if (!formData.phone.trim()) {
+        newErrors.phone = "Phone number is required";
+        isValid = false;
+      }
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+      isValid = false;
+    }
+
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+      isValid = false;
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+      isValid = false;
+    }
+
+    if (mode === "register") {
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = "Please confirm your password";
+        isValid = false;
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+        isValid = false;
+      }
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      if (mode === "login") {
+        const response = await login({
+          email: formData.email,
+          password: formData.password,
+        }).unwrap();
+
+        // Store tokens in localStorage
+        localStorage.setItem("accessToken", response.accessToken);
+        localStorage.setItem("refreshToken", response.refreshToken);
+
+        toast({
+          title: "Login successful!",
+          description: `Welcome back, ${response.fullName}!`,
+        });
+
+        // Redirect to home or dashboard
+        router.push("/");
+      } else {
+        // Register - note: confirmPassword is NOT sent to API
+        const response = await register({
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
+        }).unwrap();
+
+        toast({
+          title: "Registration successful!",
+          description: response.message,
+        });
+
+        setMode("login");
+
+        setFormData((prev) => ({
+          ...prev,
+          password: "",
+          confirmPassword: "",
+        }));
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: mode === "login" ? "Login failed" : "Registration failed",
+        description:
+          error?.data?.message || "An error occurred. Please try again.",
+      });
+    }
+  };
+
+  // Reset form when switching modes
+  const handleModeSwitch = (newMode: Mode) => {
+    setMode(newMode);
+    setFormData({
+      fullName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+    });
+    setErrors({
+      fullName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+    });
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -218,16 +384,11 @@ export default function AuthForm() {
               </div>
             )} */}
 
-            <form
-              className="flex flex-col gap-5"
-              onSubmit={(e) => {
-                e.preventDefault();
-              }}
-            >
+            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
               {mode === "register" && (
                 <div className="flex flex-col gap-2">
                   <Label
-                    htmlFor="fullname"
+                    htmlFor="fullName"
                     className="text-sm font-medium text-foreground"
                   >
                     Full Name
@@ -235,11 +396,16 @@ export default function AuthForm() {
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      id="fullname"
+                      id="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
                       placeholder="Enter your full name"
                       className="pl-10 h-11 rounded-xl border-border bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                     />
                   </div>
+                  {errors.fullName && (
+                    <p className="text-xs text-red-500">{errors.fullName}</p>
+                  )}
                 </div>
               )}
 
@@ -255,11 +421,41 @@ export default function AuthForm() {
                   <Input
                     id="email"
                     type="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     placeholder="you@example.com"
                     className="pl-10 h-11 rounded-xl border-border bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-xs text-red-500">{errors.email}</p>
+                )}
               </div>
+
+              {mode === "register" && (
+                <div className="flex flex-col gap-2">
+                  <Label
+                    htmlFor="phone"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    Phone Number
+                  </Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      type="text"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="Enter your phone number"
+                      className="pl-10 h-11 rounded-xl border-border bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                    />
+                  </div>
+                  {errors.phone && (
+                    <p className="text-xs text-red-500">{errors.phone}</p>
+                  )}
+                </div>
+              )}
 
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
@@ -283,6 +479,8 @@ export default function AuthForm() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleChange}
                     placeholder="Enter your password"
                     className="pl-10 pr-10 h-11 rounded-xl border-border bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                   />
@@ -301,12 +499,15 @@ export default function AuthForm() {
                     </span>
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-xs text-red-500">{errors.password}</p>
+                )}
               </div>
 
               {mode === "register" && (
                 <div className="flex flex-col gap-2">
                   <Label
-                    htmlFor="confirm-password"
+                    htmlFor="confirmPassword"
                     className="text-sm font-medium text-foreground"
                   >
                     Confirm Password
@@ -314,20 +515,37 @@ export default function AuthForm() {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      id="confirm-password"
+                      id="confirmPassword"
                       type="password"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
                       placeholder="Confirm your password"
                       className="pl-10 h-11 rounded-xl border-border bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                     />
                   </div>
+                  {errors.confirmPassword && (
+                    <p className="text-xs text-red-500">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
                 </div>
               )}
 
               <Button
                 type="submit"
+                disabled={isLoginLoading || isRegisterLoading}
                 className="w-full h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold mt-1"
               >
-                {mode === "login" ? "Sign In" : "Create Account"}
+                {isLoginLoading || isRegisterLoading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    {mode === "login" ? "Signing in..." : "Creating account..."}
+                  </span>
+                ) : mode === "login" ? (
+                  "Sign In"
+                ) : (
+                  "Create Account"
+                )}
               </Button>
             </form>
 
@@ -388,7 +606,7 @@ export default function AuthForm() {
                   {"Don't have an account? "}
                   <button
                     type="button"
-                    onClick={() => setMode("register")}
+                    onClick={() => handleModeSwitch("register")}
                     className="font-semibold text-primary hover:underline"
                   >
                     Sign up for free
@@ -399,7 +617,7 @@ export default function AuthForm() {
                   {"Already have an account? "}
                   <button
                     type="button"
-                    onClick={() => setMode("login")}
+                    onClick={() => handleModeSwitch("login")}
                     className="font-semibold text-primary hover:underline"
                   >
                     Sign in

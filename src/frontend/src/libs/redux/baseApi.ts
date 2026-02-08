@@ -11,7 +11,7 @@ import { toast } from "sonner";
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://localhost:7100/api",
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.token;
+    const token = (getState() as RootState).auth.accessToken;
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
     }
@@ -30,7 +30,10 @@ export const baseQueryWithReauth: BaseQueryFn<
     if (result.error.status === 401) {
       api.dispatch(logout());
     }
-    toast.error((result.error.data as any)?.message || "Something went wrong");
+    // Only show toast for actual API errors
+    const errorMessage =
+      (result.error.data as any)?.message || "Something went wrong";
+    toast.error(errorMessage);
   }
 
   return result;

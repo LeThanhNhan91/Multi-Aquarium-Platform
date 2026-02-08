@@ -7,8 +7,9 @@ export interface User {
 }
 
 export interface AuthState {
-  user: AuthResponse["user"] | null;
-  token: string | null;
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
 }
 
@@ -21,15 +22,15 @@ export interface RegisterRequest {
   fullName: string;
   email: string;
   password: string;
-  confirmPassword: string;
+  phone: string;
 }
 
-export interface AuthResponse {
-  token: string;
-  user: {
-    id: string;
-    fullName: string;
-    email: string;
-    role: string;
-  };
+export interface RegisterResponse {
+  message: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  fullName: string;
 }

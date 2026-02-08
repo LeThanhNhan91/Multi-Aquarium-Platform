@@ -1,10 +1,11 @@
 import { authApi } from "@/services/authApi";
-import { AuthResponse, AuthState } from "@/types/auth.type";
+import { AuthState, LoginResponse } from "@/types/auth.type";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const initialState: AuthState = {
   user: null,
-  token: null,
+  accessToken: null,
+  refreshToken: null,
   isAuthenticated: false,
 };
 
@@ -14,34 +15,42 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
-      state.token = null;
+      state.accessToken = null;
+      state.refreshToken = null;
       state.isAuthenticated = false;
+
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
     },
-    setCredentials: (state, action: PayloadAction<AuthResponse>) => {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
+    setCredentials: (state, action: PayloadAction<LoginResponse>) => {
+      state.accessToken = action.payload.accessToken;
+      state.refreshToken = action.payload.refreshToken;
       state.isAuthenticated = true;
+      // User info can be decoded from token if needed
+      state.user = {
+        id: "",
+        fullName: action.payload.fullName,
+        email: "",
+        role: "",
+      };
     },
   },
   // Listen for the authApi output to automatically update the state.
   extraReducers: (builder) => {
-    builder
-      .addMatcher(
-        authApi.endpoints.login.matchFulfilled,
-        (state, { payload }) => {
-          state.user = payload.data.user;
-          state.token = payload.data.token;
-          state.isAuthenticated = true;
-        },
-      )
-      .addMatcher(
-        authApi.endpoints.register.matchFulfilled,
-        (state, { payload }) => {
-          state.user = payload.user;
-          state.token = payload.token;
-          state.isAuthenticated = true;
-        },
-      );
+    builder.addMatcher(
+      authApi.endpoints.login.matchFulfilled,
+      (state, { payload }) => {
+        state.accessToken = payload.accessToken;
+        state.refreshToken = payload.refreshToken;
+        state.isAuthenticated = true;
+        state.user = {
+          id: "",
+          fullName: payload.fullName,
+          email: "",
+          role: "",
+        };
+      },
+    );
   },
 });
 
