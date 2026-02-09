@@ -1,6 +1,7 @@
 import { authApi } from "@/services/authApi";
 import { AuthState, LoginResponse } from "@/types/auth.type";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { tokenCookies } from "@/utils/cookies";
 
 const initialState: AuthState = {
   user: null,
@@ -18,9 +19,8 @@ const authSlice = createSlice({
       state.accessToken = null;
       state.refreshToken = null;
       state.isAuthenticated = false;
-
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+      // Clear cookies instead of localStorage
+      tokenCookies.clearTokens();
     },
     setCredentials: (state, action: PayloadAction<LoginResponse>) => {
       state.accessToken = action.payload.accessToken;

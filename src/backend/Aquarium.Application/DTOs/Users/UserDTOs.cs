@@ -11,10 +11,12 @@ namespace Aquarium.Application.DTOs.Users
         string Email,
         string FullName,
         string PhoneNumber,
+        string? Address,
         string Role,
         string Status,
         string? AvatarUrl,
-        string? CoverUrl
+        string? CoverUrl,
+        DateTime CreatedAt
     );
 
     public class GetUsersFilter
@@ -32,6 +34,7 @@ namespace Aquarium.Application.DTOs.Users
     {
         public string? FullName { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? Address { get; set; }
         public IFormFile? Avatar { get; set; }
         public IFormFile? Cover { get; set; }
     }

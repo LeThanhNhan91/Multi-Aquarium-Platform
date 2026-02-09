@@ -20,6 +20,7 @@ import { cn } from "@/utils/utils";
 import { useLoginMutation, useRegisterMutation } from "@/services/authApi";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { tokenCookies } from "@/utils/cookies";
 
 type Mode = "login" | "register";
 type UserType = "buyer" | "seller";
@@ -129,9 +130,9 @@ export default function AuthForm() {
           password: formData.password,
         }).unwrap();
 
-        // Store tokens in localStorage
-        localStorage.setItem("accessToken", response.accessToken);
-        localStorage.setItem("refreshToken", response.refreshToken);
+        // Store tokens in secure cookies instead of localStorage
+        tokenCookies.setAccessToken(response.accessToken);
+        tokenCookies.setRefreshToken(response.refreshToken);
 
         toast({
           title: "Login successful!",

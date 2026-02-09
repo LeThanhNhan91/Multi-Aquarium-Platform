@@ -5,9 +5,28 @@ import Link from "next/link";
 import { Fish, Menu, X, ShoppingCart, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/utils";
+import { useGetProfileQuery } from "@/services/userApi";
+import { UserMenu } from "./UserMenu";
+import { tokenCookies } from "@/utils/cookies";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import { logout } from "@/libs/redux/features/authSlice";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  // Check if user has token and fetch profile
+  const hasToken = tokenCookies.hasTokens();
+  const { data: userProfile, isLoading } = useGetProfileQuery(undefined, {
+    skip: !hasToken,
+  });
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push("/");
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
@@ -65,19 +84,27 @@ export function Navbar() {
             <ShoppingCart className="h-5 w-5" />
             <span className="sr-only">Cart</span>
           </Button>
-          <Link href="/login">
-            <Button
-              variant="outline"
-              className="border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
-            >
-              Sign In
-            </Button>
-          </Link>
-          <Link href="/login">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-              Get Started
-            </Button>
-          </Link>
+
+          {/* Show login buttons or user menu based on auth status */}
+          {!isLoading && userProfile ? (
+            <UserMenu user={userProfile.data} />
+          ) : (
+            <>
+              <Link href="/login">
+                <Button
+                  variant="outline"
+                  className="border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
+                >
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  Get Started
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         <Button
@@ -130,21 +157,49 @@ export function Navbar() {
           >
             About
           </Link>
-          <div className="flex flex-col gap-2 pt-2">
-            <Link href="/login" onClick={() => setMobileOpen(false)}>
+
+          {/* Mobile auth section */}
+          {!isLoading && userProfile ? (
+            <div className="flex flex-col gap-2 pt-2 border-t border-border">
+              <div className="px-3 py-2">
+                <p className="text-sm font-semibold text-foreground">
+                  {userProfile.data.fullName}
+                </p>
+                <p className="text-xs text-muted-foreground">Signed in</p>
+              </div>
+              <Link href="/profile" onClick={() => setMobileOpen(false)}>
+                <Button variant="outline" className="w-full">
+                  Profile
+                </Button>
+              </Link>
               <Button
-                variant="outline"
-                className="w-full border-primary/30 text-primary bg-transparent"
+                variant="destructive"
+                className="w-full"
+                onClick={() => {
+                  handleLogout();
+                  setMobileOpen(false);
+                }}
               >
-                Sign In
+                Logout
               </Button>
-            </Link>
-            <Link href="/login" onClick={() => setMobileOpen(false)}>
-              <Button className="w-full bg-primary text-primary-foreground">
-                Get Started
-              </Button>
-            </Link>
-          </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2 pt-2">
+              <Link href="/login" onClick={() => setMobileOpen(false)}>
+                <Button
+                  variant="outline"
+                  className="w-full border-primary/30 text-primary bg-transparent"
+                >
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/login" onClick={() => setMobileOpen(false)}>
+                <Button className="w-full bg-primary text-primary-foreground">
+                  Get Started
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>

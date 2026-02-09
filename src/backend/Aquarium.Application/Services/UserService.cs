@@ -35,10 +35,12 @@ namespace Aquarium.Application.Services
                 user.Email,
                 user.FullName,
                 user.PhoneNumber,
+                user.Address,
                 user.Role,
                 user.Status,
                 user.AvatarUrl,
-                user.CoverUrl
+                user.CoverUrl,
+                user.CreatedAt
             );
         }
 
@@ -51,10 +53,12 @@ namespace Aquarium.Application.Services
                 user.Email,
                 user.FullName,
                 user.PhoneNumber,
+                user.Address,
                 user.Role,
                 user.Status,
                 user.AvatarUrl,
-                user.CoverUrl
+                user.CoverUrl,
+                user.CreatedAt
             )).ToList();
 
             return new PagedResult<UserDTOs>(
@@ -82,6 +86,11 @@ namespace Aquarium.Application.Services
             if (!string.IsNullOrEmpty(request.PhoneNumber))
             {
                 user.PhoneNumber = request.PhoneNumber;
+            }
+
+            if (!string.IsNullOrEmpty(request.Address))
+            {
+                user.Address = request.Address;
             }
 
             // Update avatar

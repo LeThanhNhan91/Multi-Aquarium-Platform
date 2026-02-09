@@ -7,11 +7,13 @@ import type {
 import { RootState } from "./store";
 import { logout } from "./features/authSlice";
 import { toast } from "sonner";
+import { tokenCookies } from "@/utils/cookies";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://localhost:7100/api",
+  baseUrl: process.env.NEXT_PUBLIC_API_URL,
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.accessToken;
+    // Read token from cookies instead of Redux state for better security
+    const token = tokenCookies.getAccessToken();
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
     }
