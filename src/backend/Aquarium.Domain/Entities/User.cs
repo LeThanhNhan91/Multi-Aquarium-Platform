@@ -27,6 +27,14 @@ public partial class User
 
     public DateTime? RefreshTokenExpiryTime { get; set; }
 
+    public string? AvatarUrl { get; set; }
+
+    public string? AvatarPublicId { get; set; }
+
+    public string? CoverUrl { get; set; }
+
+    public string? CoverPublicId { get; set; }
+
     public virtual ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();

@@ -88,19 +88,24 @@ namespace Aquarium.Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            // Handle Image (Mapping list string -> ProductMedia entities)
+            // Handle Image (Upload files and create ProductMedia entities)
             if (request.Images != null && request.Images.Any())
             {
-                foreach (var img in request.Images)
+                bool isFirst = true;
+                foreach (var imageFile in request.Images)
                 {
+                    var uploadResult = await _mediaService.UploadImageAsync(imageFile);
+                    
                     product.ProductMedia.Add(new ProductMedia
                     {
                         Id = Guid.NewGuid(),
-                        MediaUrl = img.Url,
-                        PublicId = img.PublicId,
+                        MediaUrl = uploadResult.Url,
+                        PublicId = uploadResult.PublicId,
                         MediaType = "Image",
-                        IsPrimary = img.IsPrimary
+                        IsPrimary = isFirst
                     });
+                    
+                    isFirst = false;
                 }
             }
 

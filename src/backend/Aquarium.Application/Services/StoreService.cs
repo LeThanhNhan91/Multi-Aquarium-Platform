@@ -6,6 +6,7 @@ using Aquarium.Application.DTOs.StoreMember;
 using Aquarium.Application.DTOs.Stores;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Media;
+using Aquarium.Application.Interfaces.Users;
 using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Entities;
 using Aquarium.Domain.Exceptions;
@@ -85,8 +86,9 @@ namespace Aquarium.Application.Services
                     await _mediaService.DeleteMediaAsync(store.LogoPublicId);
                 }
 
-                store.LogoUrl = request.Logo.Url;
-                store.LogoPublicId = request.Logo.PublicId;
+                var logoResult = await _mediaService.UploadImageAsync(request.Logo);
+                store.LogoUrl = logoResult.Url;
+                store.LogoPublicId = logoResult.PublicId;
             }
 
             if (request.Cover != null)
@@ -96,8 +98,9 @@ namespace Aquarium.Application.Services
                     await _mediaService.DeleteMediaAsync(store.CoverPublicId);
                 }
 
-                store.CoverUrl = request.Cover.Url;
-                store.CoverPublicId = request.Cover.PublicId;
+                var coverResult = await _mediaService.UploadImageAsync(request.Cover);
+                store.CoverUrl = coverResult.Url;
+                store.CoverPublicId = coverResult.PublicId;
             }
 
             await _storeRepository.UpdateAsync(store);

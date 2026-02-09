@@ -54,7 +54,8 @@ namespace Aquarium.Api.Controllers
 
         [HttpPost("stores/{storeId}/products")]
         [Authorize]
-        public async Task<IActionResult> CreateProduct(Guid storeId, [FromBody] CreateProductRequest request)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateProduct(Guid storeId, [FromForm] CreateProductRequest request)
         {
             var userId = GetCurrentUserId();
             var response = await _productService.CreateProductAsync(request, userId);

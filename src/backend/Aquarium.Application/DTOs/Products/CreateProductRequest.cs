@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using Aquarium.Application.DTOs.Media;
+using Microsoft.AspNetCore.Http;
 
 namespace Aquarium.Application.DTOs.Products
 {
@@ -19,6 +19,6 @@ namespace Aquarium.Application.DTOs.Products
         [Required]
         public Guid CategoryId { get; set; }
 
-        public List<MediaItem>? Images { get; set; }
+        public List<IFormFile>? Images { get; set; }
     }
 }

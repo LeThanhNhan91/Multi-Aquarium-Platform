@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Aquarium.Application.DTOs;
 using Aquarium.Application.Interfaces;
+using Aquarium.Application.Interfaces.Users;
 using Aquarium.Domain.Entities;
 using Aquarium.Domain.Exceptions;
 

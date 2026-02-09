@@ -58,7 +58,8 @@ namespace Aquarium.Api.Controllers
 
         [HttpPut("{id}/info")]
         [Authorize(Roles = "StoreOwner,Manager")]
-        public async Task<IActionResult> UpdateStoreInfo(Guid id, [FromBody] UpdateStoreInfoRequest request)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateStoreInfo(Guid id, [FromForm] UpdateStoreInfoRequest request)
         {
             await _storeService.UpdateStoreInfoAsync(id, request);
             return Ok(new ApiResponse<object>(null, "Store info updated successfully."));

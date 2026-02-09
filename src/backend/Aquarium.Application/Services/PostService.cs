@@ -6,6 +6,7 @@ using Aquarium.Application.DTOs.Posts;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Posts;
+using Aquarium.Application.Interfaces.Users;
 using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Constants;
 using Aquarium.Domain.Entities;

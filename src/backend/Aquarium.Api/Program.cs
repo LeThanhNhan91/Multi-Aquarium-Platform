@@ -12,6 +12,7 @@ using Aquarium.Application.Interfaces.Payments;
 using Aquarium.Application.Interfaces.Posts;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Store;
+using Aquarium.Application.Interfaces.Users;
 using Aquarium.Application.Services;
 using Aquarium.Application.Validators;
 using Aquarium.Infrastructure.Config;
