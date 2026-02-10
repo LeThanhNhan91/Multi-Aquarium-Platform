@@ -27,12 +27,17 @@ public class AuthService : IAuthService
         var existingUser = await _userRepository.GetByEmailAsync(request.Email);
         if (existingUser != null) return false;
 
+        // Split FullName into FirstName and LastName
+        var (firstName, lastName) = SplitFullName(request.FullName);
+
         var user = new User
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
             PasswordHash = _passwordHasher.HashPassword(request.Password),
             FullName = request.FullName,
+            FirstName = firstName,
+            LastName = lastName,
             PhoneNumber = request.PhoneNumber,
             Role = "Customer",
             Status = "Active",
@@ -41,6 +46,36 @@ public class AuthService : IAuthService
 
         await _userRepository.AddAsync(user);
         return await _userRepository.SaveChangesAsync();
+    }
+
+    // Helper method to split FullName into FirstName and LastName
+    private (string firstName, string lastName) SplitFullName(string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            return (string.Empty, string.Empty);
+        }
+
+        var words = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (words.Length == 1)
+        {
+            return (words[0], string.Empty);
+        }
+        else if (words.Length == 2)
+        {
+            return (words[1], words[0]);
+        }
+        else if (words.Length == 3)
+        {
+            // First word is last name, remaining is first name
+            return (string.Join(" ", words.Skip(1)), words[0]);
+        }
+        else
+        {
+            // First 2 words are last name, remaining is first name
+            return (string.Join(" ", words.Skip(2)), string.Join(" ", words.Take(2)));
+        }
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)

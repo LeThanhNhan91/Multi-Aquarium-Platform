@@ -42,18 +42,32 @@ public class CategoriesController : ControllerBase
         return Ok(new ApiResponse<CategoryResponse>(result));
     }
 
-    [HttpGet("{id}/parent")]
+    [HttpGet("parent")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetParentCategory(Guid id)
+    public async Task<IActionResult> GetRootCategories()
     {
-        var result = await _categoryService.GetParentCategoryAsync(id);
+        var result = await _categoryService.GetRootCategoriesAsync();
         
-        if (result == null)
+        if (result.Count == 0)
         {
-            return Ok(new ApiResponse<CategoryResponse?>(null, "This category has no parent (it is a root category)"));
+            return Ok(new ApiResponse<List<CategoryResponse>>(result, "No root categories found"));
         }
         
-        return Ok(new ApiResponse<CategoryResponse>(result));
+        return Ok(new ApiResponse<List<CategoryResponse>>(result));
+    }
+
+    [HttpGet("{parentId}/child")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetChildCategories(Guid parentId)
+    {
+        var result = await _categoryService.GetChildCategoriesAsync(parentId);
+        
+        if (result.Count == 0)
+        {
+            return Ok(new ApiResponse<List<CategoryResponse>>(result, "This category has no children"));
+        }
+        
+        return Ok(new ApiResponse<List<CategoryResponse>>(result));
     }
 
     [HttpPost]

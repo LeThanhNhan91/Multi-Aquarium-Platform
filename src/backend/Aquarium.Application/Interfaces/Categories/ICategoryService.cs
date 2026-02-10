@@ -9,7 +9,8 @@ namespace Aquarium.Application.Interfaces.Categories
     {
         Task<List<CategoryResponse>> GetAllCategoriesAsync();
         Task<CategoryResponse> GetCategoryByIdAsync(Guid id);
-        Task<CategoryResponse?> GetParentCategoryAsync(Guid categoryId);
+        Task<List<CategoryResponse>> GetRootCategoriesAsync();
+        Task<List<CategoryResponse>> GetChildCategoriesAsync(Guid parentId);
         Task<CategoryResponse> CreateCategoryAsync(CreateCategoryRequest request);
         Task DeleteCategoryAsync(Guid id);
         Task<List<CategoryTreeResponse>> GetCategoryTreeAsync();

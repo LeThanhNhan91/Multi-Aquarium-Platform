@@ -10,6 +10,8 @@ namespace Aquarium.Application.DTOs.Users
         Guid Id,
         string Email,
         string FullName,
+        string FirstName,
+        string LastName,
         string PhoneNumber,
         string? Address,
         string Role,
@@ -32,10 +34,20 @@ namespace Aquarium.Application.DTOs.Users
 
     public class UpdateUserRequest
     {
-        public string? FullName { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Address { get; set; }
-        public IFormFile? Avatar { get; set; }
-        public IFormFile? Cover { get; set; }
+    }
+
+    public class UpdateAvatarRequest
+    {
+        public IFormFile Avatar { get; set; }
+    }
+
+    public class UpdateCoverRequest
+    {
+        public IFormFile Cover { get; set; }
     }
 }

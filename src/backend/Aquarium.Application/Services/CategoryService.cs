@@ -32,35 +32,36 @@ namespace Aquarium.Application.Services
             return new CategoryResponse(category.Id, category.Name, category.Slug, category.Description);
         }
 
-        public async Task<CategoryResponse?> GetParentCategoryAsync(Guid categoryId)
+        public async Task<List<CategoryResponse>> GetRootCategoriesAsync()
         {
-            // First check if the category exists
-            var category = await _categoryRepository.GetByIdAsync(categoryId);
-            if (category == null)
-            {
-                throw new NotFoundException("Category", categoryId);
-            }
+            var rootCategories = await _categoryRepository.GetRootCategoriesAsync();
 
-            // If category has no parent, return null
-            if (!category.ParentId.HasValue)
-            {
-                return null;
-            }
+            return rootCategories.Select(c => new CategoryResponse(
+                c.Id,
+                c.Name,
+                c.Slug,
+                c.Description
+            )).ToList();
+        }
 
-            // Get the parent category
-            var parentCategory = await _categoryRepository.GetParentCategoryAsync(categoryId);
-            
+        public async Task<List<CategoryResponse>> GetChildCategoriesAsync(Guid parentId)
+        {
+            // First check if the parent category exists
+            var parentCategory = await _categoryRepository.GetByIdAsync(parentId);
             if (parentCategory == null)
             {
-                return null;
+                throw new NotFoundException("Category", parentId);
             }
 
-            return new CategoryResponse(
-                parentCategory.Id, 
-                parentCategory.Name, 
-                parentCategory.Slug, 
-                parentCategory.Description
-            );
+            // Get all direct children of this category
+            var children = await _categoryRepository.GetChildCategoriesAsync(parentId);
+
+            return children.Select(c => new CategoryResponse(
+                c.Id,
+                c.Name,
+                c.Slug,
+                c.Description
+            )).ToList();
         }
 
         public async Task<CategoryResponse> CreateCategoryAsync(CreateCategoryRequest request)

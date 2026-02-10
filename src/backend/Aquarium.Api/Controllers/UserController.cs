@@ -49,18 +49,34 @@ namespace Aquarium.Api.Controllers
         }
 
         [HttpPut("me")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UpdateCurrentUser([FromForm] UpdateUserRequest request)
+        public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserRequest request)
         {
             var userId = GetCurrentUserId();
             await _userService.UpdateUserAsync(userId, request);
             return Ok(new ApiResponse<object>(null, "User information updated successfully"));
         }
 
+        [HttpPut("me/avatar")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateAvatar([FromForm] UpdateAvatarRequest request)
+        {
+            var userId = GetCurrentUserId();
+            await _userService.UpdateAvatarAsync(userId, request.Avatar);
+            return Ok(new ApiResponse<object>(null, "Avatar updated successfully"));
+        }
+
+        [HttpPut("me/cover")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateCover([FromForm] UpdateCoverRequest request)
+        {
+            var userId = GetCurrentUserId();
+            await _userService.UpdateCoverAsync(userId, request.Cover);
+            return Ok(new ApiResponse<object>(null, "Cover image updated successfully"));
+        }
+
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UpdateUser(Guid id, [FromForm] UpdateUserRequest request)
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserRequest request)
         {
             await _userService.UpdateUserAsync(id, request);
             return Ok(new ApiResponse<object>(null, "User information updated successfully"));
