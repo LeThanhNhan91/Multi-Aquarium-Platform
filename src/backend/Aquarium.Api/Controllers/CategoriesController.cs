@@ -42,6 +42,20 @@ public class CategoriesController : ControllerBase
         return Ok(new ApiResponse<CategoryResponse>(result));
     }
 
+    [HttpGet("{id}/parent")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetParentCategory(Guid id)
+    {
+        var result = await _categoryService.GetParentCategoryAsync(id);
+        
+        if (result == null)
+        {
+            return Ok(new ApiResponse<CategoryResponse?>(null, "This category has no parent (it is a root category)"));
+        }
+        
+        return Ok(new ApiResponse<CategoryResponse>(result));
+    }
+
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request)

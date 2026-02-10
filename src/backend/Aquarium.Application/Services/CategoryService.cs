@@ -32,6 +32,37 @@ namespace Aquarium.Application.Services
             return new CategoryResponse(category.Id, category.Name, category.Slug, category.Description);
         }
 
+        public async Task<CategoryResponse?> GetParentCategoryAsync(Guid categoryId)
+        {
+            // First check if the category exists
+            var category = await _categoryRepository.GetByIdAsync(categoryId);
+            if (category == null)
+            {
+                throw new NotFoundException("Category", categoryId);
+            }
+
+            // If category has no parent, return null
+            if (!category.ParentId.HasValue)
+            {
+                return null;
+            }
+
+            // Get the parent category
+            var parentCategory = await _categoryRepository.GetParentCategoryAsync(categoryId);
+            
+            if (parentCategory == null)
+            {
+                return null;
+            }
+
+            return new CategoryResponse(
+                parentCategory.Id, 
+                parentCategory.Name, 
+                parentCategory.Slug, 
+                parentCategory.Description
+            );
+        }
+
         public async Task<CategoryResponse> CreateCategoryAsync(CreateCategoryRequest request)
         {
             if (request.ParentId.HasValue)

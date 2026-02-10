@@ -27,6 +27,39 @@ namespace Aquarium.Infrastructure.Repositories
             return await _context.Categories.FindAsync(id);
         }
 
+        public async Task<Category?> GetParentCategoryAsync(Guid categoryId)
+        {
+            var category = await _context.Categories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == categoryId);
+
+            if (category == null || !category.ParentId.HasValue)
+            {
+                return null;
+            }
+
+            // Traverse up the hierarchy to find the root parent
+            var currentCategory = category;
+            var rootParent = category;
+
+            while (currentCategory.ParentId.HasValue)
+            {
+                var parent = await _context.Categories
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.Id == currentCategory.ParentId.Value);
+
+                if (parent == null)
+                {
+                    break;
+                }
+
+                rootParent = parent;
+                currentCategory = parent;
+            }
+
+            return rootParent;
+        }
+
         public async Task AddAsync(Category category)
         {
             await _context.Categories.AddAsync(category);
