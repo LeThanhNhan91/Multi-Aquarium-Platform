@@ -23,11 +23,9 @@ import { useToast } from "@/hooks/use-toast";
 import { tokenCookies } from "@/utils/cookies";
 
 type Mode = "login" | "register";
-type UserType = "buyer" | "seller";
 
 export default function AuthForm() {
   const [mode, setMode] = useState<Mode>("login");
-  const [userType, setUserType] = useState<UserType>("buyer");
   const [showPassword, setShowPassword] = useState(false);
 
   // Form state
@@ -202,7 +200,7 @@ export default function AuthForm() {
             alt="Underwater scene"
             className="h-full w-full object-cover opacity-40"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-foreground/80 via-foreground/50 to-primary/30" />
+          <div className="absolute inset-0 bg-linear-to-br from-foreground/80 via-foreground/50 to-primary/30" />
         </div>
 
         {/* Floating bubbles */}
