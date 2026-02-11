@@ -13,11 +13,12 @@ import {
 import { ProductItem } from "@/types/product.type";
 import { useGetAllProductsQuery } from "@/services/productApi";
 import { formatToVND } from "@/helper/formatter";
+import Link from "next/link";
 
 function ProductCard({ product }: { product: ProductItem }) {
   return (
     <div className="group relative flex flex-col rounded-2xl border border-border/50 bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+      <div className="relative aspect-4/3 overflow-hidden bg-muted">
         <img
           src={product.images[0] || "/placeholder.svg"}
           alt={product.name}
@@ -32,7 +33,7 @@ function ProductCard({ product }: { product: ProductItem }) {
           <Heart className="h-4 w-4" />
           <span className="sr-only">Add to wishlist</span>
         </button>
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-card/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-card/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-5">
@@ -101,12 +102,14 @@ export function FeaturedProducts() {
               Trending This Week
             </h2>
           </div>
-          <Button
-            variant="outline"
-            className="border-primary/30 text-primary hover:bg-primary/5 bg-transparent"
-          >
-            View All Products
-          </Button>
+          <Link href="/products">
+            <Button
+              variant="outline"
+              className="border-primary/30 text-primary hover:bg-primary/5 bg-transparent"
+            >
+              View All Products
+            </Button>
+          </Link>
         </div>
 
         <Carousel
