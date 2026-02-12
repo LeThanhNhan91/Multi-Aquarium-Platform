@@ -34,5 +34,7 @@ public partial class Product
 
     public virtual ICollection<ProductMedia> ProductMedia { get; set; } = new List<ProductMedia>();
 
+    public virtual ICollection<ProductReview> ProductReviews { get; set; } = new List<ProductReview>();
+
     public virtual Store Store { get; set; }
 }

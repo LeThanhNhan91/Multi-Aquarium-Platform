@@ -69,7 +69,7 @@ namespace Aquarium.Application.Services
 
             await _storeRepository.SaveChangesAsync();
 
-            return new StoreResponse(newStore.Id, newStore.Name, newStore.Slug, newStore.Status, storeUser.Role);
+            return new StoreResponse(newStore.Id, newStore.Name, newStore.Slug, newStore.Status, storeUser.Role, 0, 0);
         }
 
         public async Task UpdateStoreInfoAsync(Guid storeId, UpdateStoreInfoRequest request)
@@ -170,7 +170,30 @@ namespace Aquarium.Application.Services
             foreach (var store in pagedData.Items)
             {
                 string role = myRoles.ContainsKey(store.Id) ? myRoles[store.Id] : "Guest";
-                response.Add(new StoreResponse(store.Id, store.Name, store.Slug, store.Status, role));
+
+                // Calculate rating from StoreReviews
+                double averageRating = 0;
+                int totalReviews = 0;
+
+                if (store.StoreReviews != null && store.StoreReviews.Any())
+                {
+                    var activeReviews = store.StoreReviews.Where(r => r.Status == "Active").ToList();
+                    if (activeReviews.Any())
+                    {
+                        averageRating = activeReviews.Average(r => r.Rating);
+                        totalReviews = activeReviews.Count;
+                    }
+                }
+
+                response.Add(new StoreResponse(
+                    store.Id, 
+                    store.Name, 
+                    store.Slug, 
+                    store.Status, 
+                    role,
+                    Math.Round(averageRating, 1),
+                    totalReviews
+                ));
             }
             return new PagedResult<StoreResponse>(response, pagedData.TotalCount, pagedData.PageIndex, pagedData.PageSize);
         }

@@ -44,5 +44,7 @@ public partial class Store
 
     public virtual ICollection<StorePost> StorePosts { get; set; } = new List<StorePost>();
 
+    public virtual ICollection<StoreReview> StoreReviews { get; set; } = new List<StoreReview>();
+
     public virtual ICollection<StoreUser> StoreUsers { get; set; } = new List<StoreUser>();
 }

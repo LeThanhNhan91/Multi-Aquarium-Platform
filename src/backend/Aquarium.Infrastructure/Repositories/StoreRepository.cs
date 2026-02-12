@@ -40,7 +40,9 @@ namespace Aquarium.Infrastructure.Repositories
 
         public async Task<Store?> GetByIdAsync(Guid storeId)
         {
-            return await _context.Stores.FirstOrDefaultAsync(s => s.Id == storeId);
+            return await _context.Stores
+                .Include(s => s.StoreReviews.Where(r => r.Status == "Active"))
+                .FirstOrDefaultAsync(s => s.Id == storeId);
         }
 
         public async Task<Dictionary<Guid, string>> GetUserRolesInStoresAsync(Guid userId, List<Guid> storeIds)
@@ -57,7 +59,9 @@ namespace Aquarium.Infrastructure.Repositories
 
         public async Task<PagedResult<Store>> GetStoresByFilterAsync(GetStoresFilter filter)
         {
-            var query = _context.Stores.AsQueryable();
+            var query = _context.Stores
+                .Include(s => s.StoreReviews.Where(r => r.Status == "Active"))
+                .AsQueryable();
 
             if (filter.StoreId.HasValue)
             {

@@ -9,6 +9,8 @@ namespace Aquarium.Application.DTOs.Stores
     string Name,
     string Slug,
     string Status,
-    string Role
+    string Role,
+    double AverageRating,
+    int TotalReviews
     );
 }

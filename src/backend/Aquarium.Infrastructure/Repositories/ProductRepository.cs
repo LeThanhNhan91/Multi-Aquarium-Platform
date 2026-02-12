@@ -42,6 +42,7 @@ namespace Aquarium.Infrastructure.Repositories
                 .Include(p => p.Store)
                 .Include(p => p.Category)
                 .Include(p => p.ProductMedia)
+                .Include(p => p.ProductReviews.Where(r => r.Status == "Active"))
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
@@ -52,6 +53,7 @@ namespace Aquarium.Infrastructure.Repositories
                 .Include(p => p.Category)
                 .Include(p => p.Inventory)
                 .Include(p => p.ProductMedia.Where(m => m.IsPrimary == true))
+                .Include(p => p.ProductReviews.Where(r => r.Status == "Active"))
                 .AsNoTracking()
                 .AsQueryable();
 

@@ -16,6 +16,8 @@ namespace Aquarium.Application.DTOs.Products
     List<string> Images,
     DateTime CreatedAt,
     int Quantity,
-    int AvailableStock
+    int AvailableStock,
+    double AverageRating,
+    int TotalReviews
     );
 }
