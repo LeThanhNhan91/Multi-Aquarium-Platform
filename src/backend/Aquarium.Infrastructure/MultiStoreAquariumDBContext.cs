@@ -49,6 +49,10 @@ public partial class MultiStoreAquariumDBContext : DbContext
 
     public virtual DbSet<PostComment> PostComments { get; set; }
 
+    public virtual DbSet<ProductReview> ProductReviews { get; set; }
+
+    public virtual DbSet<StoreReview> StoreReviews { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
