@@ -13,4 +13,9 @@ namespace Aquarium.Application.DTOs.Categories
 
         public Guid? ParentId { get; set; }
     }
+
+    public class UpdateCategoryParentRequest
+    {
+        public Guid? ParentId { get; set; }
+    }
 }

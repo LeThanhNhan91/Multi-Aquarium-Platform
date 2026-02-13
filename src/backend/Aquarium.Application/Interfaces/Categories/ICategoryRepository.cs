@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Aquarium.Application.DTOs.Categories;
+using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Aquarium.Application.Interfaces.Categories
 {
     public interface ICategoryRepository
     {
-        Task<List<Category>> GetAllAsync();
+        Task<PagedResult<Category>> GetAllAsync(GetCategoryFilter filter);
         Task<Category?> GetByIdAsync(Guid id);
-        Task<List<Category>> GetRootCategoriesAsync();
-        Task<List<Category>> GetChildCategoriesAsync(Guid parentId);
+        Task<PagedResult<Category>> GetRootCategoriesAsync(GetCategoryFilter filter);
+        Task<PagedResult<Category>> GetChildCategoriesAsync(Guid parentId, GetCategoryFilter filter);
         Task AddAsync(Category category);
         Task UpdateAsync(Category category);
         Task DeleteAsync(Category category);

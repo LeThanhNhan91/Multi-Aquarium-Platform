@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Aquarium.Application.DTOs.Categories;
 using Aquarium.Application.Interfaces.Categories;
+using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Entities;
 using Aquarium.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -17,9 +19,24 @@ namespace Aquarium.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<List<Category>> GetAllAsync()
+        public async Task<PagedResult<Category>> GetAllAsync(GetCategoryFilter filter)
         {
-            return await _context.Categories.AsNoTracking().ToListAsync();
+            var query = _context.Categories.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrEmpty(filter.Keyword))
+            {
+                query = query.Where(p => p.Name.Contains(filter.Keyword) ||
+                                         p.Description.Contains(filter.Keyword));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((filter.PageIndex - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
+
+            return new PagedResult<Category>(items, totalCount, filter.PageIndex, filter.PageSize);
         }
 
         public async Task<Category?> GetByIdAsync(Guid id)
@@ -27,20 +44,48 @@ namespace Aquarium.Infrastructure.Repositories
             return await _context.Categories.FindAsync(id);
         }
 
-        public async Task<List<Category>> GetRootCategoriesAsync()
+        public async Task<PagedResult<Category>> GetRootCategoriesAsync(GetCategoryFilter filter)
         {
-            return await _context.Categories
+            var query = _context.Categories
                 .AsNoTracking()
-                .Where(c => c.ParentId == null)
+                .Where(c => c.ParentId == null);
+
+            if (!string.IsNullOrEmpty(filter.Keyword))
+            {
+                query = query.Where(c => c.Name.Contains(filter.Keyword) ||
+                                         (c.Description != null && c.Description.Contains(filter.Keyword)));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((filter.PageIndex - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<Category>(items, totalCount, filter.PageIndex, filter.PageSize);
         }
 
-        public async Task<List<Category>> GetChildCategoriesAsync(Guid parentId)
+        public async Task<PagedResult<Category>> GetChildCategoriesAsync(Guid parentId, GetCategoryFilter filter)
         {
-            return await _context.Categories
+            var query = _context.Categories
                 .AsNoTracking()
-                .Where(c => c.ParentId == parentId)
+                .Where(c => c.ParentId == parentId);
+
+            if (!string.IsNullOrEmpty(filter.Keyword))
+            {
+                query = query.Where(c => c.Name.Contains(filter.Keyword) ||
+                                         (c.Description != null && c.Description.Contains(filter.Keyword)));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((filter.PageIndex - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<Category>(items, totalCount, filter.PageIndex, filter.PageSize);
         }
 
         public async Task AddAsync(Category category)

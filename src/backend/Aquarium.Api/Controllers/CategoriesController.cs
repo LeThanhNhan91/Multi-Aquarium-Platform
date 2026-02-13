@@ -20,17 +20,17 @@ public class CategoriesController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] GetCategoryFilter filter)
     {
-        var result = await _categoryService.GetAllCategoriesAsync();
-        return Ok(new ApiResponse<List<CategoryResponse>>(result));
+        var result = await _categoryService.GetAllCategoriesAsync(filter);
+        return Ok(new ApiResponse<PagedResult<CategoryResponse>>(result));
     }
 
     [HttpGet("tree")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetTree()
+    public async Task<IActionResult> GetTree([FromQuery] GetCategoryFilter filter)
     {
-        var result = await _categoryService.GetCategoryTreeAsync();
+        var result = await _categoryService.GetCategoryTreeAsync(filter);
         return Ok(new ApiResponse<List<CategoryTreeResponse>>(result));
     }
 
@@ -44,30 +44,18 @@ public class CategoriesController : ControllerBase
 
     [HttpGet("parent")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetRootCategories()
+    public async Task<IActionResult> GetRootCategories([FromQuery] GetCategoryFilter filter)
     {
-        var result = await _categoryService.GetRootCategoriesAsync();
-        
-        if (result.Count == 0)
-        {
-            return Ok(new ApiResponse<List<CategoryResponse>>(result, "No root categories found"));
-        }
-        
-        return Ok(new ApiResponse<List<CategoryResponse>>(result));
+        var result = await _categoryService.GetRootCategoriesAsync(filter);
+        return Ok(new ApiResponse<PagedResult<CategoryResponse>>(result));
     }
 
     [HttpGet("{parentId}/child")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetChildCategories(Guid parentId)
+    public async Task<IActionResult> GetChildCategories(Guid parentId, [FromQuery] GetCategoryFilter filter)
     {
-        var result = await _categoryService.GetChildCategoriesAsync(parentId);
-        
-        if (result.Count == 0)
-        {
-            return Ok(new ApiResponse<List<CategoryResponse>>(result, "This category has no children"));
-        }
-        
-        return Ok(new ApiResponse<List<CategoryResponse>>(result));
+        var result = await _categoryService.GetChildCategoriesAsync(parentId, filter);
+        return Ok(new ApiResponse<PagedResult<CategoryResponse>>(result));
     }
 
     [HttpPost]
@@ -80,6 +68,14 @@ public class CategoriesController : ControllerBase
             new { id = result.Id }, 
             new ApiResponse<CategoryResponse>(result, "Category created successfully")
         );
+    }
+
+    [HttpPut("{id}/parent")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateCategoryParent(Guid id, [FromBody] UpdateCategoryParentRequest request)
+    {
+        await _categoryService.UpdateCategoryParentAsync(id, request);
+        return Ok(new ApiResponse<object>(null, "Category parent updated successfully"));
     }
 
     [HttpDelete("{id}")]
