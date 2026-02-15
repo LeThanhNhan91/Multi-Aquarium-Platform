@@ -23,12 +23,19 @@ namespace Aquarium.Application.Services
         {
             var categories = await _categoryRepository.GetAllAsync(filter);
 
-            var categoriesResponse = categories.Items.Select(c => new CategoryResponse(
-                c.Id,
-                c.Name,
-                c.Slug,
-                c.Description
-            )).ToList();
+            var categoriesResponse = new List<CategoryResponse>();
+
+            foreach (var c in categories.Items)
+            {
+                var productCount = await _categoryRepository.GetLeafCategoryCountAsync(c.Id);
+                categoriesResponse.Add(new CategoryResponse(
+                    c.Id,
+                    c.Name,
+                    c.Slug,
+                    c.Description,
+                    productCount
+                ));
+            }
 
             return new PagedResult<CategoryResponse>(categoriesResponse, categories.TotalCount, categories.PageIndex, categories.PageSize);
         }
@@ -38,20 +45,28 @@ namespace Aquarium.Application.Services
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null) throw new NotFoundException("Category", id);
 
-            return new CategoryResponse(category.Id, category.Name, category.Slug, category.Description);
+            var productCount = await _categoryRepository.GetLeafCategoryCountAsync(id);
+
+            return new CategoryResponse(category.Id, category.Name, category.Slug, category.Description, productCount);
         }
 
         public async Task<PagedResult<CategoryResponse>> GetRootCategoriesAsync(GetCategoryFilter filter)
         {
             var rootCategories = await _categoryRepository.GetRootCategoriesAsync(filter);
 
-            var items = rootCategories.Items
-                .Select(c => new CategoryResponse(
+            var items = new List<CategoryResponse>();
+
+            foreach (var c in rootCategories.Items)
+            {
+                var productCount = await _categoryRepository.GetLeafCategoryCountAsync(c.Id);
+                items.Add(new CategoryResponse(
                     c.Id,
                     c.Name,
                     c.Slug,
-                    c.Description
-                )).ToList();
+                    c.Description,
+                    productCount
+                ));
+            }
 
             return new PagedResult<CategoryResponse>(items, rootCategories.TotalCount, rootCategories.PageIndex, rootCategories.PageSize);
         }
@@ -68,13 +83,19 @@ namespace Aquarium.Application.Services
             // Get all direct children of this category with filter
             var children = await _categoryRepository.GetChildCategoriesAsync(parentId, filter);
 
-            var items = children.Items
-                .Select(c => new CategoryResponse(
+            var items = new List<CategoryResponse>();
+
+            foreach (var c in children.Items)
+            {
+                var productCount = await _categoryRepository.GetLeafCategoryCountAsync(c.Id);
+                items.Add(new CategoryResponse(
                     c.Id,
                     c.Name,
                     c.Slug,
-                    c.Description
-                )).ToList();
+                    c.Description,
+                    productCount
+                ));
+            }
 
             return new PagedResult<CategoryResponse>(items, children.TotalCount, children.PageIndex, children.PageSize);
         }
@@ -104,7 +125,9 @@ namespace Aquarium.Application.Services
             await _categoryRepository.AddAsync(newCategory);
             await _categoryRepository.SaveChangesAsync();
 
-            return new CategoryResponse(newCategory.Id, newCategory.Name, newCategory.Slug, newCategory.Description);
+            var productCount = await _categoryRepository.GetLeafCategoryCountAsync(newCategory.Id);
+
+            return new CategoryResponse(newCategory.Id, newCategory.Name, newCategory.Slug, newCategory.Description, productCount);
         }
 
         public async Task UpdateCategoryParentAsync(Guid categoryId, UpdateCategoryParentRequest request)

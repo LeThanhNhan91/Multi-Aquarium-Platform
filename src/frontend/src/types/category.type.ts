@@ -3,4 +3,5 @@ export interface CategoryItem {
   name: string;
   slug: string;
   description: string;
+  productCount: number;
 }

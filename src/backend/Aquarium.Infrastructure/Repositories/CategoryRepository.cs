@@ -120,6 +120,60 @@ namespace Aquarium.Infrastructure.Repositories
             return await _context.Categories.AnyAsync(c => c.Id == id);
         }
 
+        public async Task<List<Guid>> GetAllDescendantIdsAsync(Guid categoryId)
+        {
+            var descendantIds = new List<Guid>();
+            await GetDescendantsRecursive(categoryId, descendantIds);
+            return descendantIds;
+        }
+
+        private async Task GetDescendantsRecursive(Guid categoryId, List<Guid> descendantIds)
+        {
+            // Get direct children
+            var children = await _context.Categories
+                .AsNoTracking()
+                .Where(c => c.ParentId == categoryId)
+                .Select(c => c.Id)
+                .ToListAsync();
+
+            // Add children to the list
+            descendantIds.AddRange(children);
+
+            // Recursively get descendants of each child
+            foreach (var childId in children)
+            {
+                await GetDescendantsRecursive(childId, descendantIds);
+            }
+        }
+
+        public async Task<int> GetLeafCategoryCountAsync(Guid categoryId)
+        {
+            // Get all descendant category IDs
+            var descendantIds = await GetAllDescendantIdsAsync(categoryId);
+            
+            if (descendantIds.Count == 0)
+            {
+                // This is a leaf category (no children)
+                return 1;
+            }
+
+            // Count only leaf categories (categories with no children)
+            var leafCategoryCount = 0;
+
+            foreach (var descendantId in descendantIds)
+            {
+                var hasChildren = await _context.Categories
+                    .AnyAsync(c => c.ParentId == descendantId);
+                
+                if (!hasChildren)
+                {
+                    leafCategoryCount++;
+                }
+            }
+
+            return leafCategoryCount;
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

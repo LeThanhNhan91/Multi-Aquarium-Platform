@@ -1,60 +1,89 @@
 "use client";
 
-import { Fish, Waves, FlaskConical, Lamp, Shell, Leaf } from "lucide-react";
+import {
+  Fish,
+  Waves,
+  FlaskConical,
+  Lamp,
+  Shell,
+  Leaf,
+  LucideIcon,
+} from "lucide-react";
 import { cn } from "@/utils/utils";
+import { useGetParentCategoriesQuery } from "@/services/categoryApi";
+import FishLoading from "@/app/Loading";
+import { useMemo } from "react";
+import { CategoryItem } from "@/types/category.type";
 
-const categories = [
-  {
+// Mapping object for category icons and colors (using slug prefixes without random suffix)
+const categoryStyles: Record<string, { icon: LucideIcon; color: string }> = {
+  "ca-canh": {
     icon: Fish,
-    title: "Tropical Fish",
-    description:
-      "Exotic freshwater and saltwater species from trusted breeders worldwide.",
-    count: "2,400+",
     color: "bg-primary/10 text-primary",
   },
-  {
+  "ho-ca": {
     icon: Waves,
-    title: "Aquariums & Tanks",
-    description:
-      "Premium glass and acrylic tanks in every size, from nano to custom builds.",
-    count: "850+",
     color: "bg-accent/10 text-accent",
   },
-  {
+  "dung-dich-xu-ly": {
     icon: FlaskConical,
-    title: "Water Treatment",
-    description:
-      "Filters, conditioners, and testing kits to maintain perfect water quality.",
-    count: "1,200+",
     color: "bg-primary/10 text-primary",
   },
-  {
+  "dung-cu-va-vat-lieu-loc": {
     icon: Lamp,
-    title: "Lighting Systems",
-    description:
-      "LED and specialized lighting for aquariums of all types and planted tanks.",
-    count: "600+",
     color: "bg-accent/10 text-accent",
   },
-  {
+  "do-trang-tri": {
     icon: Shell,
-    title: "Decorations",
-    description:
-      "Natural rocks, driftwood, substrates, and ornamental decorations.",
-    count: "3,100+",
     color: "bg-primary/10 text-primary",
   },
-  {
+  "cay-thuy-sinh-lua": {
     icon: Leaf,
-    title: "Live Plants",
-    description:
-      "Aquatic plants for beautiful planted aquascapes and natural habitats.",
-    count: "900+",
     color: "bg-accent/10 text-accent",
   },
-];
+};
+
+// Helper function to get slug prefix (remove last 5 chars: -XXXX)
+const getSlugPrefix = (slug: string): string => {
+  // Remove last 5 characters (hyphen + 4 random chars)
+  return slug.slice(0, -5);
+};
+
+// Extended category type with visual properties
+type EnhancedCategory = CategoryItem & {
+  icon: LucideIcon;
+  color: string;
+};
 
 export function CategoriesSection() {
+  const { data: apiData, isLoading } = useGetParentCategoriesQuery({
+    pageIndex: 1,
+    pageSize: 10,
+  });
+
+  // Combine API data with visual properties
+  const enhancedCategories = useMemo(() => {
+    if (!apiData?.data?.items) return [];
+
+    return apiData.data.items.map((cat) => {
+      // Get slug prefix without random suffix
+      const slugPrefix = getSlugPrefix(cat.slug);
+
+      const styles = categoryStyles[slugPrefix] || {
+        icon: Fish,
+        color: "bg-primary/10 text-primary",
+      };
+
+      return {
+        ...cat,
+        icon: styles.icon,
+        color: styles.color,
+      } as EnhancedCategory;
+    });
+  }, [apiData]);
+
+  if (isLoading) return <FishLoading />;
+
   return (
     <section id="categories" className="py-24 bg-background">
       <div className="mx-auto max-w-7xl px-6">
@@ -72,9 +101,9 @@ export function CategoriesSection() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((cat) => (
+          {enhancedCategories.map((cat) => (
             <button
-              key={cat.title}
+              key={cat.id}
               className={cn(
                 "group relative flex flex-col items-start gap-4 rounded-2xl border border-border/50 bg-card p-8 text-left",
                 "transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 hover:-translate-y-1",
@@ -91,10 +120,10 @@ export function CategoriesSection() {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-lg font-semibold text-foreground">
-                    {cat.title}
+                    {cat.name}
                   </h3>
                   <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                    {cat.count}
+                    {cat.productCount}
                   </span>
                 </div>
                 <p className="text-sm leading-relaxed text-muted-foreground">

@@ -2,7 +2,7 @@ import { buildCrudEndpoints } from "@/libs/redux/baseCrudApi";
 import { baseQueryWithReauth } from "@/libs/redux/baseApi";
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { CategoryItem } from "@/types/category.type";
-import { ApiResponse, PaginatedParams } from "@/types/baseModel";
+import { ApiResponse, PagedResult, PaginatedParams } from "@/types/baseModel";
 
 export const categoryApi = createApi({
   reducerPath: "categoryApi",
@@ -15,7 +15,7 @@ export const categoryApi = createApi({
     }),
 
     getParentCategories: builder.query<
-      ApiResponse<CategoryItem>,
+      ApiResponse<PagedResult<CategoryItem>>,
       PaginatedParams
     >({
       query: (params) => ({

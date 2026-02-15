@@ -8,6 +8,7 @@ namespace Aquarium.Application.DTOs.Categories
     Guid Id,
     string Name,
     string Slug,
-    string? Description
+    string? Description,
+    int ProductCount
     );
 }

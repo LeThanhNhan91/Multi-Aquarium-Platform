@@ -11,4 +11,6 @@ export interface ProductItem {
   createdAt: string; // or Date if you parse it
   quantity: number;
   availableStock: number;
+  averageRating: number;
+  totalReviews: number;
 }

@@ -14,6 +14,7 @@ import { ProductItem } from "@/types/product.type";
 import { useGetAllProductsQuery } from "@/services/productApi";
 import { formatToVND } from "@/helper/formatter";
 import Link from "next/link";
+import StarRating from "@/components/shared/StarRating ";
 
 function ProductCard({ product }: { product: ProductItem }) {
   return (
@@ -44,15 +45,12 @@ function ProductCard({ product }: { product: ProductItem }) {
           </h3>
         </div>
 
-        {/* <div className="flex items-center gap-1.5">
-          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-          <span className="text-sm font-medium text-foreground">
-            {product.rating}
-          </span>
+        <div className="flex items-center gap-1.5">
+          <StarRating averageRating={product.averageRating} />
           <span className="text-xs text-muted-foreground">
-            ({product.reviews})
+            ({product.totalReviews})
           </span>
-        </div> */}
+        </div>
 
         <div className="flex items-center justify-between mt-auto pt-2">
           <div className="flex items-baseline gap-2">
