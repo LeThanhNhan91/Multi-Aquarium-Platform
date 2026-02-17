@@ -15,6 +15,7 @@ import { useGetAllProductsQuery } from "@/services/productApi";
 import { formatToVND } from "@/helper/formatter";
 import Link from "next/link";
 import StarRating from "@/components/shared/StarRating ";
+import FishLoading from "@/app/Loading";
 
 function ProductCard({ product }: { product: ProductItem }) {
   return (
@@ -84,7 +85,7 @@ export function FeaturedProducts() {
 
   const products = productData?.data.items ?? [];
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <FishLoading />;
 
   if (products.length === 0) return <div>No products found</div>;
 

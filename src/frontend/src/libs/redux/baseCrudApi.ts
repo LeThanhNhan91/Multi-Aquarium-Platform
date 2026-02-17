@@ -4,9 +4,14 @@ import { ApiResponse, PagedResult, PaginatedParams } from "@/types/baseModel";
 /**
  * Interface for CRUD endpoint configuration parameters
  */
-export interface CrudEndpointsConfig {
+export interface CrudEndpointsConfig<TGetAllParams = PaginatedParams> {
   resourcePath: string; // The URL path for the resource (e.g., 'classrooms', 'products')
   tagType?: string; // Tag type for cache invalidation (defaults to resourcePath)
+  // Custom query builder for getAll endpoint - allows overriding default pagination logic
+  buildGetAllQuery?: (
+    params: TGetAllParams,
+    resourcePath: string,
+  ) => string | { url: string; params: URLSearchParams };
 }
 
 /**
@@ -14,12 +19,12 @@ export interface CrudEndpointsConfig {
  * Usage with createApi: endpoints: (builder) => ({ ...buildCrudEndpoints(builder, 'resource') })
  *
  * @param builder - RTK Query endpoint builder
- * @param config - Resource configuration (path, tags)
+ * @param config - Resource configuration (path, tags, custom query builder)
  * @returns Object containing all basic CRUD endpoints
  */
-export function buildCrudEndpoints<T>(
+export function buildCrudEndpoints<T, TGetAllParams = PaginatedParams>(
   builder: EndpointBuilder<any, any, any>,
-  config: string | CrudEndpointsConfig,
+  config: string | CrudEndpointsConfig<TGetAllParams>,
 ) {
   // Normalize config
   const resourceConfig =
@@ -27,24 +32,36 @@ export function buildCrudEndpoints<T>(
       ? { resourcePath: config, tagType: config }
       : config;
 
-  const { resourcePath, tagType = resourcePath } = resourceConfig;
+  const {
+    resourcePath,
+    tagType = resourcePath,
+    buildGetAllQuery,
+  } = resourceConfig;
+
+  // Default query builder for backward compatibility
+  const defaultQueryBuilder = (params: any): string => {
+    const queryParams = new URLSearchParams();
+    if (params?.pageIndex)
+      queryParams.append("pageIndex", params.pageIndex.toString());
+    if (params?.pageSize)
+      queryParams.append("pageSize", params.pageSize.toString());
+    if (params?.search) queryParams.append("search", params.search);
+
+    const queryString = queryParams.toString();
+    return `/${resourcePath}${queryString ? `?${queryString}` : ""}`;
+  };
 
   return {
     /**
-     * GET ALL - Retrieves a list of all items (supports pagination and search)
-     * Query params: pageIndex, pageSize, search
+     * GET ALL - Retrieves a list of all items (supports pagination and custom params)
+     * Query params: Customizable via buildGetAllQuery or defaults to pageIndex, pageSize, search
      */
-    getAll: builder.query<ApiResponse<PagedResult<T>>, PaginatedParams | void>({
+    getAll: builder.query<ApiResponse<PagedResult<T>>, TGetAllParams | void>({
       query: (params) => {
-        const queryParams = new URLSearchParams();
-        if (params?.pageIndex)
-          queryParams.append("pageIndex", params.pageIndex.toString());
-        if (params?.pageSize)
-          queryParams.append("pageSize", params.pageSize.toString());
-        if (params?.search) queryParams.append("search", params.search);
-
-        const queryString = queryParams.toString();
-        return `/${resourcePath}${queryString ? `?${queryString}` : ""}`;
+        if (buildGetAllQuery && params) {
+          return buildGetAllQuery(params, resourcePath);
+        }
+        return defaultQueryBuilder(params);
       },
       providesTags: (result) =>
         result?.data?.items

@@ -47,19 +47,9 @@ namespace Aquarium.Application.Services
             int totalQuantity = p.Inventory?.Quantity ?? 0;
             int availableToSell = p.Inventory?.AvailableStock ?? 0;
 
-            // Calculate rating from ProductReviews
-            double averageRating = 0;
-            int totalReviews = 0;
-
-            if (p.ProductReviews != null && p.ProductReviews.Any())
-            {
-                var activeReviews = p.ProductReviews.Where(r => r.Status == "Active").ToList();
-                if (activeReviews.Any())
-                {
-                    averageRating = activeReviews.Average(r => r.Rating);
-                    totalReviews = activeReviews.Count;
-                }
-            }
+            // Use precomputed rating values
+            double averageRating = p.AverageRating;
+            int totalReviews = p.TotalReviews;
 
             return new ProductResponse(
                 p.Id,
@@ -74,7 +64,7 @@ namespace Aquarium.Application.Services
                 p.CreatedAt,
                 totalQuantity,
                 availableToSell,
-                Math.Round(averageRating, 1),
+                averageRating,
                 totalReviews
             );
         }

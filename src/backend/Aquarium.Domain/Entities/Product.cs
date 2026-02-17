@@ -26,6 +26,10 @@ public partial class Product
 
     public DateTime CreatedAt { get; set; }
 
+    public double AverageRating { get; set; } = 0;
+
+    public int TotalReviews { get; set; } = 0;
+
     public virtual Category Category { get; set; }
 
     public virtual Inventory Inventory { get; set; }

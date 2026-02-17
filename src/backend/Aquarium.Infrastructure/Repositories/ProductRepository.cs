@@ -14,7 +14,7 @@ namespace Aquarium.Infrastructure.Repositories
     {
         private readonly MultiStoreAquariumDBContext _context;
 
-        public ProductRepository (MultiStoreAquariumDBContext context)
+        public ProductRepository(MultiStoreAquariumDBContext context)
         {
             _context = context;
         }
@@ -81,6 +81,9 @@ namespace Aquarium.Infrastructure.Repositories
             if (filter.MaxPrice.HasValue)
                 query = query.Where(p => p.BasePrice <= filter.MaxPrice.Value);
 
+            if (filter.AverageRating.HasValue)
+                query = query.Where(p => p.AverageRating >= filter.AverageRating.Value);
+
             query = query.Where(p => p.Status == "Active");
 
             query = filter.SortBy?.ToLower() switch
@@ -91,6 +94,15 @@ namespace Aquarium.Infrastructure.Repositories
                 "name" => filter.IsDescending
                     ? query.OrderByDescending(p => p.Name)
                     : query.OrderBy(p => p.Name),
+                "averagerating" => filter.IsDescending
+                    ? query.OrderByDescending(p => p.AverageRating)
+                    : query.OrderBy(p => p.AverageRating),
+                "totalreviews" => filter.IsDescending
+                    ? query.OrderByDescending(p => p.TotalReviews)
+                    : query.OrderBy(p => p.TotalReviews),
+                "newest" => filter.IsDescending
+                    ? query.OrderByDescending(p => p.CreatedAt)
+                    : query.OrderBy(p => p.CreatedAt),
                 _ => query.OrderByDescending(p => p.CreatedAt)
             };
 
@@ -118,6 +130,31 @@ namespace Aquarium.Infrastructure.Repositories
                 .Include(p => p.Inventory)
                 .Where(p => ids.Contains(p.Id) && p.Status == "Active")
                 .ToListAsync();
+        }
+
+        public async Task UpdateProductRatingAsync(Guid productId)
+        {
+            var product = await _context.Products
+                .Include(p => p.ProductReviews.Where(r => r.Status == "Active"))
+                .FirstOrDefaultAsync(p => p.Id == productId);
+
+            if (product != null)
+            {
+                var activeReviews = product.ProductReviews.Where(r => r.Status == "Active").ToList();
+                
+                if (activeReviews.Any())
+                {
+                    product.AverageRating = Math.Round(activeReviews.Average(r => r.Rating), 1);
+                    product.TotalReviews = activeReviews.Count;
+                }
+                else
+                {
+                    product.AverageRating = 0;
+                    product.TotalReviews = 0;
+                }
+
+                _context.Products.Update(product);
+            }
         }
 
         public async Task<bool> SaveChangesAsync()

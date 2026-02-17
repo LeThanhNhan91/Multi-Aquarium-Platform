@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Aquarium.Application.DTOs.Reviews;
+using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Reviews;
 using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Entities;
@@ -12,10 +13,12 @@ namespace Aquarium.Application.Services
     public class ReviewService : IReviewService
     {
         private readonly IReviewRepository _reviewRepository;
+        private readonly IProductRepository _productRepository;
 
-        public ReviewService(IReviewRepository reviewRepository)
+        public ReviewService(IReviewRepository reviewRepository, IProductRepository productRepository)
         {
             _reviewRepository = reviewRepository;
+            _productRepository = productRepository;
         }
 
         // Product Reviews
@@ -50,6 +53,10 @@ namespace Aquarium.Application.Services
             await _reviewRepository.AddProductReviewAsync(review);
             await _reviewRepository.SaveChangesAsync();
 
+            // Update product rating
+            await _productRepository.UpdateProductRatingAsync(productId);
+            await _productRepository.SaveChangesAsync();
+
             // Reload to get navigation properties
             var createdReview = await _reviewRepository.GetProductReviewByIdAsync(review.Id);
 
@@ -82,6 +89,10 @@ namespace Aquarium.Application.Services
             await _reviewRepository.UpdateProductReviewAsync(review);
             await _reviewRepository.SaveChangesAsync();
 
+            // Update product rating
+            await _productRepository.UpdateProductRatingAsync(productId);
+            await _productRepository.SaveChangesAsync();
+
             return MapToReviewResponse(review);
         }
 
@@ -106,6 +117,10 @@ namespace Aquarium.Application.Services
 
             await _reviewRepository.DeleteProductReviewAsync(review);
             await _reviewRepository.SaveChangesAsync();
+
+            // Update product rating
+            await _productRepository.UpdateProductRatingAsync(productId);
+            await _productRepository.SaveChangesAsync();
         }
 
         public async Task<PagedResult<ReviewResponse>> GetProductReviewsAsync(Guid productId, GetReviewsFilter filter)
