@@ -13,7 +13,8 @@ import { cn } from "@/utils/utils";
 import { useGetParentCategoriesQuery } from "@/services/categoryApi";
 import FishLoading from "@/app/Loading";
 import { useMemo } from "react";
-import { CategoryItem } from "@/types/category.type";
+import { CategoryItem, EnhancedCategory } from "@/types/category.type";
+import { getSlugPrefix } from "@/helper/formatter";
 
 // Mapping object for category icons and colors (using slug prefixes without random suffix)
 const categoryStyles: Record<string, { icon: LucideIcon; color: string }> = {
@@ -41,18 +42,6 @@ const categoryStyles: Record<string, { icon: LucideIcon; color: string }> = {
     icon: Leaf,
     color: "bg-accent/10 text-accent",
   },
-};
-
-// Helper function to get slug prefix (remove last 5 chars: -XXXX)
-const getSlugPrefix = (slug: string): string => {
-  // Remove last 5 characters (hyphen + 4 random chars)
-  return slug.slice(0, -5);
-};
-
-// Extended category type with visual properties
-type EnhancedCategory = CategoryItem & {
-  icon: LucideIcon;
-  color: string;
 };
 
 export function CategoriesSection() {

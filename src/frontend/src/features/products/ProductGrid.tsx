@@ -45,16 +45,11 @@ export function ProductsGrid({ products, isLoading }: ProductsGridProps) {
           <EmptyMedia variant="icon">
             <SearchAlertIcon />
           </EmptyMedia>
-          <EmptyTitle>No Projects Yet</EmptyTitle>
+          <EmptyTitle>No Products Found</EmptyTitle>
           <EmptyDescription>
-            You haven&apos;t created any projects yet. Get started by creating
-            your first project.
+            There are no products match your current searches or filters.
           </EmptyDescription>
         </EmptyHeader>
-        <EmptyContent className="flex-row justify-center gap-2">
-          <Button>Create Project</Button>
-          <Button variant="outline">Import Project</Button>
-        </EmptyContent>
         <Button
           variant="link"
           asChild

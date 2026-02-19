@@ -1,7 +1,7 @@
 import { buildCrudEndpoints } from "@/libs/redux/baseCrudApi";
 import { baseQueryWithReauth } from "@/libs/redux/baseApi";
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { CategoryItem } from "@/types/category.type";
+import { CategoryItem, CategoryTreeResponse } from "@/types/category.type";
 import { ApiResponse, PagedResult, PaginatedParams } from "@/types/baseModel";
 
 export const categoryApi = createApi({
@@ -23,6 +23,15 @@ export const categoryApi = createApi({
         params,
       }),
     }),
+
+    getTreeCategories: builder.query<
+      ApiResponse<CategoryTreeResponse[]>,
+      PaginatedParams
+    >({
+      query: () => ({
+        url: "/categories/tree",
+      }),
+    }),
   }),
 });
 
@@ -35,4 +44,5 @@ export const {
   useDeleteMutation: useDeleteCategoryMutation,
 
   useGetParentCategoriesQuery,
+  useGetTreeCategoriesQuery,
 } = categoryApi;

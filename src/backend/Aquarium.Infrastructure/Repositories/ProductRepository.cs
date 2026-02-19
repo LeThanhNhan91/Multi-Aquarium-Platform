@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Products;
+using Aquarium.Application.Interfaces.Categories;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Entities;
@@ -13,10 +14,12 @@ namespace Aquarium.Infrastructure.Repositories
     public class ProductRepository : IProductRepository
     {
         private readonly MultiStoreAquariumDBContext _context;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public ProductRepository(MultiStoreAquariumDBContext context)
+        public ProductRepository(MultiStoreAquariumDBContext context, ICategoryRepository categoryRepository)
         {
             _context = context;
+            _categoryRepository = categoryRepository;
         }
 
         public async Task AddAsync(Product product)
@@ -67,7 +70,15 @@ namespace Aquarium.Infrastructure.Repositories
 
             if (filter.CategoryId.HasValue)
             {
-                query = query.Where(p => p.CategoryId == filter.CategoryId.Value);
+                // Get all descendant category IDs
+                var descendantIds = await _categoryRepository.GetAllDescendantIdsAsync(filter.CategoryId.Value);
+                
+                // Include the parent category + all descendants
+                var allCategoryIds = new List<Guid> { filter.CategoryId.Value };
+                allCategoryIds.AddRange(descendantIds);
+                
+                // Filter products in any of these categories
+                query = query.Where(p => allCategoryIds.Contains(p.CategoryId));
             }
 
             if (filter.StoreId.HasValue)

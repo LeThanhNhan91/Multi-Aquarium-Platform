@@ -20,3 +20,9 @@ export const formatVietnameseDate = (dateString: string): string => {
     year: "numeric",
   }).format(date);
 };
+
+// Helper function to get slug prefix (remove last 5 chars: -XXXX)
+export const getSlugPrefix = (slug: string): string => {
+  // Remove last 5 characters (hyphen + 4 random chars)
+  return slug.slice(0, -5);
+};

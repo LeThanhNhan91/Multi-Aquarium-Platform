@@ -4,6 +4,7 @@ import { Star, Heart, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import StarRating from "@/components/shared/StarRating ";
 
 export interface Product {
   id: string;
@@ -74,10 +75,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <div className="flex items-center gap-1.5">
-          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-          <span className="text-sm font-medium text-foreground">
-            {product.rating}
-          </span>
+          <StarRating averageRating={product.rating} />
           <span className="text-xs text-muted-foreground">
             ({product.reviews})
           </span>

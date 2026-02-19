@@ -35,13 +35,13 @@ export default function ProductsList() {
       MinPrice: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
       MaxPrice:
         filters.priceRange[1] < 10000000 ? filters.priceRange[1] : undefined,
-      // If multiple ratings selected, we might want to take the minimum, or just valid ratings.
-      // The API seems to accept a single AverageRating (min limit usually).
-      // Logic: if user selects 4 stars, they want >= 4.
-      // If they select 4 and 5, they want >= 4 (which includes 5).
       AverageRating:
         filters.selectedRatings.length > 0
           ? Math.min(...filters.selectedRatings)
+          : undefined,
+      CategoryId:
+        filters.selectedCategories.length > 0
+          ? filters.selectedCategories[0]
           : undefined,
     };
 
@@ -149,7 +149,7 @@ export default function ProductsList() {
             <div className="flex items-center justify-between gap-4 mb-8">
               <div className="text-sm text-muted-foreground">
                 {products.length === 0
-                  ? "Không tìm thấy sản phẩm"
+                  ? ""
                   : `${productData?.data?.totalCount ?? products.length} sản phẩm`}
               </div>
 
