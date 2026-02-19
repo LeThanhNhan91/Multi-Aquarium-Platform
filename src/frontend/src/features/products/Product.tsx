@@ -9,8 +9,8 @@ import { SearchBar } from "./SearchBar";
 import { FilterState, FiltersSidebar } from "./FiltersSidebar";
 import { ProductsGrid } from "./ProductGrid";
 import { Product } from "./ProductCard";
-import FishLoading from "@/app/Loading";
 import { useGetAllProductsQuery, ProductParams } from "@/services/productApi";
+import { FishLoading } from "@/app/Loading";
 
 const defaultFilters: FilterState = {
   priceRange: [0, 10000000],
@@ -99,106 +99,106 @@ export default function ProductsList() {
     setSearchQuery("");
   };
 
-  if (isLoading) return <FishLoading />;
-
   return (
-    <main className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50">
-        <div className="mx-auto max-w-7xl px-6 py-4">
-          <div className="flex items-center justify-between gap-4 mb-4">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <Fish className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-bold font-serif text-foreground tracking-tight">
-                AquaMarket
-              </span>
-            </Link>
-            <Link
-              href="/"
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-            >
-              ← Quay Lại
-            </Link>
-          </div>
-
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold font-serif text-foreground mb-2">
-            Sản Phẩm
-          </h1>
-          <p className="text-muted-foreground">
-            Tìm kiếm cá, bể, phụ kiện từ các cửa hàng tốt nhất
-          </p>
-        </div>
-
-        <div className="flex gap-8">
-          <div className="hidden md:block w-80 shrink-0">
-            <FiltersSidebar
-              filters={filters}
-              onFiltersChange={setFilters}
-              onReset={handleResetFilters}
-            />
-          </div>
-
-          <div className="flex-1">
-            <div className="flex items-center justify-between gap-4 mb-8">
-              <div className="text-sm text-muted-foreground">
-                {products.length === 0
-                  ? ""
-                  : `${productData?.data?.totalCount ?? products.length} sản phẩm`}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="px-4 py-2 rounded-lg border border-border/50 bg-card text-foreground text-sm font-medium cursor-pointer hover:border-primary/50 transition-colors"
-                >
-                  <option value="newest">Mới Nhất</option>
-                  <option value="price-low">Giá: Thấp Đến Cao</option>
-                  <option value="price-high">Giá: Cao Đến Thấp</option>
-                  <option value="rating">Đánh Giá Cao Nhất</option>
-                  <option value="popular">Phổ Biến Nhất</option>
-                </select>
-
-                <Sheet
-                  open={mobileFiltersOpen}
-                  onOpenChange={setMobileFiltersOpen}
-                >
-                  <SheetTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="md:hidden border-border/50 bg-card hover:bg-secondary"
-                    >
-                      <SlidersHorizontal className="h-4 w-4 mr-2" />
-                      Bộ Lọc
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-80 p-0">
-                    <div className="h-full overflow-y-auto p-6">
-                      <FiltersSidebar
-                        filters={filters}
-                        onFiltersChange={setFilters}
-                        onReset={handleResetFilters}
-                        isOpen={mobileFiltersOpen}
-                        onClose={() => setMobileFiltersOpen(false)}
-                      />
-                    </div>
-                  </SheetContent>
-                </Sheet>
-              </div>
+    <>
+      <FishLoading isLoading={isLoading} />
+      <main className="min-h-screen bg-background">
+        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50">
+          <div className="mx-auto max-w-7xl px-6 py-4">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <Link href="/" className="flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+                  <Fish className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="text-lg font-bold font-serif text-foreground tracking-tight">
+                  AquaMarket
+                </span>
+              </Link>
+              <Link
+                href="/"
+                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
+                ← Quay Lại
+              </Link>
             </div>
 
-            <ProductsGrid products={products} isLoading={isLoading} />
+            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          </div>
+        </header>
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold font-serif text-foreground mb-2">
+              Sản Phẩm
+            </h1>
+            <p className="text-muted-foreground">
+              Tìm kiếm cá, bể, phụ kiện từ các cửa hàng tốt nhất
+            </p>
+          </div>
+
+          <div className="flex gap-8">
+            <div className="hidden md:block w-80 shrink-0">
+              <FiltersSidebar
+                filters={filters}
+                onFiltersChange={setFilters}
+                onReset={handleResetFilters}
+              />
+            </div>
+
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-4 mb-8">
+                <div className="text-sm text-muted-foreground">
+                  {products.length === 0
+                    ? ""
+                    : `${productData?.data?.totalCount ?? products.length} sản phẩm`}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                    className="px-4 py-2 rounded-lg border border-border/50 bg-card text-foreground text-sm font-medium cursor-pointer hover:border-primary/50 transition-colors"
+                  >
+                    <option value="newest">Mới Nhất</option>
+                    <option value="price-low">Giá: Thấp Đến Cao</option>
+                    <option value="price-high">Giá: Cao Đến Thấp</option>
+                    <option value="rating">Đánh Giá Cao Nhất</option>
+                    <option value="popular">Phổ Biến Nhất</option>
+                  </select>
+
+                  <Sheet
+                    open={mobileFiltersOpen}
+                    onOpenChange={setMobileFiltersOpen}
+                  >
+                    <SheetTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="md:hidden border-border/50 bg-card hover:bg-secondary"
+                      >
+                        <SlidersHorizontal className="h-4 w-4 mr-2" />
+                        Bộ Lọc
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-80 p-0">
+                      <div className="h-full overflow-y-auto p-6">
+                        <FiltersSidebar
+                          filters={filters}
+                          onFiltersChange={setFilters}
+                          onReset={handleResetFilters}
+                          isOpen={mobileFiltersOpen}
+                          onClose={() => setMobileFiltersOpen(false)}
+                        />
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </div>
+              </div>
+
+              <ProductsGrid products={products} isLoading={isLoading} />
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }
