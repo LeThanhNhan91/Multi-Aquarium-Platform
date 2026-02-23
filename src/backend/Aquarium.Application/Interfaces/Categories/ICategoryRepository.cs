@@ -22,6 +22,7 @@ namespace Aquarium.Application.Interfaces.Categories
         Task<bool> ExistsCategoryParentAsync(Guid id);
         Task<List<Guid>> GetAllDescendantIdsAsync(Guid categoryId);
         Task<int> GetLeafCategoryCountAsync(Guid categoryId);
+        Task<Category?> GetRootCategoryAsync(Guid categoryId);
         Task<bool> SaveChangesAsync();
     }
 }

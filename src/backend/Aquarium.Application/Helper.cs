@@ -34,5 +34,25 @@ namespace Aquarium.Application
 
             return $"{str}-{Guid.NewGuid().ToString("N")[..4]}";
         }
+
+        /// <summary>
+        /// Extract base slug without the 4-char GUID suffix
+        /// Example: "ca-canh-a1b2" → "ca-canh"
+        /// </summary>
+        public static string GetBaseSlug(string slug)
+        {
+            if (string.IsNullOrWhiteSpace(slug))
+                return string.Empty;
+
+            // Slug format: {base-slug}-{4-char-guid}
+            // Find the last dash and remove the 4-char suffix
+            int lastDashIndex = slug.LastIndexOf('-');
+            if (lastDashIndex > 0 && slug.Length - lastDashIndex == 5) // "-xxxx"
+            {
+                return slug.Substring(0, lastDashIndex);
+            }
+
+            return slug; // Return as-is if format doesn't match
+        }
     }
 }

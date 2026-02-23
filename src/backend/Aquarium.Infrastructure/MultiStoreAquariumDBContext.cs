@@ -53,6 +53,10 @@ public partial class MultiStoreAquariumDBContext : DbContext
 
     public virtual DbSet<StoreReview> StoreReviews { get; set; }
 
+    public virtual DbSet<FishInstance> FishInstances { get; set; }
+
+    public virtual DbSet<FishInstanceMedia> FishInstanceMedias { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -369,6 +373,39 @@ public partial class MultiStoreAquariumDBContext : DbContext
                 .IsRequired()
                 .HasMaxLength(50)
                 .HasDefaultValue("Active");
+        });
+
+        // Configure FishInstanceMedia to map to correct table name
+        modelBuilder.Entity<FishInstanceMedia>(entity =>
+        {
+            entity.ToTable("FishInstanceMedia"); // Map to singular table name
+            
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            
+            entity.HasOne(d => d.FishInstance)
+                .WithMany(p => p.FishInstanceMedia)
+                .HasForeignKey(d => d.FishInstanceId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_FishInstanceMedia_FishInstances");
+        });
+
+        // Configure FishInstance
+        modelBuilder.Entity<FishInstance>(entity =>
+        {
+            entity.ToTable("FishInstances");
+            
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+            
+            entity.HasOne(d => d.Product)
+                .WithMany(p => p.FishInstances)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_FishInstances_Products");
         });
 
         OnModelCreatingPartial(modelBuilder);

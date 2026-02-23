@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Aquarium.Application.DTOs.FishInstances;
 using Aquarium.Application.DTOs.Products;
 using Aquarium.Application.Interfaces;
+using Aquarium.Application.Interfaces.Categories;
+using Aquarium.Application.Interfaces.FishInstances;
 using Aquarium.Application.Interfaces.Inventory;
 using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Products;
@@ -20,14 +23,25 @@ namespace Aquarium.Application.Services
         private readonly IStoreContext _storeContext;
         private readonly IMediaService _mediaService;
         private readonly IInventoryService _inventoryService;
+        private readonly IFishInstanceRepository _fishInstanceRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public ProductService(IProductRepository productRepository, IStoreRepository storeRepository, IStoreContext storeContext, IMediaService mediaService, IInventoryService inventoryService)
+        public ProductService(
+            IProductRepository productRepository, 
+            IStoreRepository storeRepository, 
+            IStoreContext storeContext, 
+            IMediaService mediaService, 
+            IInventoryService inventoryService,
+            IFishInstanceRepository fishInstanceRepository,
+            ICategoryRepository categoryRepository)
         {
             _productRepository = productRepository;
             _storeRepository = storeRepository;
             _storeContext = storeContext;
             _mediaService = mediaService;
             _inventoryService = inventoryService;
+            _fishInstanceRepository = fishInstanceRepository;
+            _categoryRepository = categoryRepository;
         }
 
         //Author Helper
@@ -42,31 +56,90 @@ namespace Aquarium.Application.Services
         }
 
         // Helper Mapping
-        private ProductResponse MapToResponse(Product p)
+        private async Task<ProductResponse> MapToResponseAsync(Product p)
         {
-            int totalQuantity = p.Inventory?.Quantity ?? 0;
-            int availableToSell = p.Inventory?.AvailableStock ?? 0;
-
             // Use precomputed rating values
             double averageRating = p.AverageRating;
             int totalReviews = p.TotalReviews;
 
-            return new ProductResponse(
-                p.Id,
-                p.Name,
-                p.Slug,
-                p.Description,
-                p.BasePrice,
-                p.Store?.Name ?? "Unknown Store",
-                p.StoreId,
-                p.Category?.Name ?? "Uncategorized",
-                p.ProductMedia.Select(m => m.MediaUrl).ToList(),
-                p.CreatedAt,
-                totalQuantity,
-                availableToSell,
-                averageRating,
-                totalReviews
-            );
+            // Determine product type based on root category
+            var rootCategory = await _categoryRepository.GetRootCategoryAsync(p.CategoryId);
+            string baseSlug = Helper.GetBaseSlug(rootCategory?.Slug ?? "");
+            bool isLiveFish = baseSlug == "ca-canh";
+
+            if (isLiveFish)
+            {
+                // For LiveFish products
+                var availableFishCount = await _fishInstanceRepository.GetAvailableCountByProductIdAsync(p.Id);
+                var priceRange = await _fishInstanceRepository.GetPriceRangeByProductIdAsync(p.Id);
+                var fishInstances = await _fishInstanceRepository.GetAvailableByProductIdAsync(p.Id);
+
+                var fishResponses = fishInstances.Select(f => new FishInstanceResponse(
+                    f.Id,
+                    f.ProductId,
+                    f.Price,
+                    f.Size,
+                    f.Color,
+                    f.Features,
+                    f.Gender,
+                    f.Status,
+                    f.FishInstanceMedia.OrderBy(m => m.DisplayOrder).Select(m => m.MediaUrl).ToList(),
+                    f.VideoUrl,
+                    f.CreatedAt,
+                    f.SoldAt,
+                    f.ReservedUntil
+                )).ToList();
+
+                return new ProductResponse(
+                    p.Id,
+                    p.Name,
+                    p.Slug,
+                    p.Description,
+                    "LiveFish", // ProductType
+                    null, // BasePrice
+                    p.Store?.Name ?? "Unknown Store",
+                    p.StoreId,
+                    p.Category?.Name ?? "Uncategorized",
+                    p.ProductMedia.Select(m => m.MediaUrl).ToList(),
+                    p.CreatedAt,
+                    null, // Quantity
+                    null, // AvailableStock
+                    averageRating,
+                    totalReviews,
+                    availableFishCount,
+                    priceRange.min,
+                    priceRange.max,
+                    fishResponses
+                );
+            }
+            else
+            {
+                // For Equipment products
+                int totalQuantity = p.Inventory?.Quantity ?? 0;
+                int availableToSell = p.Inventory?.AvailableStock ?? 0;
+
+                return new ProductResponse(
+                    p.Id,
+                    p.Name,
+                    p.Slug,
+                    p.Description,
+                    "Equipment", // ProductType
+                    p.BasePrice,
+                    p.Store?.Name ?? "Unknown Store",
+                    p.StoreId,
+                    p.Category?.Name ?? "Uncategorized",
+                    p.ProductMedia.Select(m => m.MediaUrl).ToList(),
+                    p.CreatedAt,
+                    totalQuantity,
+                    availableToSell,
+                    averageRating,
+                    totalReviews,
+                    null, // AvailableFishCount
+                    null, // MinPrice
+                    null, // MaxPrice
+                    null  // FishInstances
+                );
+            }
         }
 
         public async Task<ProductResponse> CreateProductAsync(CreateProductRequest request, Guid userId)
@@ -124,7 +197,7 @@ namespace Aquarium.Application.Services
 
             if (fullProduct == null) throw new Exception("Error creating product.");
 
-            return MapToResponse(fullProduct);
+            return await MapToResponseAsync(fullProduct);
         }
 
         public async Task DeleteProductAsync(Guid productId, Guid userId)
@@ -156,14 +229,18 @@ namespace Aquarium.Application.Services
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null) throw new NotFoundException("Product", id);
-            return MapToResponse(product);
+            return await MapToResponseAsync(product);
         }
 
         public async Task<PagedResult<ProductResponse>> GetProductsAsync(GetProductsFilter filter)
         {
             var pagedData = await _productRepository.GetProductsByFilterAsync(filter);
 
-            var productResponses = pagedData.Items.Select(p => MapToResponse(p)).ToList();
+            var productResponses = new List<ProductResponse>();
+            foreach (var product in pagedData.Items)
+            {
+                productResponses.Add(await MapToResponseAsync(product));
+            }
 
             return new PagedResult<ProductResponse>(
                 productResponses,

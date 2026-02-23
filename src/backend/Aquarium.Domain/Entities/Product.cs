@@ -40,5 +40,7 @@ public partial class Product
 
     public virtual ICollection<ProductReview> ProductReviews { get; set; } = new List<ProductReview>();
 
+    public virtual ICollection<FishInstance> FishInstances { get; set; } = new List<FishInstance>();
+
     public virtual Store Store { get; set; }
 }

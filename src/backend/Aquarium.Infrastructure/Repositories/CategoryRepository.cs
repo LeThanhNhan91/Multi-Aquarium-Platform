@@ -174,6 +174,22 @@ namespace Aquarium.Infrastructure.Repositories
             return leafCategoryCount;
         }
 
+        public async Task<Category?> GetRootCategoryAsync(Guid categoryId)
+        {
+            var category = await _context.Categories.FindAsync(categoryId);
+            if (category == null) return null;
+
+            // Traverse up the hierarchy until we find the root (ParentId == null)
+            while (category.ParentId.HasValue)
+            {
+                var parent = await _context.Categories.FindAsync(category.ParentId.Value);
+                if (parent == null) break;
+                category = parent;
+            }
+
+            return category;
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;
