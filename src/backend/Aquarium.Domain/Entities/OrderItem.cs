@@ -13,13 +13,16 @@ public partial class OrderItem
 
     public Guid ProductId { get; set; }
 
+    public Guid? FishInstanceId { get; set; }
+
     public int Quantity { get; set; }
 
-    // Snapshot Data (The value is fixed at the time of purchase.)
     public string ProductName { get; set; } = string.Empty;
     public decimal PriceAtPurchase { get; set; }
 
     public virtual Order Order { get; set; }
 
     public virtual Product Product { get; set; }
+
+    public virtual FishInstance FishInstance { get; set; }
 }

@@ -7,7 +7,14 @@ namespace Aquarium.Application.DTOs.Orders
 {
     public class CreateOrderItemRequest
     {
+        [Required]
         public Guid ProductId { get; set; }
+
+        /// <summary>
+        /// For LiveFish products, specify the exact fish instance to purchase.
+        /// For Equipment products, leave this null.
+        /// </summary>
+        public Guid? FishInstanceId { get; set; }
 
         [Range(1, 100, ErrorMessage = "The quantity must be between 1 and 100.")]
         public int Quantity { get; set; }

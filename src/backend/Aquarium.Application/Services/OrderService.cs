@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Orders;
 using Aquarium.Application.Interfaces;
+using Aquarium.Application.Interfaces.Categories;
+using Aquarium.Application.Interfaces.FishInstances;
 using Aquarium.Application.Interfaces.Orders;
 using Aquarium.Application.Interfaces.Payments;
 using Aquarium.Application.Interfaces.Products;
@@ -21,18 +23,24 @@ namespace Aquarium.Application.Services
         private readonly IStoreRepository _storeRepository;
         private readonly ILogger<OrderService> _logger;
         private readonly IPaymentGateway _paymentGateway;
+        private readonly IFishInstanceRepository _fishInstanceRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
         public OrderService(
             IProductRepository productRepository,
             IOrderRepository orderRepository,
             IStoreRepository storeRepository,
             IPaymentGateway paymentGateway,
+            IFishInstanceRepository fishInstanceRepository,
+            ICategoryRepository categoryRepository,
             ILogger<OrderService> logger)
         {
             _productRepository = productRepository;
             _orderRepository = orderRepository;
             _storeRepository = storeRepository;
             _paymentGateway = paymentGateway;
+            _fishInstanceRepository = fishInstanceRepository;
+            _categoryRepository = categoryRepository;
             _logger = logger;
         }
 
@@ -93,25 +101,91 @@ namespace Aquarium.Application.Services
                 {
                     var product = products.First(p => p.Id == itemRequest.ProductId);
 
-                    if (product.Inventory == null || !product.Inventory.CanPurchase(itemRequest.Quantity))
+                    // Determine if this is a LiveFish product
+                    var rootCategory = await _categoryRepository.GetRootCategoryAsync(product.CategoryId);
+                    string baseSlug = Helper.GetBaseSlug(rootCategory?.Slug ?? "");
+                    bool isLiveFish = baseSlug == "ca-canh";
+
+                    if (isLiveFish)
                     {
-                        throw new BadRequestException($"Product '{product.Name}' is out of stock (Available: {product.Inventory?.AvailableStock ?? 0}).");
+                        // === LIVE FISH LOGIC ===
+                        
+                        // Validate: FishInstanceId must be provided
+                        if (!itemRequest.FishInstanceId.HasValue)
+                        {
+                            throw new BadRequestException($"Product '{product.Name}' is a LiveFish product. You must specify which fish instance to purchase.");
+                        }
+
+                        // Validate: Quantity must be 1 for LiveFish
+                        if (itemRequest.Quantity != 1)
+                        {
+                            throw new BadRequestException($"LiveFish products can only have quantity = 1. Product: '{product.Name}'");
+                        }
+
+                        var fishInstance = await _fishInstanceRepository.GetByIdAsync(itemRequest.FishInstanceId.Value);
+                        
+                        if (fishInstance == null)
+                        {
+                            throw new NotFoundException("FishInstance", itemRequest.FishInstanceId.Value);
+                        }
+
+                        if (fishInstance.ProductId != product.Id)
+                        {
+                            throw new BadRequestException($"Fish instance does not belong to product '{product.Name}'");
+                        }
+
+                        if (fishInstance.Status != "Available")
+                        {
+                            throw new BadRequestException($"This fish is not available (Status: {fishInstance.Status})");
+                        }
+
+                        // Mark fish as Reserved (will be marked as Sold after payment)
+                        fishInstance.Status = "Reserved";
+                        fishInstance.ReservedUntil = DateTime.UtcNow.AddMinutes(15); // 15 min reservation
+                        await _fishInstanceRepository.UpdateAsync(fishInstance);
+
+                        var orderItem = new OrderItem
+                        {
+                            Id = Guid.NewGuid(),
+                            ProductId = product.Id,
+                            FishInstanceId = fishInstance.Id,
+                            ProductName = $"{product.Name} - {fishInstance.Size} ({fishInstance.Color})",
+                            PriceAtPurchase = fishInstance.Price,
+                            Quantity = 1
+                        };
+
+                        order.OrderItems.Add(orderItem);
+                        totalAmount += orderItem.PriceAtPurchase;
                     }
-
-                    var orderItem = new OrderItem
+                    else
                     {
-                        Id = Guid.NewGuid(),
-                        ProductId = product.Id,
-                        ProductName = product.Name,
-                        PriceAtPurchase = product.BasePrice,
-                        Quantity = itemRequest.Quantity
-                    };
+                        
+                        // Validate: FishInstanceId should not be provided for Equipment
+                        if (itemRequest.FishInstanceId.HasValue)
+                        {
+                            throw new BadRequestException($"Product '{product.Name}' is not a LiveFish product. Do not specify FishInstanceId.");
+                        }
 
-                    order.OrderItems.Add(orderItem);
-                    totalAmount += orderItem.PriceAtPurchase * orderItem.Quantity;
+                        if (product.Inventory == null || !product.Inventory.CanPurchase(itemRequest.Quantity))
+                        {
+                            throw new BadRequestException($"Product '{product.Name}' is out of stock (Available: {product.Inventory?.AvailableStock ?? 0}).");
+                        }
 
-                    // Reserve Stock
-                    product.Inventory.ReserveStock(itemRequest.Quantity);
+                        var orderItem = new OrderItem
+                        {
+                            Id = Guid.NewGuid(),
+                            ProductId = product.Id,
+                            FishInstanceId = null,
+                            ProductName = product.Name,
+                            PriceAtPurchase = product.BasePrice,
+                            Quantity = itemRequest.Quantity
+                        };
+
+                        order.OrderItems.Add(orderItem);
+                        totalAmount += orderItem.PriceAtPurchase * orderItem.Quantity;
+
+                        product.Inventory.ReserveStock(itemRequest.Quantity);
+                    }
                 }
 
                 order.TotalAmount = totalAmount;
@@ -249,7 +323,21 @@ namespace Aquarium.Application.Services
                 order.Status = OrderStatus.Confirmed;
             }
 
+            // Mark FishInstances as Sold (if any)
+            foreach (var orderItem in order.OrderItems.Where(oi => oi.FishInstanceId.HasValue))
+            {
+                var fishInstance = await _fishInstanceRepository.GetByIdAsync(orderItem.FishInstanceId.Value);
+                if (fishInstance != null && fishInstance.Status == "Reserved")
+                {
+                    fishInstance.Status = "Sold";
+                    fishInstance.SoldAt = DateTime.UtcNow;
+                    fishInstance.ReservedUntil = null;
+                    await _fishInstanceRepository.UpdateAsync(fishInstance);
+                }
+            }
+
             await _orderRepository.SaveChangesAsync();
+            await _fishInstanceRepository.SaveChangesAsync();
             _logger.LogInformation($"Order {order.Id} payment processed successfully via VNPay.");
 
             return true;
@@ -296,16 +384,33 @@ namespace Aquarium.Application.Services
 
                 foreach (var item in order.OrderItems)
                 {
-                    var product = products.First(p => p.Id == item.ProductId);
-
-                    if (product.Inventory != null)
+                    if (item.FishInstanceId.HasValue)
                     {
-                        // Call the Domain Logic we added in Step 4
-                        product.Inventory.ReleaseStock(item.Quantity);
+                        // === LIVE FISH: Release reservation ===
+                        var fishInstance = await _fishInstanceRepository.GetByIdAsync(item.FishInstanceId.Value);
+                        if (fishInstance != null && (fishInstance.Status == "Reserved" || fishInstance.Status == "Sold"))
+                        {
+                            fishInstance.Status = "Available";
+                            fishInstance.ReservedUntil = null;
+                            fishInstance.SoldAt = null;
+                            await _fishInstanceRepository.UpdateAsync(fishInstance);
+                        }
+                    }
+                    else
+                    {
+                        // === EQUIPMENT: Release inventory ===
+                        var product = products.First(p => p.Id == item.ProductId);
+
+                        if (product.Inventory != null)
+                        {
+                            // Call the Domain Logic we added in Step 4
+                            product.Inventory.ReleaseStock(item.Quantity);
+                        }
                     }
                 }
 
                 await _orderRepository.SaveChangesAsync();
+                await _fishInstanceRepository.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 _logger.LogInformation($"Order {orderId} cancelled. Stock released.");
