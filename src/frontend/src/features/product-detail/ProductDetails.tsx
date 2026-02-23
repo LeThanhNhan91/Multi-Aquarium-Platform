@@ -5,17 +5,15 @@ import { Fish, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { ImageGallery } from "./ImageGallery";
-import { VideoPlayer } from "./VideoPlayer";
 import { ProductInfo } from "./ProductInfo";
 import { PurchaseActions } from "./PurchaseActions";
 import { StoreInfo } from "./StoreInfo";
-import { ProductDescription } from "./ProductDescription";
 import { ReviewsSection } from "./ReviewsSection";
 import { RelatedProducts } from "./RelatedProducts";
-import { FishInstanceSelector } from "./FishInstanceSelector";
 import { useGetProductByIdQuery } from "@/services/productApi";
 import { FishInstance } from "@/types/product.type";
 import { FishLoading } from "@/app/Loading";
+import { FishInstanceSelector } from "./FishInstanceSelector";
 
 interface Props {
   productId: string;
@@ -34,6 +32,11 @@ export default function ProductDetailPage({ productId }: Props) {
 
   const videoUrl = selectedFish?.videoUrl ?? null;
   const isLiveFish = product?.productType === "LiveFish";
+
+  const handleFishSelect = (fish: FishInstance) => {
+    setSelectedFish((prev) => (prev?.id === fish.id ? null : fish));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <>
@@ -75,19 +78,14 @@ export default function ProductDetailPage({ productId }: Props) {
             <div className="grid lg:grid-cols-3 gap-8 mb-12">
               {/* Left Column - Gallery, Video, Fish Instances */}
               <div className="lg:col-span-2 space-y-8">
-                <ImageGallery images={galleryImages} />
-                {videoUrl && <VideoPlayer videoUrl={videoUrl} />}
+                <ImageGallery images={galleryImages} videoUrl={videoUrl} />
                 {isLiveFish &&
                   product.fishInstances &&
                   product.fishInstances.length > 0 && (
                     <FishInstanceSelector
                       fishInstances={product.fishInstances}
                       selectedId={selectedFish?.id ?? null}
-                      onSelect={(fish) =>
-                        setSelectedFish((prev) =>
-                          prev?.id === fish.id ? null : fish,
-                        )
-                      }
+                      onSelect={handleFishSelect}
                     />
                   )}
               </div>
@@ -120,13 +118,6 @@ export default function ProductDetailPage({ productId }: Props) {
                 isSticky
               />
             </div>
-
-            <Separator className="my-12 bg-border/30" />
-
-            <ProductDescription
-              description={product.description}
-              categoryName={product.categoryName}
-            />
 
             <Separator className="my-12 bg-border/30" />
 

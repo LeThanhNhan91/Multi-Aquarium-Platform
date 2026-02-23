@@ -19,7 +19,7 @@ export interface ProductItem {
   name: string;
   slug: string;
   description: string;
-  // productType: "LiveFish" | "Equipment" | string;
+  productType: "LiveFish" | "Equipment" | string;
   basePrice: number | null;
   storeName: string;
   storeId: string;

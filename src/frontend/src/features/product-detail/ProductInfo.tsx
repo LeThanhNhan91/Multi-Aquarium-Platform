@@ -69,7 +69,7 @@ export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
   };
 
   const stockInfo = renderStock();
-  const { averageRating, totalReviews, categoryName, name, createdAt } = product;
+  const { averageRating, totalReviews, categoryName, name, description , createdAt } = product;
 
   const formattedDate = new Date(createdAt).toLocaleDateString("vi-VN", {
     day: "numeric",
@@ -78,7 +78,7 @@ export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Badges */}
       <div className="flex flex-wrap gap-2">
         <Badge className="bg-primary/10 text-primary border-0 hover:bg-primary/20">
@@ -86,7 +86,7 @@ export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
         </Badge>
         {isLiveFish && (
           <Badge className="bg-emerald-500/10 text-emerald-600 border-0">
-            🐟 Cá sống
+            Cá sống
           </Badge>
         )}
       </div>
@@ -95,6 +95,8 @@ export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
       <h1 className="text-3xl sm:text-4xl font-bold font-serif text-foreground leading-tight">
         {name}
       </h1>
+
+      <p>{description}</p>
 
       {/* Rating */}
       <div className="flex items-center gap-4 pb-4 border-b border-border/50">
@@ -176,8 +178,9 @@ export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
         <p className="text-sm font-semibold text-foreground">Chính sách</p>
         <div className="space-y-2">
           {[
-            "Giao hàng an toàn, đóng gói chuyên dụng cho cá sống",
-            "Hoàn tiền nếu cá không đúng mô tả",
+            "Giao hàng an toàn, đóng gói chuyên dụng",
+            "Hoàn tiền nếu hàng không đúng mô tả",
+            "Bảo hành 7 ngày sau mua",
             "Chăm sóc khách hàng 24/7",
           ].map((policy) => (
             <div key={policy} className="flex items-start gap-3">

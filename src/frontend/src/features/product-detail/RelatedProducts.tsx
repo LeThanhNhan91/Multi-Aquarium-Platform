@@ -8,6 +8,7 @@ interface RelatedProduct {
   name: string;
   price: number;
   image: string;
+  slug: string;
   rating: number;
   reviews: number;
   shop: string;
@@ -24,6 +25,7 @@ const mockRelatedProducts: RelatedProduct[] = [
     name: "Cá Neon Tetra Đỏ Xanh",
     price: 45000,
     image: "/images/product-betta.jpg",
+    slug: "ca",
     rating: 4.8,
     reviews: 234,
     shop: "Aqua Paradise",
@@ -34,6 +36,7 @@ const mockRelatedProducts: RelatedProduct[] = [
     name: "Bộ Lọc Nước Canister 500L",
     price: 1200000,
     image: "/images/product-tank.jpg",
+    slug: "ca",
     rating: 4.6,
     reviews: 156,
     shop: "Pro Equipment",
@@ -44,6 +47,7 @@ const mockRelatedProducts: RelatedProduct[] = [
     name: "Đèn LED Full Spectrum 120cm",
     price: 850000,
     image: "/images/product-light.jpg",
+    slug: "ca",
     rating: 4.7,
     reviews: 189,
     shop: "Lighting Experts",
@@ -54,6 +58,7 @@ const mockRelatedProducts: RelatedProduct[] = [
     name: "Cá Arwana Vàng Đỏ",
     price: 2500000,
     image: "/images/product-koi.jpg",
+    slug: "ca",
     rating: 5.0,
     reviews: 45,
     shop: "Exotic Fish VN",

@@ -55,9 +55,9 @@ export function StoreInfo({
       </div>
 
       {/* Store Actions */}
-      <div className="space-y-2">
+      <div>
         <Link href={`/shop/${storeId}`}>
-          <Button variant="outline" className="w-full rounded-lg border-primary/30 text-primary hover:bg-primary/5">
+          <Button variant="outline" className="w-full rounded-lg border-primary/30 text-primary hover:bg-primary/5 mb-4">
             Xem cửa hàng
           </Button>
         </Link>
