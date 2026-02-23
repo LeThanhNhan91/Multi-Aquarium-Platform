@@ -1,13 +1,15 @@
 "use client";
 
-import { Star, Heart, ShoppingCart } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import StarRating from "@/components/shared/StarRating ";
+import Link from "next/link";
 
 export interface Product {
   id: string;
+  slug: string;
   name: string;
   shop: string;
   price: number;
@@ -32,7 +34,7 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-border/50 bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
+    <Link href={`/products/${product.slug}-${product.id}`} className="group relative flex flex-col rounded-2xl border border-border/50 bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
       <div className="relative aspect-4/3 overflow-hidden bg-muted">
         <img
           src={product.image || "/placeholder.svg"}
@@ -101,6 +103,6 @@ export function ProductCard({ product }: ProductCardProps) {
           </Button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

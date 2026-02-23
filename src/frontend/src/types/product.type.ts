@@ -1,16 +1,38 @@
+export interface FishInstance {
+  id: string;
+  productId: string;
+  price: number;
+  size: string;
+  color: string;
+  features: string;
+  gender: string;
+  status: "Available" | "Sold" | "Reserved";
+  images: string[];
+  videoUrl: string | null;
+  createdAt: string;
+  soldAt: string | null;
+  reservedUntil: string | null;
+}
+
 export interface ProductItem {
   id: string;
   name: string;
   slug: string;
   description: string;
-  basePrice: number;
+  // productType: "LiveFish" | "Equipment" | string;
+  basePrice: number | null;
   storeName: string;
   storeId: string;
   categoryName: string;
   images: string[];
-  createdAt: string; // or Date if you parse it
-  quantity: number;
-  availableStock: number;
+  videos?: string[];
+  createdAt: string;
+  quantity: number | null;
+  availableStock: number | null;
   averageRating: number;
   totalReviews: number;
+  availableFishCount?: number;
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  fishInstances?: FishInstance[];
 }

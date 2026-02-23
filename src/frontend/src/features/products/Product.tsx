@@ -82,9 +82,10 @@ export default function ProductsList() {
 
     return productData.data.items.map((item) => ({
       id: item.id,
+      slug: item.slug,
       name: item.name,
       shop: item.storeName,
-      price: item.basePrice,
+      price: item.basePrice ?? item.minPrice ?? 0,
       // originalPrice: item.originalPrice,
       rating: item.averageRating ?? 0,
       reviews: item.totalReviews ?? 0,
