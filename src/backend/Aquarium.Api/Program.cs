@@ -52,9 +52,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<MultiStoreAquariumDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-var connString = builder.Configuration.GetConnectionString("DefaultConnection");
-Console.WriteLine($"Connection String: {connString}");
-
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 // 2. Register for services (Dependency Injection)
