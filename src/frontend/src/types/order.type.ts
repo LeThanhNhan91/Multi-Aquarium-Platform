@@ -16,10 +16,15 @@ export interface OrderResponse {
   id: string;
   storeId: string;
   storeName: string;
+  customerId: string;
+  customerName: string;
   totalAmount: number;
   status: OrderStatus;
+  paymentStatus: PaymentStatus;
   shippingAddress: string;
+  note?: string;
   createdAt: string;
+  items: OrderItemResponse[];
 }
 
 export interface OrderItemResponse {
@@ -28,6 +33,7 @@ export interface OrderItemResponse {
   priceAtPurchase: number;
   quantity: number;
   totalLineAmount: number;
+  productImageUrl?: string;
 }
 
 export interface OrderDetailResponse {
@@ -58,6 +64,34 @@ export type OrderStatus =
   | "Shipping"
   | "Completed"
   | "Cancelled";
+
+export type PaymentStatus = "Unpaid" | "Paid" | "Refunded";
+
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  Unpaid: "Chưa thanh toán",
+  Paid: "Đã thanh toán",
+  Refunded: "Đã hoàn tiền",
+};
+
+export const PAYMENT_STATUS_COLORS: Record<PaymentStatus, string> = {
+  Unpaid: "text-yellow-600 bg-yellow-50 border-yellow-200",
+  Paid: "text-green-600 bg-green-50 border-green-200",
+  Refunded: "text-purple-600 bg-purple-50 border-purple-200",
+};
+
+export interface GetOrdersFilter {
+  orderId?: string;
+  storeId?: string;
+  customerId?: string;
+  status?: string;
+  paymentStatus?: string;
+  fromDate?: string;
+  toDate?: string;
+  sortBy?: string;
+  isDescending?: boolean;
+  pageIndex?: number;
+  pageSize?: number;
+}
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   Pending: "Chờ thanh toán",

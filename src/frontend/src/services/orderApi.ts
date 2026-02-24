@@ -1,8 +1,9 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "@/libs/redux/baseApi";
-import { ApiResponse } from "@/types/baseModel";
+import { ApiResponse, PagedResult } from "@/types/baseModel";
 import {
   CreateOrderRequest,
+  GetOrdersFilter,
   OrderResponse,
   OrderDetailResponse,
   CreatePaymentUrlRequest,
@@ -21,6 +22,14 @@ export const orderApi = createApi({
         body,
       }),
       invalidatesTags: [{ type: "Order", id: "LIST" }],
+    }),
+
+    getOrders: builder.query<ApiResponse<PagedResult<OrderResponse>>, GetOrdersFilter>({
+      query: (filter) => ({
+        url: "/orders",
+        params: filter,
+      }),
+      providesTags: [{ type: "Order", id: "LIST" }],
     }),
 
     getOrderById: builder.query<ApiResponse<OrderDetailResponse>, string>({
@@ -42,6 +51,7 @@ export const orderApi = createApi({
 });
 
 export const {
+  useGetOrdersQuery,
   useCreateOrderMutation,
   useGetOrderByIdQuery,
   useCreatePaymentUrlMutation,

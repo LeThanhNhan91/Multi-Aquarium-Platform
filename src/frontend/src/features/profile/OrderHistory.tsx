@@ -1,155 +1,422 @@
-"use client"
+"use client";
 
-import React from "react"
+import React, { useState } from "react";
+import Link from "next/link";
+import {
+  ShoppingBag,
+  Store,
+  ExternalLink,
+  CreditCard,
+  Loader2,
+  PackageSearch,
+  ChevronLeft,
+  ChevronRight,
+  User,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  useGetOrdersQuery,
+  useCreatePaymentUrlMutation,
+} from "@/services/orderApi";
+import { useGetProfileQuery } from "@/services/userApi";
+import {
+  ORDER_STATUS_LABELS,
+  ORDER_STATUS_COLORS,
+  PAYMENT_STATUS_LABELS,
+  PAYMENT_STATUS_COLORS,
+  OrderResponse,
+  OrderStatus,
+  PaymentStatus,
+} from "@/types/order.type";
+import { formatToVND, formatVietnameseDate } from "@/helper/formatter";
+import { cn } from "@/utils/utils";
+import { toast } from "sonner";
 
-import { Package, Truck, CheckCircle2, Clock, ExternalLink } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
+const PAGE_SIZE = 8;
 
-const orders = [
-  {
-    id: "AQM-2026-0047",
-    date: "Feb 5, 2026",
-    status: "Delivered",
-    total: "3,150,000",
-    shop: "Saigon Aquatics",
-    items: [
-      { name: "Betta Halfmoon Galaxy", qty: 2, price: "350,000", image: "/images/product-betta.jpg" },
-      { name: "ADA 60P Glass Tank", qty: 1, price: "2,800,000", image: "/images/product-tank.jpg" },
-    ],
-  },
-  {
-    id: "AQM-2026-0043",
-    date: "Jan 28, 2026",
-    status: "In Transit",
-    total: "1,200,000",
-    shop: "Hanoi Fish World",
-    items: [
-      { name: "Discus Blue Diamond", qty: 1, price: "1,200,000", image: "/images/product-discus.jpg" },
-    ],
-  },
-  {
-    id: "AQM-2026-0039",
-    date: "Jan 20, 2026",
-    status: "Processing",
-    total: "890,000",
-    shop: "AquaScape Studio",
-    items: [
-      { name: "CO2 Diffuser Pro Kit", qty: 1, price: "890,000", image: "/images/product-co2.jpg" },
-    ],
-  },
-  {
-    id: "AQM-2025-0128",
-    date: "Dec 15, 2025",
-    status: "Delivered",
-    total: "7,150,000",
-    shop: "Koi Garden Center",
-    items: [
-      { name: "Koi Showa Premium", qty: 1, price: "5,500,000", image: "/images/product-koi.jpg" },
-      { name: "LED Aquarium Light RGB", qty: 1, price: "1,650,000", image: "/images/product-light.jpg" },
-    ],
-  },
-]
+interface OrderCardProps {
+  order: OrderResponse;
+  viewAs: "buyer" | "seller";
+}
 
-const statusConfig: Record<string, { icon: React.ElementType; className: string }> = {
-  Delivered: { icon: CheckCircle2, className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
-  "In Transit": { icon: Truck, className: "bg-primary/10 text-primary border-primary/20" },
-  Processing: { icon: Clock, className: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
+function OrderCard({ order, viewAs }: OrderCardProps) {
+  const [createPaymentUrl, { isLoading: paymentLoading }] =
+    useCreatePaymentUrlMutation();
+
+  const statusClass =
+    ORDER_STATUS_COLORS[order.status as OrderStatus] ??
+    "text-muted-foreground bg-muted border-muted";
+  const paymentClass =
+    PAYMENT_STATUS_COLORS[order.paymentStatus as PaymentStatus] ??
+    "text-muted-foreground bg-muted border-muted";
+
+  const canPay =
+    viewAs === "buyer" &&
+    order.status === "Pending" &&
+    order.paymentStatus === "Unpaid";
+
+  const handlePayment = async () => {
+    try {
+      const result = await createPaymentUrl({
+        orderId: order.id,
+        paymentMethod: "VNPay",
+      }).unwrap();
+      window.location.href = result.paymentUrl;
+    } catch {
+      toast.error("Không thể tạo liên kết thanh toán. Vui lòng thử lại.");
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-border/50 bg-card overflow-hidden hover:shadow-md transition-shadow">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 bg-secondary/30">
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge
+            variant="outline"
+            className={cn("text-xs border", statusClass)}
+          >
+            {ORDER_STATUS_LABELS[order.status as OrderStatus] ?? order.status}
+          </Badge>
+          <Badge
+            variant="outline"
+            className={cn("text-xs border", paymentClass)}
+          >
+            {PAYMENT_STATUS_LABELS[order.paymentStatus as PaymentStatus] ??
+              order.paymentStatus}
+          </Badge>
+          <div>
+            {/* <p className="text-xs font-mono text-muted-foreground">
+              #{order.id.slice(0, 8).toUpperCase()}
+            </p> */}
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {formatVietnameseDate(order.createdAt)}
+            </p>
+          </div>
+        </div>
+        <p className="text-sm font-bold text-foreground">
+          {formatToVND(order.totalAmount)}
+        </p>
+      </div>
+
+      <Separator />
+
+      {/* Body */}
+      <div className="px-5 py-4">
+        {/* Context info row */}
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
+          {viewAs === "buyer" ? (
+            <>
+              <Store className="h-3.5 w-3.5" />
+              <span>
+                Từ{" "}
+                <span className="font-medium text-foreground">
+                  {order.storeName}
+                </span>
+              </span>
+            </>
+          ) : (
+            <>
+              <User className="h-3.5 w-3.5" />
+              <span>
+                khách hàng:{" "}
+                <span className="font-medium text-foreground">
+                  {order.customerName || "—"}
+                </span>
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Items */}
+        <div className="flex flex-col gap-3">
+          {order.items.slice(0, 3).map((item) => (
+            <div key={item.productId} className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-xl overflow-hidden bg-muted shrink-0">
+                <img
+                  src={item.productImageUrl ?? "/placeholder.svg"}
+                  alt={item.productName}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {item.productName}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Số lượng: {item.quantity}
+                </p>
+              </div>
+              <p className="text-sm font-semibold text-foreground shrink-0">
+                {formatToVND(item.priceAtPurchase)}
+              </p>
+            </div>
+          ))}
+          {order.items.length > 3 && (
+            <p className="text-xs text-muted-foreground">
+              +{order.items.length - 3} sản phẩm khác
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border/50 bg-secondary/20">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-primary hover:text-primary/80 hover:bg-primary/5 gap-1.5 text-xs"
+          asChild
+        >
+          <Link href={`/orders/${order.id}`}>
+            <ExternalLink className="h-3.5 w-3.5" />
+            Xem chi tiết
+          </Link>
+        </Button>
+
+        {canPay && (
+          <Button
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs gap-1.5"
+            onClick={handlePayment}
+            disabled={paymentLoading}
+          >
+            {paymentLoading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <CreditCard className="h-3.5 w-3.5" />
+            )}
+            Thanh toán
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function OrderCardSkeleton() {
+  return (
+    <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+      <div className="px-5 py-4 bg-secondary/30">
+        <div className="flex items-center justify-between">
+          <div className="flex gap-3">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-6 w-20" />
+          </div>
+          <Skeleton className="h-5 w-24" />
+        </div>
+      </div>
+      <Separator />
+      <div className="px-5 py-4 flex flex-col gap-3">
+        {[1, 2].map((i) => (
+          <div key={i} className="flex items-center gap-3">
+            <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+            <div className="flex-1">
+              <Skeleton className="h-4 w-3/4 mb-1" />
+              <Skeleton className="h-3 w-1/4" />
+            </div>
+            <Skeleton className="h-4 w-20" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface PaginationProps {
+  pageIndex: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+function OrderPagination({
+  pageIndex,
+  totalPages,
+  onPageChange,
+}: PaginationProps) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-center gap-2 mt-6">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={pageIndex <= 1}
+        onClick={() => onPageChange(pageIndex - 1)}
+        className="gap-1"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        Trước
+      </Button>
+      <span className="text-sm text-muted-foreground px-2">
+        Trang {pageIndex} / {totalPages}
+      </span>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={pageIndex >= totalPages}
+        onClick={() => onPageChange(pageIndex + 1)}
+        className="gap-1"
+      >
+        Tiếp
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+function EmptyOrders({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 gap-4">
+      <PackageSearch className="h-12 w-12 text-muted-foreground/40" />
+      <p className="text-sm text-muted-foreground">{message}</p>
+    </div>
+  );
+}
+
+interface OrderListProps {
+  userId: string;
+  viewAs: "buyer" | "seller";
+}
+
+function OrderList({ userId, viewAs }: OrderListProps) {
+  const [pageIndex, setPageIndex] = useState(1);
+
+  // Buyer tab: pass customerId so the server returns only orders where user is customer.
+  // Seller tab: no customerId filter — the backend security layer returns all accessible
+  //             orders (both customer + store-owner). We then client-side filter to keep
+  //             only orders where the current user is NOT the customer (i.e. store-side orders).
+  const filter =
+    viewAs === "buyer"
+      ? { customerId: userId, pageIndex, pageSize: PAGE_SIZE }
+      : { pageIndex, pageSize: PAGE_SIZE };
+
+  const {
+    data: response,
+    isLoading,
+    isFetching,
+  } = useGetOrdersQuery(filter, {
+    skip: !userId,
+  });
+
+  const allItems = response?.data?.items ?? [];
+  const orders =
+    viewAs === "buyer"
+      ? allItems
+      : allItems.filter((o) => o.customerId !== userId);
+
+  const totalCount = response?.data?.totalCount ?? 0;
+  const totalPages = response?.data?.totalPages ?? 1;
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <OrderCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <EmptyOrders
+        message={
+          viewAs === "buyer"
+            ? "Bạn chưa có đơn hàng nào."
+            : "Cửa hàng chưa nhận được đơn hàng nào."
+        }
+      />
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground mb-4">
+        {viewAs === "buyer"
+          ? `${totalCount} đơn hàng`
+          : `${orders.length} đơn trên trang này`}
+      </p>
+      <div
+        className={cn(
+          "flex flex-col gap-4",
+          isFetching && "opacity-60 pointer-events-none",
+        )}
+      >
+        {orders.map((order) => (
+          <OrderCard key={order.id} order={order} viewAs={viewAs} />
+        ))}
+      </div>
+      {viewAs === "buyer" && (
+        <OrderPagination
+          pageIndex={pageIndex}
+          totalPages={totalPages}
+          onPageChange={(p) => {
+            setPageIndex(p);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
+      )}
+    </div>
+  );
 }
 
 export function OrderHistory() {
+  const { data: profileResponse } = useGetProfileQuery();
+  const userId = profileResponse?.data?.id ?? "";
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-lg font-bold font-serif text-foreground">Order History</h2>
-          <p className="text-sm text-muted-foreground mt-1">Track and manage your purchases</p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="bg-transparent border-border text-foreground hover:bg-muted gap-2"
-        >
-          <Package className="h-4 w-4" />
-          View All
-        </Button>
+      <div className="mb-6">
+        <h2 className="text-lg font-bold font-serif text-foreground">
+          Lịch sử đơn hàng
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Theo dõi và quản lý đơn hàng của bạn
+        </p>
       </div>
 
-      <div className="flex flex-col gap-4">
-        {orders.map((order) => {
-          const StatusIcon = statusConfig[order.status]?.icon ?? Clock
-          const statusClass = statusConfig[order.status]?.className ?? ""
+      <Tabs defaultValue="purchases" className="w-full">
+        <TabsList className="bg-muted/50 rounded-xl p-1 h-auto gap-1 mb-6">
+          <TabsTrigger
+            value="purchases"
+            className="rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm gap-2"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Đơn mua
+          </TabsTrigger>
+          <TabsTrigger
+            value="store-orders"
+            className="rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm gap-2"
+          >
+            <Store className="h-4 w-4" />
+            Đơn cửa hàng
+          </TabsTrigger>
+        </TabsList>
 
-          return (
-            <div
-              key={order.id}
-              className="rounded-2xl border border-border/50 bg-card overflow-hidden hover:shadow-md transition-shadow"
-            >
-              {/* Order header */}
-              <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 bg-secondary/30">
-                <div className="flex items-center gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{order.id}</p>
-                    <p className="text-xs text-muted-foreground">{order.date}</p>
-                  </div>
-                  <Badge className={`border ${statusClass} gap-1.5`}>
-                    <StatusIcon className="h-3 w-3" />
-                    {order.status}
-                  </Badge>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Total</p>
-                  <p className="text-sm font-bold text-foreground">{order.total}d</p>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Order items */}
-              <div className="px-5 py-4">
-                <p className="text-xs text-muted-foreground mb-3">
-                  from <span className="font-medium text-foreground">{order.shop}</span>
-                </p>
-                <div className="flex flex-col gap-3">
-                  {order.items.map((item) => (
-                    <div key={item.name} className="flex items-center gap-4">
-                      <div className="h-14 w-14 rounded-xl overflow-hidden bg-muted shrink-0">
-                        <img src={item.image || "/placeholder.svg"} alt={item.name} className="h-full w-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">Qty: {item.qty}</p>
-                      </div>
-                      <p className="text-sm font-semibold text-foreground shrink-0">{item.price}d</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Order footer */}
-              <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border/50 bg-secondary/20">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-primary hover:text-primary/80 hover:bg-primary/5 gap-1.5 text-xs"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  Track Order
-                </Button>
-                {order.status === "Delivered" && (
-                  <Button
-                    size="sm"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs"
-                  >
-                    Buy Again
-                  </Button>
-                )}
-              </div>
+        <TabsContent value="purchases" className="mt-0">
+          {userId ? (
+            <OrderList userId={userId} viewAs="buyer" />
+          ) : (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          )
-        })}
-      </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="store-orders" className="mt-0">
+          {userId ? (
+            <OrderList userId={userId} viewAs="seller" />
+          ) : (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
-  )
+  );
 }
