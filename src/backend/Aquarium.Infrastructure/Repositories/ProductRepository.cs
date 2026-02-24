@@ -139,6 +139,7 @@ namespace Aquarium.Infrastructure.Repositories
         {
             return await _context.Products
                 .Include(p => p.Inventory)
+                .Include(p => p.ProductMedia)
                 .Where(p => ids.Contains(p.Id) && p.Status == "Active")
                 .ToListAsync();
         }

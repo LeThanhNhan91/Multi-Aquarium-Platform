@@ -6,10 +6,12 @@ namespace Aquarium.Application.DTOs.Orders
 {
     public record OrderItemResponse(
         Guid ProductId,
+        Guid? FishInstanceId,
         string ProductName,
         decimal PriceAtPurchase,
         int Quantity,
-        decimal TotalLineAmount
+        decimal TotalLineAmount,
+        string? ProductImageUrl
     );
 
     public record OrderDetailResponse(

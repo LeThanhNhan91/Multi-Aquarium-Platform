@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Orders;
+using Aquarium.Application.Wrappers;
 using Microsoft.AspNetCore.Http;
 
 namespace Aquarium.Application.Interfaces.Orders
@@ -11,6 +12,8 @@ namespace Aquarium.Application.Interfaces.Orders
         Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request, Guid customerId);
 
         Task<OrderDetailResponse> GetOrderByIdAsync(Guid orderId, Guid userId);
+
+        Task<PagedResult<OrderResponse>> GetOrdersAsync(GetOrdersFilter filter, Guid userId);
 
         Task<string> CreatePaymentUrlAsync(Guid orderId, Guid userId, HttpContext httpContext);
 

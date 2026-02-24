@@ -34,6 +34,15 @@ namespace Aquarium.Api.Controllers
             return Ok(new ApiResponse<OrderDetailResponse>(response));
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetOrders([FromQuery] GetOrdersFilter filter)
+        {
+            var userId = GetCurrentUserId();
+            var response = await _orderService.GetOrdersAsync(filter, userId);
+            return Ok(new ApiResponse<PagedResult<OrderResponse>>(response));
+        }
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)

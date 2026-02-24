@@ -8,6 +8,7 @@ using Aquarium.Application.Interfaces.FishInstances;
 using Aquarium.Application.Interfaces.Orders;
 using Aquarium.Application.Interfaces.Payments;
 using Aquarium.Application.Interfaces.Products;
+using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Constants;
 using Aquarium.Domain.Entities;
 using Aquarium.Domain.Exceptions;
@@ -54,6 +55,9 @@ namespace Aquarium.Application.Services
                 {
                     _logger.LogInformation($"Idempotency check: Order {existingOrder.Id} already exists for key {request.IdempotencyKey}.");
 
+                    // Reload with items
+                    var fullExistingOrder = await _orderRepository.GetByIdWithDetailsAsync(existingOrder.Id);
+                    
                     // Return the old result immediately without creating a new order or deducting inventory again.
                     var existingStore = await _storeRepository.GetByIdAsync(existingOrder.StoreId);
                     return new OrderResponse(
@@ -63,7 +67,16 @@ namespace Aquarium.Application.Services
                         existingOrder.TotalAmount,
                         existingOrder.Status,
                         existingOrder.ShippingAddress,
-                        existingOrder.CreatedAt
+                        existingOrder.CreatedAt,
+                        fullExistingOrder?.OrderItems.Select(i => new OrderItemResponse(
+                            i.ProductId,
+                            i.FishInstanceId,
+                            i.ProductName,
+                            i.PriceAtPurchase,
+                            i.Quantity,
+                            i.PriceAtPurchase * i.Quantity,
+                            i.ProductImageUrl
+                        )).ToList() ?? new List<OrderItemResponse>()
                     );
                 }
             }
@@ -144,6 +157,11 @@ namespace Aquarium.Application.Services
                         fishInstance.ReservedUntil = DateTime.UtcNow.AddMinutes(15); // 15 min reservation
                         await _fishInstanceRepository.UpdateAsync(fishInstance);
 
+                        // Get primary image from FishInstance
+                        var fishImageUrl = fishInstance.FishInstanceMedia
+                            .OrderBy(m => m.DisplayOrder)
+                            .FirstOrDefault()?.MediaUrl;
+
                         var orderItem = new OrderItem
                         {
                             Id = Guid.NewGuid(),
@@ -151,7 +169,8 @@ namespace Aquarium.Application.Services
                             FishInstanceId = fishInstance.Id,
                             ProductName = $"{product.Name} - {fishInstance.Size} ({fishInstance.Color})",
                             PriceAtPurchase = fishInstance.Price,
-                            Quantity = 1
+                            Quantity = 1,
+                            ProductImageUrl = fishImageUrl
                         };
 
                         order.OrderItems.Add(orderItem);
@@ -171,6 +190,11 @@ namespace Aquarium.Application.Services
                             throw new BadRequestException($"Product '{product.Name}' is out of stock (Available: {product.Inventory?.AvailableStock ?? 0}).");
                         }
 
+                        // Get primary image from Product
+                        var productImageUrl = product.ProductMedia
+                            .FirstOrDefault(m => m.IsPrimary == true)?.MediaUrl
+                            ?? product.ProductMedia.FirstOrDefault()?.MediaUrl;
+
                         var orderItem = new OrderItem
                         {
                             Id = Guid.NewGuid(),
@@ -178,7 +202,8 @@ namespace Aquarium.Application.Services
                             FishInstanceId = null,
                             ProductName = product.Name,
                             PriceAtPurchase = product.BasePrice,
-                            Quantity = itemRequest.Quantity
+                            Quantity = itemRequest.Quantity,
+                            ProductImageUrl = productImageUrl
                         };
 
                         order.OrderItems.Add(orderItem);
@@ -206,7 +231,16 @@ namespace Aquarium.Application.Services
                     order.TotalAmount,
                     order.Status,
                     order.ShippingAddress,
-                    order.CreatedAt
+                    order.CreatedAt,
+                    order.OrderItems.Select(i => new OrderItemResponse(
+                        i.ProductId,
+                        i.FishInstanceId,
+                        i.ProductName,
+                        i.PriceAtPurchase,
+                        i.Quantity,
+                        i.PriceAtPurchase * i.Quantity,
+                        i.ProductImageUrl
+                    )).ToList()
                 );
             }
             catch (Exception ex)
@@ -254,11 +288,60 @@ namespace Aquarium.Application.Services
                 order.CreatedAt,
                 order.OrderItems.Select(i => new OrderItemResponse(
                     i.ProductId,
+                    i.FishInstanceId,
                     i.ProductName,
                     i.PriceAtPurchase,
                     i.Quantity,
-                    i.PriceAtPurchase * i.Quantity
+                    i.PriceAtPurchase * i.Quantity,
+                    i.ProductImageUrl
                 )).ToList()
+            );
+        }
+
+        public async Task<PagedResult<OrderResponse>> GetOrdersAsync(GetOrdersFilter filter, Guid userId)
+        {
+            // Get user's stores (if user is store owner/manager)
+            var userStores = await _storeRepository.GetStoresByUserIdAsync(userId);
+            var userStoreIds = userStores.Select(s => s.Id).ToList();
+
+            // Filter orders that user can see:
+            // 1. Orders where user is customer
+            // 2. Orders from stores where user is owner/manager
+            var pagedOrders = await _orderRepository.GetOrdersByFilterAsync(filter);
+
+            // Apply security filter
+            var accessibleOrders = pagedOrders.Items.Where(o =>
+                o.CustomerId == userId || // User is customer
+                userStoreIds.Contains(o.StoreId) // User is store owner/manager
+            ).ToList();
+
+            // Recalculate total count after security filter
+            var totalAccessible = accessibleOrders.Count;
+
+            var orderResponses = accessibleOrders.Select(o => new OrderResponse(
+                o.Id,
+                o.StoreId,
+                o.Store?.Name ?? "Unknown Store",
+                o.TotalAmount,
+                o.Status,
+                o.ShippingAddress,
+                o.CreatedAt,
+                o.OrderItems.Select(i => new OrderItemResponse(
+                    i.ProductId,
+                    i.FishInstanceId,
+                    i.ProductName,
+                    i.PriceAtPurchase,
+                    i.Quantity,
+                    i.PriceAtPurchase * i.Quantity,
+                    i.ProductImageUrl
+                )).ToList()
+            )).ToList();
+
+            return new PagedResult<OrderResponse>(
+                orderResponses,
+                totalAccessible,
+                filter.PageIndex,
+                filter.PageSize
             );
         }
 

@@ -140,6 +140,18 @@ namespace Aquarium.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Store>> GetStoresByUserIdAsync(Guid userId)
+        {
+            var storeIds = await _context.StoreUsers
+                .Where(su => su.UserId == userId)
+                .Select(su => su.StoreId)
+                .ToListAsync();
+
+            return await _context.Stores
+                .Where(s => storeIds.Contains(s.Id))
+                .ToListAsync();
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;
