@@ -5,6 +5,7 @@ import { logout } from "./features/authSlice";
 import { productApi } from "@/services/productApi";
 import { userApi } from "@/services/userApi";
 import { categoryApi } from "@/services/categoryApi";
+import { orderApi } from "@/services/orderApi";
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -13,6 +14,7 @@ const appReducer = combineReducers({
   [productApi.reducerPath]: productApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
   [categoryApi.reducerPath]: categoryApi.reducer,
+  [orderApi.reducerPath]: orderApi.reducer,
 });
 
 export const rootReducer = (state: any, action: any) => {

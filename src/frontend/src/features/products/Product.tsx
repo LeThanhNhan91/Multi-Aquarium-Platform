@@ -107,14 +107,6 @@ export default function ProductsList() {
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50">
           <div className="mx-auto max-w-7xl px-6 py-4">
             <div className="flex items-center justify-between gap-4 mb-4">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                  <Fish className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="text-lg font-bold font-serif text-foreground tracking-tight">
-                  AquaMarket
-                </span>
-              </Link>
               <Link
                 href="/"
                 className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"

@@ -64,7 +64,7 @@ export function ReviewsSection({
       <div className="grid md:grid-cols-3 gap-8">
         {/* Rating Summary */}
         <div className="md:col-span-1">
-          <Card className="border-border/50 bg-gradient-to-br from-card to-card/80 rounded-2xl p-8 space-y-6">
+          <Card className="border-border/50 bg-linear-to-br from-card to-card/80 rounded-2xl p-8 space-y-6">
             <div className="text-center">
               <div className="text-5xl font-bold text-primary">
                 {averageRating.toFixed(1)}
@@ -98,7 +98,7 @@ export function ReviewsSection({
                   </button>
                   <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-primary to-accent"
+                      className="h-full bg-linear-to-r from-primary to-accent"
                       style={{ width: `${item.percentage}%` }}
                     />
                   </div>
@@ -125,7 +125,7 @@ export function ReviewsSection({
               {/* Review Header */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 flex-1">
-                  <Avatar className="h-10 w-10 flex-shrink-0">
+                  <Avatar className="h-10 w-10 shrink-0">
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                       {review.author.charAt(0)}
                     </AvatarFallback>

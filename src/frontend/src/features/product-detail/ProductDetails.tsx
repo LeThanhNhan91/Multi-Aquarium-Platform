@@ -50,9 +50,6 @@ export default function ProductDetailPage({ productId }: Props) {
                 href="/"
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                  <Fish className="h-4 w-4 text-primary-foreground" />
-                </div>
                 <span className="text-sm font-bold font-serif text-foreground">
                   AquaMarket
                 </span>
@@ -96,6 +93,7 @@ export default function ProductDetailPage({ productId }: Props) {
 
                 <PurchaseActions
                   productId={product.id}
+                  storeId={product.storeId}
                   isLiveFish={isLiveFish}
                   availableStock={product.availableStock ?? 0}
                   selectedFish={selectedFish}
@@ -112,6 +110,7 @@ export default function ProductDetailPage({ productId }: Props) {
             <div className="lg:hidden mb-28">
               <PurchaseActions
                 productId={product.id}
+                storeId={product.storeId}
                 isLiveFish={isLiveFish}
                 availableStock={product.availableStock ?? 0}
                 selectedFish={selectedFish}

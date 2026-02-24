@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ShoppingCart, Heart, Share2, Minus, Plus, Fish } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { FishInstance } from "@/types/product.type";
 
 interface PurchaseActionsProps {
   productId: string;
+  storeId: string;
   isLiveFish: boolean;
   availableStock: number;
   selectedFish: FishInstance | null;
@@ -17,11 +19,13 @@ interface PurchaseActionsProps {
 
 export function PurchaseActions({
   productId,
+  storeId,
   isLiveFish,
   availableStock,
   selectedFish,
   isSticky = false,
 }: PurchaseActionsProps) {
+  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -38,11 +42,15 @@ export function PurchaseActions({
   const handleAddToCart = async () => {
     setIsAdding(true);
     try {
-      console.log(
-        isLiveFish
-          ? `Order fish instance: ${selectedFish?.id}`
-          : `Added ${quantity} of product ${productId} to cart`,
-      );
+      const params = new URLSearchParams({
+        productId,
+        storeId,
+        quantity: quantity.toString(),
+      });
+      if (isLiveFish && selectedFish) {
+        params.set("fishInstanceId", selectedFish.id);
+      }
+      router.push(`/checkout?${params.toString()}`);
     } finally {
       setIsAdding(false);
     }

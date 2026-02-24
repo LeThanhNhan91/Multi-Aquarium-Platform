@@ -2,6 +2,7 @@
 using Aquarium.Application.Interfaces.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace Aquarium.Api.Controllers
 {
@@ -10,10 +11,12 @@ namespace Aquarium.Api.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly string _frontendUrl;
 
-        public PaymentController(IOrderService orderService)
+        public PaymentController(IOrderService orderService, IConfiguration configuration)
         {
             _orderService = orderService;
+            _frontendUrl = configuration["FrontendUrl"] ?? "http://localhost:3000";
         }
 
         [HttpPost("create-url")]
@@ -30,20 +33,20 @@ namespace Aquarium.Api.Controllers
         }
 
         [HttpGet("vnpay-return")]
-        [AllowAnonymous] 
+        [AllowAnonymous]
         public async Task<IActionResult> VnPayReturn()
         {
             var response = await _orderService.HandlePaymentCallbackAsync(Request.Query);
 
+            // vnp_TxnRef is the orderId we stored when creating the payment URL
+            var orderId = Request.Query["vnp_TxnRef"].ToString();
+
             if (response)
             {
-                // redirect to a Frontend "Thank You" page (IMPLEMENT LATER)
-                // Example: return Redirect($"http://localhost:3000/checkout/success");
-                return Ok(new { message = "Payment Successful!" });
+                return Redirect($"{_frontendUrl}/checkout/success?orderId={orderId}");
             }
 
-            // Redirect to Frontend "Failed" page
-            return BadRequest(new { message = "Payment Failed." });
+            return Redirect($"{_frontendUrl}/checkout/failed");
         }
     }
 }
