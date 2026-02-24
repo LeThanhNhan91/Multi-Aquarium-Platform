@@ -12,6 +12,7 @@ import {
   AlertCircle,
   Loader2,
   Package,
+  LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -23,10 +24,12 @@ import {
   useCreatePaymentUrlMutation,
 } from "@/services/orderApi";
 import { cn } from "@/utils/utils";
+import { useAppSelector } from "@/libs/redux/hook";
 
 export default function CheckoutPageClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   const productId = searchParams.get("productId") ?? "";
   const storeId = searchParams.get("storeId") ?? "";
@@ -113,6 +116,41 @@ export default function CheckoutPageClient() {
       // Errors are handled globally by baseQueryWithReauth via toast
     }
   };
+
+  if (!isAuthenticated) {
+    const returnUrl = encodeURIComponent(
+      `/checkout?${searchParams.toString()}`,
+    );
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-sm px-4">
+          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+            <LogIn className="h-8 w-8 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-foreground">
+              Đăng nhập để tiếp tục
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Bạn cần đăng nhập trước khi đặt hàng.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={() => router.push(`/login?returnUrl=${returnUrl}`)}
+              className="w-full"
+            >
+              <LogIn className="h-4 w-4 mr-2" />
+              Đăng nhập
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/products">Quay lại cửa hàng</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!productId || !storeId) {
     return (

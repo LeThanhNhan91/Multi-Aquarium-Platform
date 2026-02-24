@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/utils/utils";
 import { useLoginMutation, useRegisterMutation } from "@/services/authApi";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { tokenCookies } from "@/utils/cookies";
 
@@ -27,6 +27,8 @@ type Mode = "login" | "register";
 export default function AuthForm() {
   const [mode, setMode] = useState<Mode>("login");
   const [showPassword, setShowPassword] = useState(false);
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -137,8 +139,8 @@ export default function AuthForm() {
           description: `Welcome back, ${response.fullName}!`,
         });
 
-        // Redirect to home or dashboard
-        router.push("/");
+        // Redirect to returnUrl or home
+        router.push(returnUrl ?? "/");
       } else {
         // Register - note: confirmPassword is NOT sent to API
         const response = await register({
