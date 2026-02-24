@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Plus,
@@ -11,12 +11,14 @@ import {
   Eye,
   ShoppingCart,
   Clock,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { useGetProfileQuery } from "@/services/userApi";
+import { RegisterShopForm } from "@/features/profile/RegisterShopForm";
 
 const shops = [
   {
@@ -73,24 +75,23 @@ const shops = [
     completionRate: 88,
     categories: ["Lighting", "CO2 Systems", "Filters"],
   },
-]
+];
 
 function ShopCard({ shop }: { shop: (typeof shops)[0] }) {
   const statusStyles =
     shop.status === "Active"
       ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-      : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+      : "bg-amber-500/10 text-amber-600 border-amber-500/20";
 
   const completionColor =
     shop.completionRate >= 95
       ? "[&>div]:bg-emerald-500"
       : shop.completionRate >= 85
         ? "[&>div]:bg-amber-500"
-        : "[&>div]:bg-destructive"
+        : "[&>div]:bg-destructive";
 
   return (
     <Card className="group overflow-hidden border-border/50 bg-card hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
-      {/* Shop cover & logo */}
       <div className="relative aspect-[2.5/1] overflow-hidden">
         <img
           src={shop.image || "/placeholder.svg"}
@@ -98,7 +99,9 @@ function ShopCard({ shop }: { shop: (typeof shops)[0] }) {
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
-        <Badge className={`absolute top-3 right-3 border ${statusStyles} text-xs`}>
+        <Badge
+          className={`absolute top-3 right-3 border ${statusStyles} text-xs`}
+        >
           {shop.status}
         </Badge>
         <button
@@ -111,13 +114,18 @@ function ShopCard({ shop }: { shop: (typeof shops)[0] }) {
 
       {/* Shop info */}
       <div className="relative px-5 pb-5">
-        {/* Logo overlapping */}
         <div className="-mt-8 mb-3 flex items-end gap-3">
           <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border-4 border-card shadow-md">
-            <img src={shop.logo || "/placeholder.svg"} alt={`${shop.name} logo`} className="h-full w-full object-cover" />
+            <img
+              src={shop.logo || "/placeholder.svg"}
+              alt={`${shop.name} logo`}
+              className="h-full w-full object-cover"
+            />
           </div>
           <div className="min-w-0 pb-1">
-            <h3 className="text-base font-bold font-serif text-foreground truncate">{shop.name}</h3>
+            <h3 className="text-base font-bold font-serif text-foreground truncate">
+              {shop.name}
+            </h3>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3 shrink-0" />
               <span className="truncate">{shop.location}</span>
@@ -129,9 +137,13 @@ function ShopCard({ shop }: { shop: (typeof shops)[0] }) {
         <div className="flex items-center gap-3 mb-4">
           <div className="flex items-center gap-1">
             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            <span className="text-sm font-semibold text-foreground">{shop.rating}</span>
+            <span className="text-sm font-semibold text-foreground">
+              {shop.rating}
+            </span>
           </div>
-          <span className="text-xs text-muted-foreground">({shop.reviewCount} reviews)</span>
+          <span className="text-xs text-muted-foreground">
+            ({shop.reviewCount} reviews)
+          </span>
           <div className="ml-auto flex flex-wrap gap-1">
             {shop.categories.slice(0, 2).map((cat) => (
               <span
@@ -151,31 +163,46 @@ function ShopCard({ shop }: { shop: (typeof shops)[0] }) {
 
         {/* Order completion */}
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium text-muted-foreground">Order Completion</span>
-          <span className="text-sm font-bold text-foreground">{shop.completionRate}%</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            Order Completion
+          </span>
+          <span className="text-sm font-bold text-foreground">
+            {shop.completionRate}%
+          </span>
         </div>
-        <Progress value={shop.completionRate} className={`h-2 mb-4 ${completionColor}`} />
+        <Progress
+          value={shop.completionRate}
+          className={`h-2 mb-4 ${completionColor}`}
+        />
 
         {/* Stats grid */}
         <div className="grid grid-cols-4 gap-2 mb-4">
           <div className="flex flex-col items-center gap-1 rounded-xl bg-secondary/50 p-2.5">
             <Package className="h-3.5 w-3.5 text-primary" />
-            <span className="text-xs font-semibold text-foreground">{shop.totalProducts}</span>
+            <span className="text-xs font-semibold text-foreground">
+              {shop.totalProducts}
+            </span>
             <span className="text-[10px] text-muted-foreground">Products</span>
           </div>
           <div className="flex flex-col items-center gap-1 rounded-xl bg-secondary/50 p-2.5">
             <ShoppingCart className="h-3.5 w-3.5 text-primary" />
-            <span className="text-xs font-semibold text-foreground">{shop.totalOrders}</span>
+            <span className="text-xs font-semibold text-foreground">
+              {shop.totalOrders}
+            </span>
             <span className="text-[10px] text-muted-foreground">Orders</span>
           </div>
           <div className="flex flex-col items-center gap-1 rounded-xl bg-secondary/50 p-2.5">
             <Eye className="h-3.5 w-3.5 text-primary" />
-            <span className="text-xs font-semibold text-foreground">{shop.monthlyViews}</span>
+            <span className="text-xs font-semibold text-foreground">
+              {shop.monthlyViews}
+            </span>
             <span className="text-[10px] text-muted-foreground">Views</span>
           </div>
           <div className="flex flex-col items-center gap-1 rounded-xl bg-secondary/50 p-2.5">
             <Clock className="h-3.5 w-3.5 text-primary" />
-            <span className="text-xs font-semibold text-foreground">{shop.pendingOrders}</span>
+            <span className="text-xs font-semibold text-foreground">
+              {shop.pendingOrders}
+            </span>
             <span className="text-[10px] text-muted-foreground">Pending</span>
           </div>
         </div>
@@ -185,7 +212,9 @@ function ShopCard({ shop }: { shop: (typeof shops)[0] }) {
         {/* Revenue & actions */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Revenue (VND)</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              Revenue (VND)
+            </p>
             <p className="text-base font-bold font-serif text-foreground flex items-center gap-1">
               <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
               {shop.revenue}
@@ -202,20 +231,44 @@ function ShopCard({ shop }: { shop: (typeof shops)[0] }) {
         </div>
       </div>
     </Card>
-  )
+  );
 }
 
 export function MyShops() {
+  const { data: profileResponse } = useGetProfileQuery();
+  const isStoreOwner = profileResponse?.data?.role === "StoreOwner";
+
+  if (!isStoreOwner) {
+    return (
+      <div>
+        <div className="mb-6">
+          <h2 className="text-lg font-bold font-serif text-foreground">
+            My Shops
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Mở cửa hàng để bắt đầu bán sản phẩm của bạn
+          </p>
+        </div>
+        <RegisterShopForm />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-bold font-serif text-foreground">My Shops</h2>
+          <h2 className="text-lg font-bold font-serif text-foreground">
+            My Shops
+          </h2>
           <p className="text-sm text-muted-foreground mt-1">
             Manage your aquarium shops and track performance
           </p>
         </div>
-        <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
+        <Button
+          size="sm"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+        >
           <Plus className="h-4 w-4" />
           Create Shop
         </Button>
@@ -224,9 +277,19 @@ export function MyShops() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Total Revenue", value: "263.6M VND", icon: TrendingUp, trend: "+12.5%" },
+          {
+            label: "Total Revenue",
+            value: "263.6M VND",
+            icon: TrendingUp,
+            trend: "+12.5%",
+          },
           { label: "Total Products", value: "147", icon: Package, trend: "+8" },
-          { label: "Total Orders", value: "1,986", icon: ShoppingCart, trend: "+34" },
+          {
+            label: "Total Orders",
+            value: "1,986",
+            icon: ShoppingCart,
+            trend: "+34",
+          },
           { label: "Avg Rating", value: "4.7", icon: Star, trend: "+0.1" },
         ].map((item) => (
           <Card key={item.label} className="border-border/50 bg-card">
@@ -237,8 +300,12 @@ export function MyShops() {
                   {item.trend}
                 </span>
               </div>
-              <p className="text-lg font-bold font-serif text-foreground">{item.value}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{item.label}</p>
+              <p className="text-lg font-bold font-serif text-foreground">
+                {item.value}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {item.label}
+              </p>
             </CardContent>
           </Card>
         ))}
@@ -251,5 +318,5 @@ export function MyShops() {
         ))}
       </div>
     </div>
-  )
+  );
 }

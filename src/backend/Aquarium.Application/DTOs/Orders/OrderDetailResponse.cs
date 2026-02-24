@@ -11,7 +11,9 @@ namespace Aquarium.Application.DTOs.Orders
         decimal PriceAtPurchase,
         int Quantity,
         decimal TotalLineAmount,
-        string? ProductImageUrl
+        string? ProductImageUrl,
+        List<string>? FishImages,
+        string? FishVideoUrl
     );
 
     public record OrderDetailResponse(

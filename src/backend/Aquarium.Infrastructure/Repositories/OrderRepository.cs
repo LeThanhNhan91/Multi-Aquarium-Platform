@@ -30,6 +30,8 @@ namespace Aquarium.Infrastructure.Repositories
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.FishInstance)
+                        .ThenInclude(fi => fi!.FishInstanceMedia)
                 .Include(o => o.Store)
                 .Include(o => o.Customer)
                 .FirstOrDefaultAsync(o => o.Id == id);

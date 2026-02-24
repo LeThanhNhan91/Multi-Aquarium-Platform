@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Fish, ShoppingBag, Heart, Settings, Store } from "lucide-react";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +11,8 @@ import { Wishlist } from "@/features/profile/Wishlist";
 import { SettingsTab } from "@/features/profile/SettingsTab";
 
 export default function Profile() {
+  const [activeTab, setActiveTab] = useState("shops");
+
   return (
     <div className="min-h-screen bg-background">
       {/* Top nav bar */}
@@ -35,7 +38,7 @@ export default function Profile() {
       <ProfileHeader />
 
       <div className="mx-auto max-w-7xl px-6 py-8">
-        <Tabs defaultValue="shops" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full justify-start bg-muted/50 rounded-xl p-1 h-auto flex-wrap gap-1">
             <TabsTrigger
               value="shops"
@@ -73,7 +76,7 @@ export default function Profile() {
               <MyShops />
             </TabsContent>
             <TabsContent value="orders" className="mt-0">
-              <OrderHistory />
+              <OrderHistory onNavigateToShops={() => setActiveTab("shops")} />
             </TabsContent>
             <TabsContent value="wishlist" className="mt-0">
               <Wishlist />

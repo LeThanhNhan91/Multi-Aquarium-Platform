@@ -13,6 +13,7 @@ import {
   ChevronRight,
   User,
 } from "lucide-react";
+import { StoreOwnerCTA } from "@/features/profile/StoreOwnerCTA";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -364,9 +365,14 @@ function OrderList({ userId, viewAs }: OrderListProps) {
   );
 }
 
-export function OrderHistory() {
+interface OrderHistoryProps {
+  onNavigateToShops?: () => void;
+}
+
+export function OrderHistory({ onNavigateToShops }: OrderHistoryProps) {
   const { data: profileResponse } = useGetProfileQuery();
   const userId = profileResponse?.data?.id ?? "";
+  const isStoreOwner = profileResponse?.data?.role === "StoreOwner";
 
   return (
     <div>
@@ -408,7 +414,9 @@ export function OrderHistory() {
         </TabsContent>
 
         <TabsContent value="store-orders" className="mt-0">
-          {userId ? (
+          {!isStoreOwner ? (
+            <StoreOwnerCTA onOpenShop={onNavigateToShops} />
+          ) : userId ? (
             <OrderList userId={userId} viewAs="seller" />
           ) : (
             <div className="flex justify-center py-8">

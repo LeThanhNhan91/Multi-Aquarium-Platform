@@ -29,11 +29,14 @@ export interface OrderResponse {
 
 export interface OrderItemResponse {
   productId: string;
+  fishInstanceId?: string | null;
   productName: string;
   priceAtPurchase: number;
   quantity: number;
   totalLineAmount: number;
-  productImageUrl?: string;
+  productImageUrl?: string | null;
+  fishImages?: string[] | null;
+  fishVideoUrl?: string | null;
 }
 
 export interface OrderDetailResponse {

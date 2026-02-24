@@ -79,7 +79,9 @@ namespace Aquarium.Application.Services
                             i.PriceAtPurchase,
                             i.Quantity,
                             i.PriceAtPurchase * i.Quantity,
-                            i.ProductImageUrl
+                            i.ProductImageUrl,
+                            null,
+                            null
                         )).ToList() ?? new List<OrderItemResponse>()
                     );
                 }
@@ -247,7 +249,9 @@ namespace Aquarium.Application.Services
                         i.PriceAtPurchase,
                         i.Quantity,
                         i.PriceAtPurchase * i.Quantity,
-                        i.ProductImageUrl
+                        i.ProductImageUrl,
+                        null,
+                        null
                     )).ToList()
                 );
             }
@@ -294,15 +298,28 @@ namespace Aquarium.Application.Services
                 order.ShippingAddress,
                 order.Note,
                 order.CreatedAt,
-                order.OrderItems.Select(i => new OrderItemResponse(
-                    i.ProductId,
-                    i.FishInstanceId,
-                    i.ProductName,
-                    i.PriceAtPurchase,
-                    i.Quantity,
-                    i.PriceAtPurchase * i.Quantity,
-                    i.ProductImageUrl
-                )).ToList()
+                order.OrderItems.Select(i =>
+                {
+                    var fishMedia = i.FishInstance?.FishInstanceMedia
+                        .OrderBy(m => m.DisplayOrder).ToList();
+                    var fishImages = fishMedia?
+                        .Where(m => !string.Equals(m.MediaType, "video", StringComparison.OrdinalIgnoreCase))
+                        .Select(m => m.MediaUrl).ToList();
+                    var fishVideo = fishMedia?
+                        .FirstOrDefault(m => string.Equals(m.MediaType, "video", StringComparison.OrdinalIgnoreCase))
+                        ?.MediaUrl;
+                    return new OrderItemResponse(
+                        i.ProductId,
+                        i.FishInstanceId,
+                        i.ProductName,
+                        i.PriceAtPurchase,
+                        i.Quantity,
+                        i.PriceAtPurchase * i.Quantity,
+                        i.ProductImageUrl,
+                        fishImages,
+                        fishVideo
+                    );
+                }).ToList()
             );
         }
 
@@ -345,7 +362,9 @@ namespace Aquarium.Application.Services
                     i.PriceAtPurchase,
                     i.Quantity,
                     i.PriceAtPurchase * i.Quantity,
-                    i.ProductImageUrl
+                    i.ProductImageUrl,
+                    null,
+                    null
                 )).ToList()
             )).ToList();
 
