@@ -16,5 +16,13 @@ namespace Aquarium.Application.Interfaces
         Task AddMemberAsync(Guid storeId, Guid currentUserId, AddStoreMemberRequest request);
         Task RemoveMemberAsync(Guid storeId, Guid currentUserId, Guid memberIdToRemove);
         Task<List<StoreMemberResponse>> GetStoreMembersAsync(Guid storeId, Guid currentUserId);
+        
+        // Media Upload
+        Task<UpdateStoreMediaResponse> UpdateStoreLogoAsync(Guid storeId, Guid currentUserId, UpdateStoreLogoRequest request);
+        Task<UpdateStoreMediaResponse> UpdateStoreCoverAsync(Guid storeId, Guid currentUserId, UpdateStoreCoverRequest request);
+        
+        // Admin Approval
+        Task<StoreApprovalResponse> ApproveStoreAsync(Guid storeId, Guid adminUserId);
+        Task<StoreApprovalResponse> RejectStoreAsync(Guid storeId, Guid adminUserId, RejectStoreRequest request);
     }
 }

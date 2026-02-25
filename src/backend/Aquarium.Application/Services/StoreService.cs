@@ -39,6 +39,7 @@ namespace Aquarium.Application.Services
                 Id = Guid.NewGuid(),
                 Name = request.Name,
                 Slug = slug,
+                PhoneNumber = request.PhoneNumber,
                 Address = request.Address,
                 DeliveryArea = request.DeliveryArea,
                 Description = request.Description ?? string.Empty,
@@ -77,31 +78,11 @@ namespace Aquarium.Application.Services
             var store = await _storeRepository.GetByIdAsync(storeId);
             if (store == null) throw new NotFoundException("Store", storeId);
 
-            if (!string.IsNullOrEmpty(request.Description)) store.Description = request.Description;
-
-            if (request.Logo != null)
-            {
-                if (!string.IsNullOrEmpty(store.LogoPublicId))
-                {
-                    await _mediaService.DeleteMediaAsync(store.LogoPublicId);
-                }
-
-                var logoResult = await _mediaService.UploadImageAsync(request.Logo);
-                store.LogoUrl = logoResult.Url;
-                store.LogoPublicId = logoResult.PublicId;
-            }
-
-            if (request.Cover != null)
-            {
-                if (!string.IsNullOrEmpty(store.CoverPublicId))
-                {
-                    await _mediaService.DeleteMediaAsync(store.CoverPublicId);
-                }
-
-                var coverResult = await _mediaService.UploadImageAsync(request.Cover);
-                store.CoverUrl = coverResult.Url;
-                store.CoverPublicId = coverResult.PublicId;
-            }
+            store.Name = request.Name;
+            store.PhoneNumber = request.PhoneNumber;
+            store.Address = request.Address;
+            store.DeliveryArea = request.DeliveryArea;
+            store.Description = request.Description ?? store.Description;
 
             await _storeRepository.UpdateAsync(store);
             await _storeRepository.SaveChangesAsync();
@@ -129,7 +110,7 @@ namespace Aquarium.Application.Services
                 case "Active":
                     store.Status = "Active";
                     store.RejetionReason = null;
-                    //Cou can send an email notification: "Congratulations on your shop going public!" (do later)
+                    //send an email notification: "Congratulations on your shop going public!" (do later)
                     break;
 
                 case "Rejected":
@@ -140,7 +121,7 @@ namespace Aquarium.Application.Services
 
                     store.Status = "Rejected";
                     store.RejetionReason = request.Reason;
-                    // Log the reason for rejection into the Audit Log system (to be done later).
+                    // Log the reason for rejection into the Audit Log system (do later).
                     // var reason = request.Reason; 
                     break;
 
@@ -263,6 +244,114 @@ namespace Aquarium.Application.Services
 
             await _storeRepository.RemoveMemberAsync(memberToRemove);
             await _storeRepository.SaveChangesAsync();
+        }
+
+        public async Task<UpdateStoreMediaResponse> UpdateStoreLogoAsync(Guid storeId, Guid currentUserId, UpdateStoreLogoRequest request)
+        {
+            await EnsureStoreOwnerAsync(storeId, currentUserId);
+
+            var store = await _storeRepository.GetByIdAsync(storeId);
+            if (store == null) throw new NotFoundException("Store", storeId);
+
+            // Delete old logo if exists
+            if (!string.IsNullOrEmpty(store.LogoPublicId))
+            {
+                await _mediaService.DeleteMediaAsync(store.LogoPublicId);
+            }
+
+            // Upload new logo
+            var uploadResult = await _mediaService.UploadImageAsync(request.Logo);
+            store.LogoUrl = uploadResult.Url;
+            store.LogoPublicId = uploadResult.PublicId;
+
+            await _storeRepository.UpdateAsync(store);
+            await _storeRepository.SaveChangesAsync();
+
+            return new UpdateStoreMediaResponse(
+                store.Id,
+                store.Name,
+                store.LogoUrl,
+                store.CoverUrl
+            );
+        }
+
+        public async Task<UpdateStoreMediaResponse> UpdateStoreCoverAsync(Guid storeId, Guid currentUserId, UpdateStoreCoverRequest request)
+        {
+            await EnsureStoreOwnerAsync(storeId, currentUserId);
+
+            var store = await _storeRepository.GetByIdAsync(storeId);
+            if (store == null) throw new NotFoundException("Store", storeId);
+
+            // Delete old cover if exists
+            if (!string.IsNullOrEmpty(store.CoverPublicId))
+            {
+                await _mediaService.DeleteMediaAsync(store.CoverPublicId);
+            }
+
+            // Upload new cover
+            var uploadResult = await _mediaService.UploadImageAsync(request.Cover);
+            store.CoverUrl = uploadResult.Url;
+            store.CoverPublicId = uploadResult.PublicId;
+
+            await _storeRepository.UpdateAsync(store);
+            await _storeRepository.SaveChangesAsync();
+
+            return new UpdateStoreMediaResponse(
+                store.Id,
+                store.Name,
+                store.LogoUrl,
+                store.CoverUrl
+            );
+        }
+
+        public async Task<StoreApprovalResponse> ApproveStoreAsync(Guid storeId, Guid adminUserId)
+        {
+            var store = await _storeRepository.GetByIdAsync(storeId);
+            if (store == null) throw new NotFoundException("Store", storeId);
+
+            if (store.Status == "Active")
+            {
+                throw new BadRequestException("Store is already approved");
+            }
+
+            store.Status = "Active";
+            store.RejetionReason = null; // Clear rejection reason if any
+
+            await _storeRepository.UpdateAsync(store);
+            await _storeRepository.SaveChangesAsync();
+
+            return new StoreApprovalResponse(
+                store.Id,
+                store.Name,
+                store.Status,
+                store.RejetionReason,
+                DateTime.UtcNow
+            );
+        }
+
+        public async Task<StoreApprovalResponse> RejectStoreAsync(Guid storeId, Guid adminUserId, RejectStoreRequest request)
+        {
+            var store = await _storeRepository.GetByIdAsync(storeId);
+            if (store == null) throw new NotFoundException("Store", storeId);
+
+            if (store.Status == "Rejected")
+            {
+                throw new BadRequestException("Store is already rejected");
+            }
+
+            store.Status = "Rejected";
+            store.RejetionReason = request.RejectionReason;
+
+            await _storeRepository.UpdateAsync(store);
+            await _storeRepository.SaveChangesAsync();
+
+            return new StoreApprovalResponse(
+                store.Id,
+                store.Name,
+                store.Status,
+                store.RejetionReason,
+                DateTime.UtcNow
+            );
         }
     }
 }

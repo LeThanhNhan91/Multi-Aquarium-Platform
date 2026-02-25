@@ -97,5 +97,43 @@ namespace Aquarium.Api.Controllers
             await _storeService.RemoveMemberAsync(storeId, currentUserId, memberId);
             return Ok(new ApiResponse<object>(null, "Member removed successfully."));
         }
+
+        
+        [HttpPut("{storeId}/logo")]
+        [Authorize]
+        public async Task<IActionResult> UpdateStoreLogo(Guid storeId, [FromForm] UpdateStoreLogoRequest request)
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var response = await _storeService.UpdateStoreLogoAsync(storeId, userId, request);
+            return Ok(new ApiResponse<UpdateStoreMediaResponse>(response, "Logo updated successfully"));
+        }
+
+        
+        [HttpPut("{storeId}/cover")]
+        [Authorize]
+        public async Task<IActionResult> UpdateStoreCover(Guid storeId, [FromForm] UpdateStoreCoverRequest request)
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var response = await _storeService.UpdateStoreCoverAsync(storeId, userId, request);
+            return Ok(new ApiResponse<UpdateStoreMediaResponse>(response, "Cover image updated successfully"));
+        }
+
+        [HttpPut("{storeId}/approve")]
+        [Authorize(Roles = "Admin")] 
+        public async Task<IActionResult> ApproveStore(Guid storeId, [FromBody] ApproveStoreRequest request)
+        {
+            var adminUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var response = await _storeService.ApproveStoreAsync(storeId, adminUserId);
+            return Ok(new ApiResponse<StoreApprovalResponse>(response, "Store approved successfully"));
+        }
+
+        [HttpPut("{storeId}/reject")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RejectStore(Guid storeId, [FromBody] RejectStoreRequest request)
+        {
+            var adminUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var response = await _storeService.RejectStoreAsync(storeId, adminUserId, request);
+            return Ok(new ApiResponse<StoreApprovalResponse>(response, "Store rejected"));
+        }
     }
 }

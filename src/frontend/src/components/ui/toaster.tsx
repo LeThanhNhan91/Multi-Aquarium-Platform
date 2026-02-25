@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { toastsState, listeners } from "@/hooks/use-toast";
+
 interface Toast {
   id: string;
   title: string;
@@ -9,20 +11,16 @@ interface Toast {
   variant?: "default" | "destructive";
 }
 
-let toastsState: Toast[] = [];
-let listeners: Array<(toasts: Toast[]) => void> = [];
-
-const notify = (toasts: Toast[]) => {
-  listeners.forEach((listener) => listener(toasts));
-};
-
 export function Toaster() {
   const [toasts, setToasts] = useState<Toast[]>(toastsState);
 
   useEffect(() => {
     listeners.push(setToasts);
     return () => {
-      listeners = listeners.filter((l) => l !== setToasts);
+      const index = listeners.indexOf(setToasts);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
     };
   }, []);
 
@@ -67,5 +65,4 @@ export function Toaster() {
   );
 }
 
-// Export the toastsState and notify for use in the hook
-export { toastsState, notify };
+// No need for local exports as we use shared state from use-toast.ts

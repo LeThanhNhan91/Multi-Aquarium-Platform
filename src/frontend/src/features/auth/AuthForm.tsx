@@ -34,7 +34,7 @@ export default function AuthForm() {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    phone: "",
+    phoneNumber: "",
     password: "",
     confirmPassword: "",
   });
@@ -42,7 +42,7 @@ export default function AuthForm() {
   const [errors, setErrors] = useState({
     fullName: "",
     email: "",
-    phone: "",
+    phoneNumber: "",
     password: "",
     confirmPassword: "",
   });
@@ -66,7 +66,7 @@ export default function AuthForm() {
     const newErrors = {
       fullName: "",
       email: "",
-      phone: "",
+      phoneNumber: "",
       password: "",
       confirmPassword: "",
     };
@@ -79,8 +79,8 @@ export default function AuthForm() {
         isValid = false;
       }
 
-      if (!formData.phone.trim()) {
-        newErrors.phone = "Phone number is required";
+      if (!formData.phoneNumber.trim()) {
+        newErrors.phoneNumber = "Phone number is required";
         isValid = false;
       }
     }
@@ -147,7 +147,7 @@ export default function AuthForm() {
           fullName: formData.fullName,
           email: formData.email,
           password: formData.password,
-          phone: formData.phone,
+          phoneNumber: formData.phoneNumber,
         }).unwrap();
 
         toast({
@@ -179,14 +179,14 @@ export default function AuthForm() {
     setFormData({
       fullName: "",
       email: "",
-      phone: "",
+      phoneNumber: "",
       password: "",
       confirmPassword: "",
     });
     setErrors({
       fullName: "",
       email: "",
-      phone: "",
+      phoneNumber: "",
       password: "",
       confirmPassword: "",
     });
@@ -444,16 +444,16 @@ export default function AuthForm() {
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      id="phone"
+                      id="phoneNumber"
                       type="text"
-                      value={formData.phone}
+                      value={formData.phoneNumber}
                       onChange={handleChange}
                       placeholder="Enter your phone number"
                       className="pl-10 h-11 rounded-xl border-border bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                     />
                   </div>
-                  {errors.phone && (
-                    <p className="text-xs text-red-500">{errors.phone}</p>
+                  {errors.phoneNumber && (
+                    <p className="text-xs text-red-500">{errors.phoneNumber}</p>
                   )}
                 </div>
               )}

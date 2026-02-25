@@ -13,6 +13,8 @@ public partial class Store
 
     public string Slug { get; set; }
 
+    public string PhoneNumber { get; set; }
+
     public string Address { get; set; }
 
     public string DeliveryArea { get; set; }

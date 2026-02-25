@@ -12,10 +12,10 @@ interface Toast extends ToastOptions {
   id: string;
 }
 
-let toastsState: Toast[] = [];
-let listeners: Array<(toasts: Toast[]) => void> = [];
+export let toastsState: Toast[] = [];
+export const listeners: Array<(toasts: Toast[]) => void> = [];
 
-const notify = (toasts: Toast[]) => {
+export const notify = (toasts: Toast[]) => {
   listeners.forEach((listener) => listener(toasts));
 };
 
@@ -27,11 +27,10 @@ export function useToast() {
     toastsState = [...toastsState, newToast];
     notify(toastsState);
 
-    // Auto dismiss after 3 seconds
     setTimeout(() => {
       toastsState = toastsState.filter((t) => t.id !== id);
       notify(toastsState);
-    }, 3000);
+    }, 5000);
   }, []);
 
   return { toast };
