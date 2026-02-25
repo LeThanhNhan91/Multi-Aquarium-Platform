@@ -20,6 +20,8 @@ export interface CreateStoreRequest {
   address: string;
   deliveryArea: string;
   description?: string;
+  logo?: File | Blob;
+  cover?: File | Blob;
 }
 
 export interface UpdateStoreInfoRequest {

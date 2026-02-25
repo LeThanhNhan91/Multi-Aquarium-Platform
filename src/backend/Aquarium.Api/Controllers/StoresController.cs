@@ -40,7 +40,8 @@ namespace Aquarium.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateStore([FromBody] CreateStoreRequest request)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateStore([FromForm] CreateStoreRequest request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
             if (userIdClaim == null) return Unauthorized();

@@ -105,23 +105,15 @@ export function RegisterShopForm() {
 
   const handleSubmit = async () => {
     try {
-      const store = await createStore({
+      await createStore({
         name: formData.name,
         phoneNumber: formData.phoneNumber,
         address: formData.address,
         deliveryArea: formData.deliveryArea,
         description: formData.description,
+        logo: logoFile || undefined,
+        cover: coverFile || undefined,
       }).unwrap();
-
-      const storeId = store.id;
-
-      if (logoFile) {
-        await updateLogo({ id: storeId, logo: logoFile }).unwrap();
-      }
-
-      if (coverFile) {
-        await updateCover({ id: storeId, cover: coverFile }).unwrap();
-      }
 
       toast({
         title: "Đăng ký thành công!",

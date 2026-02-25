@@ -34,6 +34,25 @@ namespace Aquarium.Application.Services
                 throw new BadRequestException($"Store name '{request.Name}' is already taken (Slug conflict).");
             }
 
+            string? logoUrl = null;
+            string? logoPublicId = null;
+            string? coverUrl = null;
+            string? coverPublicId = null;
+
+            if (request.Logo != null)
+            {
+                var logoResult = await _mediaService.UploadImageAsync(request.Logo);
+                logoUrl = logoResult.Url;
+                logoPublicId = logoResult.PublicId;
+            }
+
+            if (request.Cover != null)
+            {
+                var coverResult = await _mediaService.UploadImageAsync(request.Cover);
+                coverUrl = coverResult.Url;
+                coverPublicId = coverResult.PublicId;
+            }
+
             var newStore = new Store
             {
                 Id = Guid.NewGuid(),
@@ -43,8 +62,10 @@ namespace Aquarium.Application.Services
                 Address = request.Address,
                 DeliveryArea = request.DeliveryArea,
                 Description = request.Description ?? string.Empty,
-                LogoUrl = null,
-                CoverUrl = null,
+                LogoUrl = logoUrl,
+                LogoPublicId = logoPublicId,
+                CoverUrl = coverUrl,
+                CoverPublicId = coverPublicId,
                 VideoIntroUrl = null,
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow

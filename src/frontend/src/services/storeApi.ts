@@ -25,11 +25,23 @@ export const storeApi = createApi({
     }),
 
     createStore: builder.mutation<StoreResponse, CreateStoreRequest>({
-      query: (request) => ({
-        url: "/Stores",
-        method: "POST",
-        body: request,
-      }),
+      query: (data) => {
+        const formData = new FormData();
+        formData.append("name", data.name);
+        formData.append("phoneNumber", data.phoneNumber);
+        formData.append("address", data.address);
+        if (data.deliveryArea)
+          formData.append("deliveryArea", data.deliveryArea);
+        if (data.description) formData.append("description", data.description);
+        if (data.logo) formData.append("logo", data.logo);
+        if (data.cover) formData.append("cover", data.cover);
+
+        return {
+          url: "/Stores",
+          method: "POST",
+          body: formData,
+        };
+      },
       transformResponse: (response: ApiResponse<StoreResponse>) =>
         response.data,
       invalidatesTags: ["Stores", "Profile"],
