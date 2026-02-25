@@ -136,5 +136,13 @@ namespace Aquarium.Api.Controllers
             var response = await _storeService.RejectStoreAsync(storeId, adminUserId, request);
             return Ok(new ApiResponse<StoreApprovalResponse>(response, "Store rejected"));
         }
+
+        [HttpGet("{storeId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetStoreById(Guid storeId)
+        {
+            var store = await _storeService.GetStoreByIdAsync(storeId);
+            return Ok(new ApiResponse<StoreResponse>(store));
+        }
     }
 }

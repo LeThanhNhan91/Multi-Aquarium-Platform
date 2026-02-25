@@ -152,6 +152,31 @@ namespace Aquarium.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task UpdateStoreRatingAsync(Guid storeId)
+        {
+            var store = await _context.Stores
+                .Include(s => s.StoreReviews.Where(r => r.Status == "Active"))
+                .FirstOrDefaultAsync(s => s.Id == storeId);
+
+            if (store != null)
+            {
+                var activeReviews = store.StoreReviews.Where(r => r.Status == "Active").ToList();
+
+                if (activeReviews.Any())
+                {
+                    store.AverageRating = Math.Round(activeReviews.Average(r => r.Rating), 1);
+                    store.TotalReviews = activeReviews.Count;
+                }
+                else
+                {
+                    store.AverageRating = 0;
+                    store.TotalReviews = 0;
+                }
+
+                _context.Stores.Update(store);
+            }
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

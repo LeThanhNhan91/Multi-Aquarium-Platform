@@ -36,6 +36,10 @@ public partial class Store
 
     public DateTime CreatedAt { get; set; }
 
+    public double AverageRating { get; set; } = 0;
+
+    public int TotalReviews { get; set; } = 0;
+
     public virtual ICollection<Category> Categories { get; set; } = new List<Category>();
 
     public virtual ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();

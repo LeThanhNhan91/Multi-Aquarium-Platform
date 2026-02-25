@@ -104,7 +104,9 @@ namespace Aquarium.Application.Services
                 newStore.DeliveryArea,
                 newStore.Description,
                 newStore.LogoUrl,
-                newStore.CoverUrl
+                newStore.CoverUrl,
+                0,
+                0
             );
         }
 
@@ -187,19 +189,11 @@ namespace Aquarium.Application.Services
             {
                 string role = myRoles.ContainsKey(store.Id) ? myRoles[store.Id] : "Guest";
 
-                // Calculate rating from StoreReviews
-                double averageRating = 0;
-                int totalReviews = 0;
+                double averageRating = store.AverageRating;
+                int totalReviews = store.TotalReviews;
 
-                if (store.StoreReviews != null && store.StoreReviews.Any())
-                {
-                    var activeReviews = store.StoreReviews.Where(r => r.Status == "Active").ToList();
-                    if (activeReviews.Any())
-                    {
-                        averageRating = activeReviews.Average(r => r.Rating);
-                        totalReviews = activeReviews.Count;
-                    }
-                }
+                int productCount = store.Products?.Count ?? 0;
+                int orderCount = store.Orders?.Count ?? 0;
 
                 response.Add(new StoreResponse(
                     store.Id,
@@ -214,7 +208,9 @@ namespace Aquarium.Application.Services
                     store.DeliveryArea,
                     store.Description,
                     store.LogoUrl,
-                    store.CoverUrl
+                    store.CoverUrl,
+                    productCount,
+                    orderCount
                 ));
             }
             return new PagedResult<StoreResponse>(response, pagedData.TotalCount, pagedData.PageIndex, pagedData.PageSize);
@@ -392,6 +388,40 @@ namespace Aquarium.Application.Services
                 store.Status,
                 store.RejetionReason,
                 DateTime.UtcNow
+            );
+        }
+
+        public async Task<StoreResponse> GetStoreByIdAsync(Guid storeId)
+        {
+            var store = await _storeRepository.GetByIdAsync(storeId);
+
+            if (store == null)
+            {
+                throw new NotFoundException("Store", storeId);
+            }
+
+            double averageRating = store.AverageRating;
+            int totalReviews = store.TotalReviews;
+
+            int productCount = store.Products?.Count ?? 0;
+            int orderCount = store.Orders?.Count ?? 0;
+
+            return new StoreResponse(
+                store.Id,
+                store.Name,
+                store.Slug,
+                store.Status,
+                "Guest", // Role not relevant for public view
+                Math.Round(averageRating, 1),
+                totalReviews,
+                store.PhoneNumber,
+                store.Address,
+                store.DeliveryArea,
+                store.Description,
+                store.LogoUrl,
+                store.CoverUrl,
+                productCount,
+                orderCount
             );
         }
     }

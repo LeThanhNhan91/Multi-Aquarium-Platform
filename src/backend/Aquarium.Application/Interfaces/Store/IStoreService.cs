@@ -24,5 +24,6 @@ namespace Aquarium.Application.Interfaces
         // Admin Approval
         Task<StoreApprovalResponse> ApproveStoreAsync(Guid storeId, Guid adminUserId);
         Task<StoreApprovalResponse> RejectStoreAsync(Guid storeId, Guid adminUserId, RejectStoreRequest request);
+        Task<StoreResponse> GetStoreByIdAsync(Guid storeId);
     }
 }

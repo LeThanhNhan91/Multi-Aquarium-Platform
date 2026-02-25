@@ -17,6 +17,8 @@ namespace Aquarium.Application.DTOs.Stores
         string? DeliveryArea,
         string? Description,
         string? LogoUrl,
-        string? CoverUrl
+        string? CoverUrl,
+        int ProductCount,
+        int OrderCount
     );
 }

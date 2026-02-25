@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Aquarium.Application.DTOs.Reviews;
+using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Reviews;
 using Aquarium.Application.Wrappers;
@@ -14,11 +15,16 @@ namespace Aquarium.Application.Services
     {
         private readonly IReviewRepository _reviewRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IStoreRepository _storeRepository;
 
-        public ReviewService(IReviewRepository reviewRepository, IProductRepository productRepository)
+        public ReviewService(
+            IReviewRepository reviewRepository, 
+            IProductRepository productRepository,
+            IStoreRepository storeRepository)
         {
             _reviewRepository = reviewRepository;
             _productRepository = productRepository;
+            _storeRepository = storeRepository;
         }
 
         // Product Reviews
@@ -174,6 +180,9 @@ namespace Aquarium.Application.Services
             await _reviewRepository.AddStoreReviewAsync(review);
             await _reviewRepository.SaveChangesAsync();
 
+            await _storeRepository.UpdateStoreRatingAsync(storeId);
+            await _storeRepository.SaveChangesAsync();
+
             // Reload to get navigation properties
             var createdReview = await _reviewRepository.GetStoreReviewByIdAsync(review.Id);
 
@@ -206,6 +215,9 @@ namespace Aquarium.Application.Services
             await _reviewRepository.UpdateStoreReviewAsync(review);
             await _reviewRepository.SaveChangesAsync();
 
+            await _storeRepository.UpdateStoreRatingAsync(storeId);
+            await _storeRepository.SaveChangesAsync();
+
             return MapToStoreReviewResponse(review);
         }
 
@@ -230,6 +242,9 @@ namespace Aquarium.Application.Services
 
             await _reviewRepository.DeleteStoreReviewAsync(review);
             await _reviewRepository.SaveChangesAsync();
+
+            await _storeRepository.UpdateStoreRatingAsync(storeId);
+            await _storeRepository.SaveChangesAsync();
         }
 
         public async Task<PagedResult<ReviewResponse>> GetStoreReviewsAsync(Guid storeId, GetReviewsFilter filter)
