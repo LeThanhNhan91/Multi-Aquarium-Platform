@@ -70,7 +70,21 @@ namespace Aquarium.Application.Services
 
             await _storeRepository.SaveChangesAsync();
 
-            return new StoreResponse(newStore.Id, newStore.Name, newStore.Slug, newStore.Status, storeUser.Role, 0, 0);
+            return new StoreResponse(
+                newStore.Id, 
+                newStore.Name, 
+                newStore.Slug, 
+                newStore.Status, 
+                storeUser.Role, 
+                0, 
+                0,
+                newStore.PhoneNumber,
+                newStore.Address,
+                newStore.DeliveryArea,
+                newStore.Description,
+                newStore.LogoUrl,
+                newStore.CoverUrl
+            );
         }
 
         public async Task UpdateStoreInfoAsync(Guid storeId, UpdateStoreInfoRequest request)
@@ -167,13 +181,19 @@ namespace Aquarium.Application.Services
                 }
 
                 response.Add(new StoreResponse(
-                    store.Id, 
-                    store.Name, 
-                    store.Slug, 
-                    store.Status, 
+                    store.Id,
+                    store.Name,
+                    store.Slug,
+                    store.Status,
                     role,
                     Math.Round(averageRating, 1),
-                    totalReviews
+                    totalReviews,
+                    store.PhoneNumber,
+                    store.Address,
+                    store.DeliveryArea,
+                    store.Description,
+                    store.LogoUrl,
+                    store.CoverUrl
                 ));
             }
             return new PagedResult<StoreResponse>(response, pagedData.TotalCount, pagedData.PageIndex, pagedData.PageSize);

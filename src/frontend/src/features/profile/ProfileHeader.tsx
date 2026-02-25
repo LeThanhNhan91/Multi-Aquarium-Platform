@@ -242,10 +242,10 @@ export function ProfileHeader() {
                   Member since{" "}
                   {formatVietnameseDate(userProfile?.createdAt || "")}
                 </span>
-                <span className="flex items-center gap-1.5">
+                {/* <span className="flex items-center gap-1.5">
                   <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                   4.9 avg rating
-                </span>
+                </span> */}
               </div>
             </div>
 

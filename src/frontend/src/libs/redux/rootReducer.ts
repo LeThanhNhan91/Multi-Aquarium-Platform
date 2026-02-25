@@ -6,6 +6,7 @@ import { productApi } from "@/services/productApi";
 import { userApi } from "@/services/userApi";
 import { categoryApi } from "@/services/categoryApi";
 import { orderApi } from "@/services/orderApi";
+import { storeApi } from "@/services/storeApi";
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -15,6 +16,7 @@ const appReducer = combineReducers({
   [userApi.reducerPath]: userApi.reducer,
   [categoryApi.reducerPath]: categoryApi.reducer,
   [orderApi.reducerPath]: orderApi.reducer,
+  [storeApi.reducerPath]: storeApi.reducer,
 });
 
 export const rootReducer = (state: any, action: any) => {
