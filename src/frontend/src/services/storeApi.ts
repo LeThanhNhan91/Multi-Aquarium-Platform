@@ -103,11 +103,19 @@ export const storeApi = createApi({
         "Stores",
       ],
     }),
+
+    getStoreById: builder.query<StoreResponse, string>({
+      query: (id) => `/Stores?StoreId=${id}`,
+      transformResponse: (response: ApiResponse<PagedResult<StoreResponse>>) =>
+        response.data.items[0],
+      providesTags: (result, error, id) => [{ type: "Stores", id }],
+    }),
   }),
 });
 
 export const {
   useGetStoresQuery,
+  useGetStoreByIdQuery,
   useCreateStoreMutation,
   useUpdateStoreInfoMutation,
   useUpdateStoreLogoMutation,

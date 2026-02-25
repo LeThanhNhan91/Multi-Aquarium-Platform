@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Plus,
   Star,
@@ -50,12 +51,12 @@ function ShopCard({ shop }: { shop: StoreResponse }) {
         >
           {shop.status}
         </Badge>
-        <button
+        {/* <button
           className="absolute top-3 left-3 h-8 w-8 rounded-full bg-card/20 backdrop-blur-sm flex items-center justify-center text-background/80 hover:bg-card/40 transition-colors"
           aria-label="More options"
         >
           <MoreHorizontal className="h-4 w-4" />
-        </button>
+        </button> */}
       </div>
 
       {/* Shop info */}
@@ -99,7 +100,7 @@ function ShopCard({ shop }: { shop: StoreResponse }) {
         </div>
 
         {/* Rating */}
-        <div className="flex items-center justify-between mb-4 bg-secondary/30 rounded-lg px-3 py-2">
+        <div className="flex items-center justify-between mb-4 bg-secondary/60 rounded-lg px-3 py-2">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
@@ -114,14 +115,18 @@ function ShopCard({ shop }: { shop: StoreResponse }) {
 
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-bold text-foreground">--</span>
+              <span className="text-[15px] font-bold text-foreground">
+                {shop.productCount}
+              </span>
               <span className="text-[8px] text-muted-foreground uppercase tracking-tighter">
                 Sản phẩm
               </span>
             </div>
             <div className="w-px h-4 bg-border/50" />
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-bold text-foreground">--</span>
+              <span className="text-[15px] font-bold text-foreground">
+                {shop.orderCount}
+              </span>
               <span className="text-[8px] text-muted-foreground uppercase tracking-tighter">
                 Đơn hàng
               </span>
@@ -157,9 +162,12 @@ function ShopCard({ shop }: { shop: StoreResponse }) {
             size="sm"
             variant="outline"
             className="h-8 bg-transparent border-border text-foreground hover:bg-primary hover:text-primary-foreground gap-1.5 text-xs font-bold"
+            asChild
           >
-            <ExternalLink className="h-3.5 w-3.5" />
-            Quản lý
+            <Link href={`/dashboard/stores/${shop.id}`}>
+              <ExternalLink className="h-3.5 w-3.5" />
+              Quản lý
+            </Link>
           </Button>
         </div>
       </div>

@@ -36,6 +36,8 @@ export interface GetStoresFilter {
   searchTerm?: string;
   status?: string;
   userId?: string;
+  slug?: string;
+  storeId?: string;
   pageIndex?: number;
   pageSize?: number;
 }
@@ -54,6 +56,8 @@ export interface StoreResponse {
   description: string | null;
   logoUrl: string | null;
   coverUrl: string | null;
+  productCount: number;
+  orderCount: number;
 }
 
 export interface UpdateStoreMediaResponse {
