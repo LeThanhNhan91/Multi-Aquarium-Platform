@@ -200,14 +200,19 @@ var app = builder.Build();
 
 app.UseMiddleware<Aquarium.Api.Middleware.ExceptionMiddleware>();
 
-// 4. Configure the HTTP processing pipeline
+// Configure the HTTP processing pipeline
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Multi-Store Aquarium API v1");
+    c.RoutePrefix = "swagger";
+});
+
+// Only redirect HTTPS in development; Azure handles HTTPS at the load balancer
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseHttpsRedirection();
 }
-
-app.UseHttpsRedirection();
 
 app.UseCors("AllowSpecificOrigin");
 
