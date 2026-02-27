@@ -201,8 +201,17 @@ var app = builder.Build();
 // Auto-apply pending migrations on startup (production-safe)
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<MultiStoreAquariumDBContext>();
-    db.Database.Migrate();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<MultiStoreAquariumDBContext>();
+        db.Database.Migrate();
+        logger.LogInformation("Database migration applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while applying database migrations. App will continue starting up.");
+    }
 }
 
 app.UseMiddleware<Aquarium.Api.Middleware.ExceptionMiddleware>();
