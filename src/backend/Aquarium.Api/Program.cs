@@ -198,6 +198,13 @@ builder.Services.AddScoped<IStoreContext, StoreContext>();
 
 var app = builder.Build();
 
+// Auto-apply pending migrations on startup (production-safe)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<MultiStoreAquariumDBContext>();
+    db.Database.Migrate();
+}
+
 app.UseMiddleware<Aquarium.Api.Middleware.ExceptionMiddleware>();
 
 // Configure the HTTP processing pipeline
