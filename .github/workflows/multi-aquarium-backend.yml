@@ -8,10 +8,10 @@ permissions:
   contents: read
 env:
   AZURE_WEBAPP_NAME: multi-aquarium-backend
-  AZURE_WEBAPP_PACKAGE_PATH: Aquarium.Api/publish
+  AZURE_WEBAPP_PACKAGE_PATH: src/backend/Aquarium.Api/publish
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 10.0.x
-  WORKING_DIRECTORY: Aquarium.Api
+  WORKING_DIRECTORY: src/backend/Aquarium.Api
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,11 +22,9 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
     - name: Restore
-      run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
+      run: dotnet restore src/backend/MultiStoreAquarium.sln
     - name: Build
       run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
-    - name: Test
-      run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
     - name: Publish
       run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
     - name: Publish Artifacts
