@@ -33,15 +33,18 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Read allowed origins from configuration; falls back to localhost for local development
+var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:3000";
+var allowedOrigins = frontendUrl
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder =>
+        corsBuilder =>
         {
-            builder
-                // Replace with the Frontend URL (e.g., http://127.0.0.1:5500 or http://localhost:3000)
-                // If running the HTML file directly, you may need to enable all permissions (but SignalR requires specific permissions for Credentials)
-                .WithOrigins("http://127.0.0.1:5500", "http://localhost:3000", "null")
+            corsBuilder
+                .WithOrigins(allowedOrigins)
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();

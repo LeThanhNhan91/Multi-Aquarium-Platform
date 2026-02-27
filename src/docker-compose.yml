@@ -1,0 +1,27 @@
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      # Override via a .env file (see .env.example) – never hard-code secrets here
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: ${DB_CONNECTION_STRING}
+      JwtSettings__Secret:   ${JWT_SECRET}
+      JwtSettings__Issuer:   ${JWT_ISSUER}
+      JwtSettings__Audience: ${JWT_AUDIENCE}
+      CloudinarySettings__CloudName: ${CLOUDINARY_CLOUD_NAME}
+      CloudinarySettings__ApiKey:    ${CLOUDINARY_API_KEY}
+      CloudinarySettings__ApiSecret: ${CLOUDINARY_API_SECRET}
+      VnPay__TmnCode:     ${VNPAY_TMN_CODE}
+      VnPay__HashSecret:  ${VNPAY_HASH_SECRET}
+      VnPay__BaseUrl:     ${VNPAY_BASE_URL}
+      VnPay__CallbackUrl: ${VNPAY_CALLBACK_URL}
+      VnPay__Command:     ${VNPAY_COMMAND}
+      VnPay__CurrCode:    ${VNPAY_CURR_CODE}
+      VnPay__Version:     ${VNPAY_VERSION}
+      VnPay__Locale:      ${VNPAY_LOCALE}
+      FrontendUrl: ${FRONTEND_URL}
+    restart: unless-stopped

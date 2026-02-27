@@ -1,0 +1,31 @@
+# ================================================================
+# ROOT .gitignore – applies to the entire repository
+# ================================================================
+
+# ----- Local Docker secrets -----
+.env
+# Keep the template
+!.env.example
+
+# ----- .NET / Backend secrets -----
+# Only exclude Production config (contains real secrets on the server)
+backend/**/appsettings.Production.json
+
+# Build outputs
+backend/**/bin/
+backend/**/obj/
+backend/**/*.user
+backend/.vs/
+
+# ----- Frontend secrets -----
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+frontend/.env*.local
+# Keep .env.example so others know what variables are needed
+!frontend/.env.example
+
+# Frontend build cache
+frontend/.next/
+frontend/node_modules/
+frontend/.vercel/

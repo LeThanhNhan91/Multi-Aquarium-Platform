@@ -1,0 +1,22 @@
+## .NET / Visual Studio
+bin/
+obj/
+*.user
+.vs/
+*.suo
+*.userosscache
+*.sln.docstates
+*.log
+
+## Sensitive configuration – NEVER commit these
+appsettings.Development.json
+appsettings.Production.json
+
+## User Secrets (dotnet user-secrets)
+%APPDATA%\Microsoft\UserSecrets\
+
+## Test results
+TestResults/
+
+## Publish output
+publish/
