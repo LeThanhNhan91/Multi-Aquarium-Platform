@@ -12,6 +12,7 @@ export interface ProductParams {
   MaxPrice?: number;
   AverageRating?: number;
   CategoryId?: string;
+  StoreId?: string;
   SortBy?: "name" | "price" | "averagerating" | "totalreviews" | "newest";
   IsDescending?: boolean;
 }
@@ -39,6 +40,7 @@ export const productApi = createApi({
           queryParams.append("AverageRating", params.AverageRating.toString());
         if (params.CategoryId)
           queryParams.append("CategoryId", params.CategoryId);
+        if (params.StoreId) queryParams.append("StoreId", params.StoreId);
         if (params.SortBy) queryParams.append("SortBy", params.SortBy);
         if (params.IsDescending !== undefined)
           queryParams.append("IsDescending", params.IsDescending.toString());
