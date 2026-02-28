@@ -92,7 +92,7 @@ export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
       </div>
 
       {/* Product Name */}
-      <h1 className="text-3xl sm:text-4xl font-bold font-serif text-foreground leading-tight">
+      <h1 className="text-3xl sm:text-4xl font-bold  text-foreground leading-tight">
         {name}
       </h1>
 

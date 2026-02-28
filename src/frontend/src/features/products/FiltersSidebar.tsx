@@ -255,7 +255,7 @@ export function FiltersSidebar({
       <div className="flex items-center justify-between gap-2 mb-8">
         <div className="flex items-center gap-2">
           <div className="h-8 w-1 rounded-full bg-linear-to-b from-primary to-accent" />
-          <h3 className="text-lg font-bold font-serif text-foreground">
+          <h3 className="text-lg font-bold  text-foreground">
             Bộ Lọc
           </h3>
         </div>

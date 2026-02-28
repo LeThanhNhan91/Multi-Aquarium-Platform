@@ -17,7 +17,7 @@ export default function TabPlaceholder({
       <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/5 mb-6">
         <Icon className="h-10 w-10 text-primary/40" />
       </div>
-      <h3 className="text-xl font-bold font-serif text-foreground mb-2">
+      <h3 className="text-xl font-bold  text-foreground mb-2">
         Chức năng {title}
       </h3>
       <p className="text-muted-foreground max-w-sm mx-auto">

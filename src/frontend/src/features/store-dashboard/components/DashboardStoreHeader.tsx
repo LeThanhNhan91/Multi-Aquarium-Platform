@@ -48,7 +48,7 @@ export default function DashboardStoreHeader({
 
         <div className="flex-1 pb-1">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-3xl font-bold font-serif text-foreground">
+            <h2 className="text-3xl font-bold  text-foreground">
               {store.name}
             </h2>
             <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 px-3">

@@ -32,7 +32,7 @@ export function CtaSection() {
             <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
               Why MultiAqua
             </p>
-            <h2 className="text-3xl font-bold font-serif text-foreground sm:text-4xl text-balance">
+            <h2 className="text-3xl font-bold  text-foreground sm:text-4xl text-balance">
               The Trusted Platform for Aquatic Commerce
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-muted-foreground">

@@ -70,7 +70,7 @@ function ShopCard({ shop }: { shop: StoreResponse }) {
             />
           </div>
           <div className="min-w-0 pb-1 flex-1">
-            <h3 className="text-base font-bold font-serif text-foreground truncate">
+            <h3 className="text-base font-bold  text-foreground truncate">
               {shop.name}
             </h3>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -208,7 +208,7 @@ export function MyShops() {
     return (
       <div className="py-8">
         <div className="mb-8">
-          <h2 className="text-xl font-bold font-serif text-foreground">
+          <h2 className="text-xl font-bold  text-foreground">
             Cửa hàng của tôi
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -224,7 +224,7 @@ export function MyShops() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-xl font-bold font-serif text-foreground">
+          <h2 className="text-xl font-bold  text-foreground">
             Cửa hàng của tôi
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -272,7 +272,7 @@ export function MyShops() {
                   {item.trend}
                 </span>
               </div>
-              <p className="text-xl font-bold font-serif text-foreground">
+              <p className="text-xl font-bold  text-foreground">
                 {item.value}
               </p>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter mt-1">

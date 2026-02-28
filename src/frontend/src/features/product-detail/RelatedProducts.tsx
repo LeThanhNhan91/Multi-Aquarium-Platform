@@ -71,7 +71,7 @@ export function RelatedProducts({ categoryName }: RelatedProductsProps) {
     <div className="space-y-8">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold font-serif text-foreground">
+          <h2 className="text-2xl font-bold  text-foreground">
             Sản phẩm tương tự
           </h2>
           <p className="text-sm text-muted-foreground mt-1">

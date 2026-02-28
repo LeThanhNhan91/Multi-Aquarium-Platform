@@ -54,7 +54,7 @@ export default function OverviewTab({ storeId }: OverviewTabProps) {
                 +12%
               </span>
             </div>
-            <p className="text-2xl font-bold text-foreground font-serif">
+            <p className="text-2xl font-bold text-foreground ">
               {stat.value}
             </p>
             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">
@@ -69,7 +69,7 @@ export default function OverviewTab({ storeId }: OverviewTabProps) {
           [Biểu đồ tăng trưởng doanh thu]
         </div>
         <div className="bg-card border border-border/50 rounded-2xl p-6 h-[400px]">
-          <h3 className="font-bold font-serif mb-4 flex items-center gap-2">
+          <h3 className="font-bold  mb-4 flex items-center gap-2">
             <Bell className="h-4 w-4 text-primary" />
             Thông báo mới
           </h3>

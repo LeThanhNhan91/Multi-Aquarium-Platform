@@ -74,7 +74,7 @@ export function HeroSection() {
               </span>
             </div>
 
-            <h1 className="text-4xl font-bold font-serif leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl text-balance">
+            <h1 className="text-4xl font-bold  leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl text-balance">
               Dive Into the World of{" "}
               <span className="text-primary">Premium Aquatics</span>
             </h1>
@@ -99,17 +99,17 @@ export function HeroSection() {
 
             <div className="flex items-center gap-8 pt-4">
               <div>
-                <p className="text-3xl font-bold font-serif text-foreground">500+</p>
+                <p className="text-3xl font-bold  text-foreground">500+</p>
                 <p className="text-sm text-muted-foreground">Trusted Shops</p>
               </div>
               <div className="h-10 w-px bg-border" />
               <div>
-                <p className="text-3xl font-bold font-serif text-foreground">10K+</p>
+                <p className="text-3xl font-bold  text-foreground">10K+</p>
                 <p className="text-sm text-muted-foreground">Fish Species</p>
               </div>
               <div className="h-10 w-px bg-border" />
               <div>
-                <p className="text-3xl font-bold font-serif text-foreground">50K+</p>
+                <p className="text-3xl font-bold  text-foreground">50K+</p>
                 <p className="text-sm text-muted-foreground">Happy Customers</p>
               </div>
             </div>

@@ -50,7 +50,7 @@ export default function ProductDetailPage({ productId }: Props) {
                 href="/"
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
-                <span className="text-sm font-bold font-serif text-foreground">
+                <span className="text-sm font-bold  text-foreground">
                   AquaMarket
                 </span>
               </Link>

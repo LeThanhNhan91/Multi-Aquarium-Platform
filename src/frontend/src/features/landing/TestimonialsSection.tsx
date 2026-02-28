@@ -48,7 +48,7 @@ export function TestimonialsSection() {
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
             Testimonials
           </p>
-          <h2 className="text-3xl font-bold font-serif text-foreground sm:text-4xl text-balance">
+          <h2 className="text-3xl font-bold  text-foreground sm:text-4xl text-balance">
             Loved by Aquarium Enthusiasts
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">

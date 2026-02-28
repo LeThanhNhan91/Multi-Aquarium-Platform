@@ -23,7 +23,7 @@ export function StoreOwnerCTA({ onOpenShop }: StoreOwnerCTAProps) {
 
       {/* Text */}
       <div className="relative space-y-2 max-w-md">
-        <h3 className="text-xl font-bold font-serif text-foreground">
+        <h3 className="text-xl font-bold  text-foreground">
           Bạn chưa có cửa hàng nào
         </h3>
         <p className="text-sm text-muted-foreground leading-relaxed">

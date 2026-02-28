@@ -46,7 +46,7 @@ export function FeaturedProducts() {
               <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
                 Featured Products
               </p>
-              <h2 className="text-3xl font-bold font-serif text-foreground sm:text-4xl text-balance">
+              <h2 className="text-3xl font-bold  text-foreground sm:text-4xl text-balance">
                 Trending This Week
               </h2>
             </div>

@@ -52,7 +52,7 @@ export function Wishlist() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-bold font-serif text-foreground">Wishlist</h2>
+          <h2 className="text-lg font-bold  text-foreground">Wishlist</h2>
           <p className="text-sm text-muted-foreground mt-1">
             {wishlistItems.length} items saved for later
           </p>

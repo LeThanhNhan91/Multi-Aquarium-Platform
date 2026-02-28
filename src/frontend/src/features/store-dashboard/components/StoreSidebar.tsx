@@ -50,7 +50,7 @@ export default function StoreSidebar({
           <StoreIcon className="h-5 w-5 text-primary-foreground" />
         </div>
         {!isCollapsed && (
-          <span className="font-bold font-serif text-xl tracking-tight text-foreground truncate">
+          <span className="font-bold  text-xl tracking-tight text-foreground truncate">
             Aqua Admin
           </span>
         )}

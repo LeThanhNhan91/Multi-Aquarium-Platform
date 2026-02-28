@@ -140,7 +140,7 @@ export function RegisterShopForm() {
         <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 mb-6">
           <CheckCircle2 className="h-10 w-10 text-emerald-600" />
         </div>
-        <h2 className="text-2xl font-bold font-serif text-foreground mb-3">
+        <h2 className="text-2xl font-bold  text-foreground mb-3">
           Đăng ký thành công!
         </h2>
         <p className="text-muted-foreground mb-8">
@@ -161,7 +161,7 @@ export function RegisterShopForm() {
     <div className="max-w-2xl mx-auto pb-12">
       {/* Header */}
       <div className="mb-10 text-center">
-        <h1 className="text-2xl font-bold font-serif text-foreground mb-2">
+        <h1 className="text-2xl font-bold  text-foreground mb-2">
           Mở cửa hàng mới
         </h1>
         <p className="text-sm text-muted-foreground">

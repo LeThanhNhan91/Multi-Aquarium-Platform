@@ -120,7 +120,7 @@ export default function ProductsList() {
         </header>
         <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold font-serif text-foreground mb-2">
+            <h1 className="text-3xl font-bold  text-foreground mb-2">
               Sản Phẩm
             </h1>
             <p className="text-muted-foreground">

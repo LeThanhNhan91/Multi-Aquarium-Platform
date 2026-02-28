@@ -198,7 +198,7 @@ export function ProfileHeader() {
                   src={userProfile?.avatarUrl || "/images/product-koi.jpg"}
                   alt={userProfile?.fullName}
                 />
-                <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-serif">
+                <AvatarFallback className="bg-primary text-primary-foreground text-3xl ">
                   {userProfile?.fullName
                     ?.split(" ")
                     .map((n) => n[0])
@@ -224,7 +224,7 @@ export function ProfileHeader() {
             {/* Name & meta */}
             <div className="flex-1 min-w-0 pb-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold font-serif text-foreground">
+                <h1 className="text-2xl font-bold  text-foreground">
                   {userProfile?.fullName}
                 </h1>
                 <BadgeCheck className="h-5 w-5 text-primary shrink-0" />
@@ -273,7 +273,7 @@ export function ProfileHeader() {
           {/* <div className="grid grid-cols-4 gap-4 py-5 border-t border-border">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
-              <p className="text-xl font-bold font-serif text-foreground">{stat.value}</p>
+              <p className="text-xl font-bold  text-foreground">{stat.value}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
             </div>
           ))}

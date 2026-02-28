@@ -151,7 +151,7 @@ export function SettingsTab() {
                 <User className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-base font-bold font-serif text-foreground">
+                <CardTitle className="text-base font-bold  text-foreground">
                   Personal Information
                 </CardTitle>
                 <CardDescription className="text-sm text-muted-foreground">
@@ -301,7 +301,7 @@ export function SettingsTab() {
                 <Bell className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-base font-bold font-serif text-foreground">
+                <CardTitle className="text-base font-bold  text-foreground">
                   Notifications
                 </CardTitle>
                 <CardDescription className="text-sm text-muted-foreground">
@@ -360,7 +360,7 @@ export function SettingsTab() {
                   <Shield className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-base font-bold font-serif text-foreground">
+                  <CardTitle className="text-base font-bold  text-foreground">
                     Security
                   </CardTitle>
                   <CardDescription className="text-sm text-muted-foreground">
@@ -394,7 +394,7 @@ export function SettingsTab() {
                   <CreditCard className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-base font-bold font-serif text-foreground">
+                  <CardTitle className="text-base font-bold  text-foreground">
                     Payment Methods
                   </CardTitle>
                   <CardDescription className="text-sm text-muted-foreground">

@@ -33,7 +33,7 @@ export function FishInstanceSelector({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold font-serif text-foreground">
+        <h3 className="text-lg font-bold  text-foreground">
           Chọn cá
         </h3>
         <span className="text-sm text-muted-foreground">

@@ -27,7 +27,7 @@ export function StoreInfo({
             <Store className="h-7 w-7 text-primary-foreground" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-bold text-foreground text-lg font-serif truncate">
+            <h3 className="font-bold text-foreground text-lg  truncate">
               {storeName}
             </h3>
             <p className="text-xs text-muted-foreground">Nhà bán chính thức</p>

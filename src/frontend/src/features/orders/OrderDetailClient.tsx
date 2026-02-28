@@ -282,7 +282,7 @@ export default function OrderDetailClient({ orderId }: Props) {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <Fish className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="hidden sm:inline text-sm font-bold font-serif text-foreground">
+              <span className="hidden sm:inline text-sm font-bold  text-foreground">
                 AquaMarket
               </span>
             </Link>

@@ -24,7 +24,7 @@ export function Footer() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
                 <Fish className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold font-serif text-background">
+              <span className="text-lg font-bold  text-background">
                 MultiAqua
               </span>
             </Link>

@@ -57,7 +57,7 @@ export function ReviewsSection({
 }: ReviewsSectionProps) {
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold font-serif text-foreground">
+      <h2 className="text-2xl font-bold  text-foreground">
         Đánh giá & Nhận xét
       </h2>
 

@@ -228,13 +228,13 @@ export default function AuthForm() {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
               <Fish className="h-6 w-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold font-serif text-background">
+            <span className="text-xl font-bold  text-background">
               MultiAqua
             </span>
           </Link>
 
           <div className="max-w-md">
-            <h2 className="text-4xl font-bold font-serif text-background leading-tight mb-6">
+            <h2 className="text-4xl font-bold  text-background leading-tight mb-6">
               Your Gateway to the Aquatic World
             </h2>
             <p className="text-base leading-relaxed text-background/60">
@@ -245,7 +245,7 @@ export default function AuthForm() {
 
             <div className="flex gap-6 mt-10">
               <div className="rounded-xl bg-background/10 backdrop-blur-sm p-4 flex-1">
-                <p className="text-2xl font-bold font-serif text-background">
+                <p className="text-2xl font-bold  text-background">
                   500+
                 </p>
                 <p className="text-xs text-background/50 mt-1">
@@ -253,13 +253,13 @@ export default function AuthForm() {
                 </p>
               </div>
               <div className="rounded-xl bg-background/10 backdrop-blur-sm p-4 flex-1">
-                <p className="text-2xl font-bold font-serif text-background">
+                <p className="text-2xl font-bold  text-background">
                   10K+
                 </p>
                 <p className="text-xs text-background/50 mt-1">Fish Species</p>
               </div>
               <div className="rounded-xl bg-background/10 backdrop-blur-sm p-4 flex-1">
-                <p className="text-2xl font-bold font-serif text-background">
+                <p className="text-2xl font-bold  text-background">
                   50K+
                 </p>
                 <p className="text-xs text-background/50 mt-1">Customers</p>
@@ -287,7 +287,7 @@ export default function AuthForm() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <Fish className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold font-serif text-foreground">
+            <span className="text-lg font-bold  text-foreground">
               MultiAqua
             </span>
           </Link>
@@ -296,7 +296,7 @@ export default function AuthForm() {
         <div className="flex flex-1 items-center justify-center px-6 pb-12">
           <div className="w-full max-w-md">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold font-serif text-foreground">
+              <h1 className="text-2xl font-bold  text-foreground">
                 {mode === "login" ? "Welcome back" : "Create your account"}
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
