@@ -30,7 +30,7 @@ namespace Aquarium.Api.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             var currentUserId = userIdClaim != null ? Guid.Parse(userIdClaim.Value) : Guid.Empty;
 
-            if (currentUserId == Guid.Empty && string.IsNullOrEmpty(filter.Status) && filter.StoreId == null)
+            if (currentUserId == Guid.Empty && string.IsNullOrEmpty(filter.Status))
             {
                 filter.Status = "Active";
             }

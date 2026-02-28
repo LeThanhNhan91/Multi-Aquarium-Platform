@@ -6,7 +6,6 @@ namespace Aquarium.Application.DTOs.Stores
 {
     public class GetStoresFilter
     {
-        public Guid? StoreId { get; set; }
         public Guid? UserId { get; set; }
         public string? Slug { get; set; }
         public string? SearchTerm { get; set; } 

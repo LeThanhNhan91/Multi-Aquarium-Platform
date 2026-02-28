@@ -9,8 +9,8 @@ import Link from "next/link";
 
 export default function DashboardHeader() {
   return (
-    <header className="h-16 bg-card/80 backdrop-blur-md border-b border-border/50 flex items-center justify-between px-8 z-20 sticky top-0">
-      <div className="flex items-center gap-4 flex-1">
+    <header className="h-16 bg-card/80 backdrop-blur-md border-b border-border/50 flex justify-end px-8 z-20 sticky top-0">
+      {/* <div className="flex items-center gap-4 flex-1">
         <div className="relative max-w-sm w-full hidden md:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -19,7 +19,7 @@ export default function DashboardHeader() {
             className="w-full bg-secondary/50 border-0 rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
           />
         </div>
-      </div>
+      </div> */}
 
       <div className="flex items-center gap-4">
         <Button

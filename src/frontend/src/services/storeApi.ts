@@ -51,11 +51,22 @@ export const storeApi = createApi({
       void,
       { id: string; request: UpdateStoreInfoRequest }
     >({
-      query: ({ id, request }) => ({
-        url: `/Stores/${id}/info`,
-        method: "PUT",
-        body: request,
-      }),
+      query: ({ id, request }) => {
+        const formData = new FormData();
+        formData.append("name", request.name);
+        formData.append("phoneNumber", request.phoneNumber);
+        formData.append("address", request.address);
+        if (request.deliveryArea)
+          formData.append("deliveryArea", request.deliveryArea);
+        if (request.description)
+          formData.append("description", request.description);
+
+        return {
+          url: `/Stores/${id}/info`,
+          method: "PUT",
+          body: formData,
+        };
+      },
       invalidatesTags: (result, error, { id }) => [
         { type: "Stores", id },
         "Stores",
@@ -105,9 +116,9 @@ export const storeApi = createApi({
     }),
 
     getStoreById: builder.query<StoreResponse, string>({
-      query: (id) => `/Stores?StoreId=${id}`,
-      transformResponse: (response: ApiResponse<PagedResult<StoreResponse>>) =>
-        response.data.items[0],
+      query: (id) => `/Stores/${id}`,
+      transformResponse: (response: ApiResponse<StoreResponse>) =>
+        response.data,
       providesTags: (result, error, id) => [{ type: "Stores", id }],
     }),
   }),

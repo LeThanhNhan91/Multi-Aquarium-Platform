@@ -37,7 +37,6 @@ export interface GetStoresFilter {
   status?: string;
   userId?: string;
   slug?: string;
-  storeId?: string;
   pageIndex?: number;
   pageSize?: number;
 }

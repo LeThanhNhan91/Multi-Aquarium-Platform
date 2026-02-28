@@ -63,11 +63,6 @@ namespace Aquarium.Infrastructure.Repositories
                 .Include(s => s.StoreReviews.Where(r => r.Status == "Active"))
                 .AsQueryable();
 
-            if (filter.StoreId.HasValue)
-            {
-                query = query.Where(s => s.Id == filter.StoreId.Value);
-            }
-
             if (filter.UserId.HasValue)
             {
                 query = query.Where(s => s.StoreUsers.Any(su => su.UserId == filter.UserId.Value));
