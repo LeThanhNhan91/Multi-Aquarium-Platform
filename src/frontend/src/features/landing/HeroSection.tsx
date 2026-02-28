@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { ArrowRight, Play } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import { ArrowRight, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 function Bubbles() {
   return (
@@ -22,7 +22,7 @@ function Bubbles() {
         />
       ))}
     </div>
-  )
+  );
 }
 
 function WaveDecoration() {
@@ -52,7 +52,7 @@ function WaveDecoration() {
         />
       </svg>
     </div>
-  )
+  );
 }
 
 export function HeroSection() {
@@ -75,42 +75,54 @@ export function HeroSection() {
             </div>
 
             <h1 className="text-4xl font-bold  leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl text-balance">
-              Dive Into the World of{" "}
-              <span className="text-primary">Premium Aquatics</span>
+              Khám phá thế giới{" "}
+              <span className="text-primary">thủy sinh cao cấp</span>
             </h1>
 
             <p className="text-lg leading-relaxed text-muted-foreground max-w-lg">
-              The ultimate marketplace connecting aquarium enthusiasts with trusted shops. 
-              Discover exotic fish, stunning tanks, and premium accessories all in one place.
+              Nơi kết nối những người đam mê cá cảnh với các cửa hàng uy tín.
+              Khám phá những loài cá kỳ lạ, những bể cá tuyệt đẹp và phụ kiện
+              cao cấp, tất cả chỉ trong một nơi.
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
               <Link href="/login">
-                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 px-8 text-base h-12">
-                  Start Shopping
+                <Button
+                  size="lg"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 px-8 text-base h-12"
+                >
+                  Bắt đầu mua sắm
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="gap-2 border-primary/30 text-primary hover:bg-primary/5 text-base h-12 bg-transparent">
+              <Button
+                size="lg"
+                variant="outline"
+                className="gap-2 border-primary/30 text-primary hover:bg-primary/5 text-base h-12 bg-transparent"
+              >
                 <Play className="h-4 w-4" />
-                Watch Demo
+                Xem demo
               </Button>
             </div>
 
             <div className="flex items-center gap-8 pt-4">
               <div>
                 <p className="text-3xl font-bold  text-foreground">500+</p>
-                <p className="text-sm text-muted-foreground">Trusted Shops</p>
+                <p className="text-sm text-muted-foreground">
+                  Cửa hàng đáng tin cậy
+                </p>
               </div>
               <div className="h-10 w-px bg-border" />
               <div>
                 <p className="text-3xl font-bold  text-foreground">10K+</p>
-                <p className="text-sm text-muted-foreground">Fish Species</p>
+                <p className="text-sm text-muted-foreground">Loài cá</p>
               </div>
               <div className="h-10 w-px bg-border" />
               <div>
                 <p className="text-3xl font-bold  text-foreground">50K+</p>
-                <p className="text-sm text-muted-foreground">Happy Customers</p>
+                <p className="text-sm text-muted-foreground">
+                  Khách hàng hài lòng
+                </p>
               </div>
             </div>
           </div>
@@ -131,19 +143,30 @@ export function HeroSection() {
                     <span className="text-lg">🐠</span>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">New Arrivals</p>
-                    <p className="text-xs text-muted-foreground">120+ species this week</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      Hàng vừa cập bến
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      120+ loại trong tuần này
+                    </p>
                   </div>
                 </div>
               </div>
-              <div className="absolute -top-4 -right-4 rounded-2xl bg-card p-4 shadow-lg border border-border/50 animate-float" style={{ animationDelay: "3s" }}>
+              <div
+                className="absolute -top-4 -right-4 rounded-2xl bg-card p-4 shadow-lg border border-border/50 animate-float"
+                style={{ animationDelay: "3s" }}
+              >
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center">
                     <span className="text-lg">⭐</span>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Top Rated</p>
-                    <p className="text-xs text-muted-foreground">4.9/5 average rating</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      Đánh giá cao
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      4.9/5 đánh giá trung bình
+                    </p>
                   </div>
                 </div>
               </div>
@@ -152,5 +175,5 @@ export function HeroSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

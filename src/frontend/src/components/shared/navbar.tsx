@@ -51,19 +51,19 @@ export function Navbar() {
             href="#categories"
             className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
           >
-            Categories
+            Danh mục
           </Link>
           <Link
             href="#products"
             className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
           >
-            Products
+            Sản phẩm
           </Link>
           <Link
             href="#about"
             className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
           >
-            About
+            Giới thiệu
           </Link>
         </div>
 

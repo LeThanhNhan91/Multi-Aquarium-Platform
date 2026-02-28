@@ -44,10 +44,10 @@ export function FeaturedProducts() {
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-12">
             <div>
               <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
-                Featured Products
+                Sản phẩm nổi bật
               </p>
               <h2 className="text-3xl font-bold  text-foreground sm:text-4xl text-balance">
-                Trending This Week
+                Xu hướng tuần này
               </h2>
             </div>
             <Link href="/products">
@@ -55,7 +55,7 @@ export function FeaturedProducts() {
                 variant="outline"
                 className="border-primary/30 text-primary hover:bg-primary/5 bg-transparent"
               >
-                View All Products
+                Xem tất cả sản phẩm
               </Button>
             </Link>
           </div>

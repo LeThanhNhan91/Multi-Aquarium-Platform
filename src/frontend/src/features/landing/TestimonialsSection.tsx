@@ -46,14 +46,13 @@ export function TestimonialsSection() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="text-center mb-16">
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
-            Testimonials
+            Đánh giá
           </p>
           <h2 className="text-3xl font-bold  text-foreground sm:text-4xl text-balance">
-            Loved by Aquarium Enthusiasts
+            Được yêu thích bởi những người đam mê hồ cá
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of satisfied customers and shop owners who trust
-            MultiAqua for their aquatic needs.
+            Tham gia cùng hàng nghìn khách hàng và chủ cửa hàng hài lòng, những người tin tưởng MultiAqua cho nhu cầu thủy sinh của họ.
           </p>
         </div>
 

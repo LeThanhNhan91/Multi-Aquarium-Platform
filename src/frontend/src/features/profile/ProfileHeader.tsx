@@ -177,12 +177,12 @@ export function ProfileHeader() {
             {isUploadingCover ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="hidden sm:inline">Uploading...</span>
+                <span className="hidden sm:inline">Đang tải lên...</span>
               </>
             ) : (
               <>
                 <Camera className="h-4 w-4" />
-                <span className="hidden sm:inline">Edit Cover</span>
+                <span className="hidden sm:inline">Chỉnh sửa ảnh bìa</span>
               </>
             )}
           </Button>

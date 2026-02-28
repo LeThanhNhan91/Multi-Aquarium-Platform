@@ -78,14 +78,14 @@ export function CategoriesSection() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
-              Browse Categories
+              Duyệt danh mục
             </p>
             <h2 className="text-3xl font-bold  text-foreground sm:text-4xl text-balance">
-              Everything Your Aquarium Needs
+              Mọi thứ hồ cá của bạn cần
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              From rare exotic fish to professional-grade equipment, find
-              everything to create and maintain your dream aquarium.
+              Từ cá cảnh quý hiếm đến thiết bị chuyên nghiệp, tìm mọi thứ để tạo
+              và duy trì hồ cá mơ ước của bạn.
             </p>
           </div>
 

@@ -30,15 +30,13 @@ export function CtaSection() {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-20 items-center">
           <div>
             <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
-              Why MultiAqua
+              Tại sao chọn MultiAqua
             </p>
             <h2 className="text-3xl font-bold  text-foreground sm:text-4xl text-balance">
-              The Trusted Platform for Aquatic Commerce
+              Nền tảng đáng tin cậy cho thương mại thủy sinh
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-              Whether you are a hobbyist looking for rare species or a shop
-              owner wanting to expand your reach, MultiAqua provides the tools
-              and trust you need to succeed.
+              Cho dù bạn là người đam mê tìm kiếm các loài quý hiếm hay chủ cửa hàng muốn mở rộng phạm vi tiếp cận, MultiAqua cung cấp các công cụ và sự tin cậy bạn cần để thành công.
             </p>
 
             <div className="flex flex-col gap-8 mt-10">
@@ -49,10 +47,10 @@ export function CtaSection() {
                   </div>
                   <div>
                     <h3 className="text-base font-semibold text-foreground">
-                      {f.title}
+                      {f.title === "For Shop Owners" ? "Dành cho chủ cửa hàng" : f.title === "Verified Sellers" ? "Người bán đã xác minh" : "Giao hàng an toàn"}
                     </h3>
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                      {f.description}
+                      {f.description === "List your products, manage inventory, and reach thousands of customers. Our platform handles payments and logistics so you can focus on what you do best." ? "Liệt kê sản phẩm của bạn, quản lý hàng tồn kho và tiếp cận hàng nghìn khách hàng. Nền tảng của chúng tôi xử lý thanh toán và hậu cần để bạn tập trung vào những gì bạn làm tốt nhất." : f.description === "Every seller on our platform goes through a rigorous verification process. Shop with confidence knowing you are buying from trusted experts." ? "Mọi người bán trên nền tảng của chúng tôi đều trải qua quy trình xác minh nghiêm ngặt. Mua sắm với sự tự tin khi biết rằng bạn đang mua từ các chuyên gia đáng tin cậy." : "Đóng gói chuyên dụng và giao hàng nhanh cho cá sống. Vận chuyển kiểm soát nhiệt độ đảm bảo thú cưng thủy sinh của bạn đến nơi khỏe mạnh và hạnh phúc."}
                     </p>
                   </div>
                 </div>

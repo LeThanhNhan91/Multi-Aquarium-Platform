@@ -45,29 +45,29 @@ export default function Profile() {
               className="rounded-lg px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm gap-2"
             >
               <Store className="h-4 w-4" />
-              <span className="hidden sm:inline">My Shops</span>
-              <span className="sm:hidden">Shops</span>
+              <span className="hidden sm:inline">Cửa hàng của tôi</span>
+              <span className="sm:hidden">Cửa hàng</span>
             </TabsTrigger>
             <TabsTrigger
               value="orders"
               className="rounded-lg px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm gap-2"
             >
               <ShoppingBag className="h-4 w-4" />
-              Orders
+              Đơn hàng
             </TabsTrigger>
             <TabsTrigger
               value="wishlist"
               className="rounded-lg px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm gap-2"
             >
               <Heart className="h-4 w-4" />
-              Wishlist
+              Danh sách yêu thích
             </TabsTrigger>
             <TabsTrigger
               value="settings"
               className="rounded-lg px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm gap-2"
             >
               <Settings className="h-4 w-4" />
-              Settings
+              Cài đặt
             </TabsTrigger>
           </TabsList>
 

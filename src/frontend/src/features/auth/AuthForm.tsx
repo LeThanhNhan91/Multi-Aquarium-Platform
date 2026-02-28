@@ -103,10 +103,10 @@ export default function AuthForm() {
 
     if (mode === "register") {
       if (!formData.confirmPassword) {
-        newErrors.confirmPassword = "Please confirm your password";
+        newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu của bạn";
         isValid = false;
       } else if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = "Passwords do not match";
+        newErrors.confirmPassword = "Mật khẩu không khớp";
         isValid = false;
       }
     }
@@ -135,8 +135,8 @@ export default function AuthForm() {
         tokenCookies.setRefreshToken(response.refreshToken);
 
         toast({
-          title: "Login successful!",
-          description: `Welcome back, ${response.fullName}!`,
+          title: "Đăng nhập thành công!",
+          description: `Chào mừng trở lại, ${response.fullName}!`,
         });
 
         // Redirect to returnUrl or home
@@ -151,7 +151,7 @@ export default function AuthForm() {
         }).unwrap();
 
         toast({
-          title: "Registration successful!",
+          title: "Đăng ký thành công!",
           description: response.message,
         });
 
@@ -166,7 +166,7 @@ export default function AuthForm() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: mode === "login" ? "Login failed" : "Registration failed",
+        title: mode === "login" ? "Đăng nhập thất bại" : "Đăng ký thất bại",
         description:
           error?.data?.message || "An error occurred. Please try again.",
       });
