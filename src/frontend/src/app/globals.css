@@ -47,6 +47,10 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+@theme {
+  --font-sans: var(--font-main);
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

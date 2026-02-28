@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Be_Vietnam_Pro, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "@/libs/redux/StoreProvider";
 import { Toaster } from "@/components/ui/toaster";
@@ -15,6 +15,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const beVietnam = Be_Vietnam_Pro({
+  subsets: ["vietnamese"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-main",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "MultiAqua",
   description: "MultiAqua - The best place to buy and sell aquarium products",
@@ -27,8 +34,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      {/* ${geistSans.variable} ${geistMono.variable} antialiased */}
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${beVietnam.variable} font-sans`}
       >
         <StoreProvider>{children}</StoreProvider>
         <Toaster />
