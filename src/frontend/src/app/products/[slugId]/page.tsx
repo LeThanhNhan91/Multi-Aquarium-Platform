@@ -1,4 +1,5 @@
-import ProductDetailPage from "@/features/product-detail/ProductDetails";
+import ProductDetailPage from "@/features/product-detail/customer/ProductDetails";
+
 
 interface Props {
   params: Promise<{ slugId: string }>;
