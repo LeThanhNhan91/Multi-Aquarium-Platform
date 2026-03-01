@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ProductCard } from "../products/ProductCard";
+import { ProductCard } from "@/features/products/ProductCard";
 
 interface RelatedProduct {
   id: string;
