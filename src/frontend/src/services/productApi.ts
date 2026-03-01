@@ -87,6 +87,50 @@ export const productApi = createApi({
       transformResponse: (response: ApiResponse<ProductItem>) => response.data,
       invalidatesTags: ["Product"],
     }),
+    getStoreProducts: builder.query<
+      PagedResult<ProductItem>,
+      { storeId: string } & ProductParams
+    >({
+      query: ({ storeId, ...params }) => {
+        const queryParams = new URLSearchParams();
+        if (params.pageIndex)
+          queryParams.append("pageIndex", params.pageIndex.toString());
+        if (params.pageSize)
+          queryParams.append("pageSize", params.pageSize.toString());
+        if (params.Keyword) queryParams.append("Keyword", params.Keyword);
+        if (params.MinPrice !== undefined)
+          queryParams.append("MinPrice", params.MinPrice.toString());
+        if (params.MaxPrice !== undefined)
+          queryParams.append("MaxPrice", params.MaxPrice.toString());
+        if (params.AverageRating !== undefined)
+          queryParams.append("AverageRating", params.AverageRating.toString());
+        if (params.CategoryId)
+          queryParams.append("CategoryId", params.CategoryId);
+        if (params.SortBy) queryParams.append("SortBy", params.SortBy);
+        if (params.IsDescending !== undefined)
+          queryParams.append("IsDescending", params.IsDescending.toString());
+
+        return {
+          url: `/products/stores/${storeId}`,
+          params: queryParams,
+          headers: {
+            "X-Force-Store-Context": "true",
+          },
+        };
+      },
+      transformResponse: (response: ApiResponse<PagedResult<ProductItem>>) =>
+        response.data,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.items.map(({ id }) => ({
+                type: "Product" as const,
+                id,
+              })),
+              { type: "Product", id: "PARTIAL-LIST" },
+            ]
+          : [{ type: "Product", id: "PARTIAL-LIST" }],
+    }),
   }),
 });
 
@@ -95,6 +139,7 @@ export const {
   useGetByIdQuery: useGetProductByIdQuery,
   useSearchQuery: useSearchProductsQuery,
   useCreateProductMutation,
+  useGetStoreProductsQuery,
   useUpdateMutation: useUpdateProductMutation,
   useDeleteMutation: useDeleteProductMutation,
 } = productApi;

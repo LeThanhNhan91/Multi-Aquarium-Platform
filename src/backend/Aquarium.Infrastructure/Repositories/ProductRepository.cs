@@ -52,6 +52,7 @@ namespace Aquarium.Infrastructure.Repositories
         public async Task<PagedResult<Product>> GetProductsByFilterAsync(GetProductsFilter filter)
         {
             var query = _context.Products
+                .IgnoreQueryFilters()
                 .Include(p => p.Store)
                 .Include(p => p.Category)
                 .Include(p => p.Inventory)

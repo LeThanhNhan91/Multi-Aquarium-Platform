@@ -28,10 +28,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useGetAllProductsQuery } from "@/services/productApi";
-import { AquariumLoader } from "@/components/shared/AquariumLoader";
 import { formatCurrency } from "@/utils/utils";
 import { CreateProductDialog } from "./CreateProductDialog";
+import { FishInstancesDialog } from "./FishInstancesDialog";
+import { useGetStoreProductsQuery } from "@/services/productApi";
+import { AquariumLoader } from "@/components/shared/AquariumLoader";
 
 interface ProductsTabProps {
   storeId: string;
@@ -39,11 +40,15 @@ interface ProductsTabProps {
 
 export default function ProductsTab({ storeId }: ProductsTabProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [fishDialogProduct, setFishDialogProduct] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
-  const { data: response, isLoading } = useGetAllProductsQuery({
-    StoreId: storeId,
+  const { data: response, isLoading } = useGetStoreProductsQuery({
+    storeId,
   });
-  const products = response?.data?.items || [];
+  const products = response?.items || [];
 
   if (isLoading) {
     return <AquariumLoader />;
@@ -74,6 +79,15 @@ export default function ProductsTab({ storeId }: ProductsTabProps) {
         onOpenChange={setIsCreateOpen}
         storeId={storeId}
       />
+
+      {fishDialogProduct && (
+        <FishInstancesDialog
+          open={!!fishDialogProduct}
+          onOpenChange={(v) => !v && setFishDialogProduct(null)}
+          productId={fishDialogProduct.id}
+          productName={fishDialogProduct.name}
+        />
+      )}
 
       <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-2xl border border-border/50">
         <div className="relative flex-1 max-w-sm">
@@ -135,7 +149,15 @@ export default function ProductsTab({ storeId }: ProductsTabProps) {
                     </Badge>
                   </TableCell>
                   <TableCell className="font-semibold text-primary">
-                    {formatCurrency(product.basePrice || product.minPrice || 0)}
+                    {product.productType === "LiveFish"
+                      ? product.minPrice != null && product.maxPrice != null
+                        ? product.minPrice === product.maxPrice
+                          ? formatCurrency(product.minPrice)
+                          : `${formatCurrency(product.minPrice)} – ${formatCurrency(product.maxPrice)}`
+                        : product.minPrice != null
+                          ? formatCurrency(product.minPrice)
+                          : "—"
+                      : formatCurrency(product.basePrice ?? 0)}
                   </TableCell>
                   <TableCell>
                     {product.availableStock ?? product.availableFishCount ?? 0}
@@ -166,6 +188,20 @@ export default function ProductsTab({ storeId }: ProductsTabProps) {
                           <Edit className="h-4 w-4" />
                           Chỉnh sửa
                         </DropdownMenuItem>
+                        {product.productType === "LiveFish" && (
+                          <DropdownMenuItem
+                            className="rounded-lg gap-2 cursor-pointer"
+                            onClick={() =>
+                              setFishDialogProduct({
+                                id: product.id,
+                                name: product.name,
+                              })
+                            }
+                          >
+                            <Plus className="h-4 w-4" />
+                            Quản lý cá cảnh
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer">
                           <Package className="h-4 w-4" />
                           Quản lý tồn kho

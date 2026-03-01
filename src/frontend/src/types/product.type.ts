@@ -44,3 +44,22 @@ export interface CreateProductRequest {
   categoryId: string;
   images?: File[];
 }
+
+export interface CreateFishInstanceRequest {
+  price: number;
+  size: string;
+  color?: string;
+  features?: string;
+  gender?: string;
+  images?: File[];
+  video?: File;
+}
+
+export interface UpdateFishInstanceRequest {
+  price: number;
+  size: string;
+  color?: string;
+  features?: string;
+  gender?: string;
+  status: "Available" | "Sold" | "Reserved" | "OnHold";
+}

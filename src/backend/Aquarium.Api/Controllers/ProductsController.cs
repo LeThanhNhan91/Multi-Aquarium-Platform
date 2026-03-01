@@ -42,12 +42,12 @@ namespace Aquarium.Api.Controllers
             return Ok(new ApiResponse<ProductResponse>(product));
         }
 
-        [HttpGet("products/store/{storeId}")]
-        [AllowAnonymous]
+        [HttpGet("products/stores/{storeId}")]
+        [Authorize]
         public async Task<IActionResult> GetStoreProducts(Guid storeId, [FromQuery] GetProductsFilter filter)
         {
-            filter.StoreId = storeId;
-            var pagedData = await _productService.GetProductsAsync(filter);
+            var userId = GetCurrentUserId();
+            var pagedData = await _productService.GetMyStoreProductsAsync(storeId, userId, filter);
 
             return Ok(new ApiResponse<PagedResult<ProductResponse>>(pagedData));
         }

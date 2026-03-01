@@ -281,6 +281,30 @@ namespace Aquarium.Application.Services
             );
         }
 
+        public async Task<PagedResult<ProductResponse>> GetMyStoreProductsAsync(Guid storeId, Guid userId, GetProductsFilter filter)
+        {
+            // Authorization check: Only Owner/Manager of the store can access
+            await EnsureStoreAccessAsync(storeId, userId);
+
+            // Force the filter to use the specified storeId
+            filter.StoreId = storeId;
+
+            var pagedData = await _productRepository.GetProductsByFilterAsync(filter);
+
+            var productResponses = new List<ProductResponse>();
+            foreach (var product in pagedData.Items)
+            {
+                productResponses.Add(await MapToResponseAsync(product));
+            }
+
+            return new PagedResult<ProductResponse>(
+                productResponses,
+                pagedData.TotalCount,
+                pagedData.PageIndex,
+                pagedData.PageSize
+            );
+        }
+
         public async Task<ProductApprovalResponse> ApproveProductAsync(Guid productId, Guid adminUserId, ApproveProductRequest request)
         {
             var product = await _productRepository.GetByIdAsync(productId);

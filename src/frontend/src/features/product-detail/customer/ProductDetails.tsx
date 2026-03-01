@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Fish, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import { ImageGallery } from "./ImageGallery";
+import { ImageGallery } from "./customer/ImageGallery";
 import { ProductInfo } from "./ProductInfo";
 import { PurchaseActions } from "./PurchaseActions";
 import { StoreInfo } from "./StoreInfo";
@@ -13,7 +13,7 @@ import { RelatedProducts } from "./RelatedProducts";
 import { useGetProductByIdQuery } from "@/services/productApi";
 import { FishInstance } from "@/types/product.type";
 import { FishLoading } from "@/app/Loading";
-import { FishInstanceSelector } from "./FishInstanceSelector";
+import { FishInstanceSelector } from "./customer/FishInstanceSelector";
 
 interface Props {
   productId: string;

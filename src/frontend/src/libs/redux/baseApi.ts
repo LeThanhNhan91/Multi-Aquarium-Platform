@@ -35,7 +35,7 @@ const decodeToken = (token: string) => {
 
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
-  prepareHeaders: (headers, { getState }) => {
+  prepareHeaders: (headers, { getState, type }) => {
     // Read token from cookies instead of Redux state for better security
     const token = tokenCookies.getAccessToken();
     if (token) {
@@ -50,7 +50,7 @@ const baseQuery = fetchBaseQuery({
         );
         const storeId = storeIdKey ? decodedPayload[storeIdKey] : null;
 
-        if (storeId) {
+        if (storeId && type === "mutation") {
           headers.set(
             "X-Store-Id",
             storeId.ToString ? storeId.ToString() : String(storeId),

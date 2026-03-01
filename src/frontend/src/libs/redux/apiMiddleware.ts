@@ -4,6 +4,7 @@ import { productApi } from "@/services/productApi";
 import { userApi } from "@/services/userApi";
 import { orderApi } from "@/services/orderApi";
 import { storeApi } from "@/services/storeApi";
+import { fishInstanceApi } from "@/services/fishInstanceApi";
 import { Middleware } from "@reduxjs/toolkit";
 
 export const apiMiddlewares: Middleware[] = [
@@ -13,4 +14,5 @@ export const apiMiddlewares: Middleware[] = [
   categoryApi.middleware,
   orderApi.middleware,
   storeApi.middleware,
+  fishInstanceApi.middleware,
 ];

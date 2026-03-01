@@ -7,6 +7,7 @@ import { userApi } from "@/services/userApi";
 import { categoryApi } from "@/services/categoryApi";
 import { orderApi } from "@/services/orderApi";
 import { storeApi } from "@/services/storeApi";
+import { fishInstanceApi } from "@/services/fishInstanceApi";
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -17,6 +18,7 @@ const appReducer = combineReducers({
   [categoryApi.reducerPath]: categoryApi.reducer,
   [orderApi.reducerPath]: orderApi.reducer,
   [storeApi.reducerPath]: storeApi.reducer,
+  [fishInstanceApi.reducerPath]: fishInstanceApi.reducer,
 });
 
 export const rootReducer = (state: any, action: any) => {
