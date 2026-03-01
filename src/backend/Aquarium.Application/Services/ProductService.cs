@@ -153,6 +153,33 @@ namespace Aquarium.Application.Services
 
             await EnsureStoreAccessAsync(currentStoreId.Value, userId);
 
+            // Ensure the selected category is a leaf node (has no sub-categories)
+            var hasSubCategories = await _categoryRepository.HasSubCategoriesAsync(request.CategoryId);
+            if (hasSubCategories)
+            {
+                throw new BadRequestException("Sản phẩm chỉ có thể được thêm vào danh mục cấp cuối cùng.");
+            }
+
+            // Determine product type based on category
+            var rootCategory = await _categoryRepository.GetRootCategoryAsync(request.CategoryId);
+            string baseSlug = Helper.GetBaseSlug(rootCategory?.Slug ?? "");
+            bool isLiveFish = baseSlug == "ca-canh";
+
+            if (isLiveFish)
+            {
+                if (request.BasePrice.HasValue)
+                {
+                    throw new BadRequestException("LiveFish products should not have a base price. Price is determined by individual fish instances.");
+                }
+            }
+            else
+            {
+                if (!request.BasePrice.HasValue || request.BasePrice.Value <= 0)
+                {
+                    throw new BadRequestException("Equipment products must have a base price greater than 0.");
+                }
+            }
+
             var product = new Product
             {
                 Id = Guid.NewGuid(),
@@ -161,7 +188,7 @@ namespace Aquarium.Application.Services
                 Name = request.Name,
                 Slug = Helper.GenerateSlug(request.Name),
                 Description = request.Description,
-                BasePrice = request.BasePrice,
+                BasePrice = request.BasePrice ?? 0, // Set to 0 for LiveFish, actual value for Equipment
                 Status = "Active",
                 Type = "Physical",
                 CreatedAt = DateTime.UtcNow
@@ -191,7 +218,11 @@ namespace Aquarium.Application.Services
             await _productRepository.AddAsync(product);
             await _productRepository.SaveChangesAsync();
 
-            await _inventoryService.InitInventoryAsync(product.Id);
+            // Only init inventory for Equipment products
+            if (!isLiveFish)
+            {
+                await _inventoryService.InitInventoryAsync(product.Id);
+            }
 
             var fullProduct = await _productRepository.GetByIdAsync(product.Id);
 
@@ -247,6 +278,64 @@ namespace Aquarium.Application.Services
                 pagedData.TotalCount,
                 pagedData.PageIndex,
                 pagedData.PageSize
+            );
+        }
+
+        public async Task<ProductApprovalResponse> ApproveProductAsync(Guid productId, Guid adminUserId, ApproveProductRequest request)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+
+            if (product == null)
+            {
+                throw new NotFoundException("Product", productId);
+            }
+
+            if (product.Status == "Approved")
+            {
+                throw new BadRequestException("Product is already approved.");
+            }
+
+            product.Status = "Approved";
+            product.RejectionReason = null; // Clear rejection reason if any
+
+            await _productRepository.UpdateAsync(product);
+            await _productRepository.SaveChangesAsync();
+
+            return new ProductApprovalResponse(
+                product.Id,
+                product.Name,
+                product.Status,
+                product.RejectionReason,
+                DateTime.UtcNow
+            );
+        }
+
+        public async Task<ProductApprovalResponse> RejectProductAsync(Guid productId, Guid adminUserId, RejectProductRequest request)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+
+            if (product == null)
+            {
+                throw new NotFoundException("Product", productId);
+            }
+
+            if (product.Status == "Rejected")
+            {
+                throw new BadRequestException("Product is already rejected.");
+            }
+
+            product.Status = "Rejected";
+            product.RejectionReason = request.RejectionReason;
+
+            await _productRepository.UpdateAsync(product);
+            await _productRepository.SaveChangesAsync();
+
+            return new ProductApprovalResponse(
+                product.Id,
+                product.Name,
+                product.Status,
+                product.RejectionReason,
+                DateTime.UtcNow
             );
         }
     }

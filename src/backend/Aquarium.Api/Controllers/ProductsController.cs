@@ -42,7 +42,7 @@ namespace Aquarium.Api.Controllers
             return Ok(new ApiResponse<ProductResponse>(product));
         }
 
-        [HttpGet("stores/{storeId}/products")]
+        [HttpGet("products/store/{storeId}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetStoreProducts(Guid storeId, [FromQuery] GetProductsFilter filter)
         {
@@ -52,10 +52,11 @@ namespace Aquarium.Api.Controllers
             return Ok(new ApiResponse<PagedResult<ProductResponse>>(pagedData));
         }
 
-        [HttpPost("stores/{storeId}/products")]
+        
+        [HttpPost("products")]
         [Authorize]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> CreateProduct(Guid storeId, [FromForm] CreateProductRequest request)
+        public async Task<IActionResult> CreateProduct([FromForm] CreateProductRequest request)
         {
             var userId = GetCurrentUserId();
             var response = await _productService.CreateProductAsync(request, userId);
@@ -73,6 +74,25 @@ namespace Aquarium.Api.Controllers
             var userId = GetCurrentUserId();
             await _productService.DeleteProductAsync(id, userId);
             return Ok(new ApiResponse<object>(null, "Product deleted successfully"));
+        }
+
+        
+        [HttpPut("products/{id}/approve")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ApproveProduct(Guid id, [FromBody] ApproveProductRequest request)
+        {
+            var adminUserId = GetCurrentUserId();
+            var response = await _productService.ApproveProductAsync(id, adminUserId, request);
+            return Ok(new ApiResponse<ProductApprovalResponse>(response, "Product approved successfully"));
+        }
+
+        [HttpPut("products/{id}/reject")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RejectProduct(Guid id, [FromBody] RejectProductRequest request)
+        {
+            var adminUserId = GetCurrentUserId();
+            var response = await _productService.RejectProductAsync(id, adminUserId, request);
+            return Ok(new ApiResponse<ProductApprovalResponse>(response, "Product rejected"));
         }
     }
 }

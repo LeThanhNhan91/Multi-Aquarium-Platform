@@ -1,7 +1,7 @@
 import { buildCrudEndpoints } from "@/libs/redux/baseCrudApi";
 import { baseQueryWithReauth } from "@/libs/redux/baseApi";
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { ProductItem } from "@/types/product.type";
+import { ProductItem, CreateProductRequest } from "@/types/product.type";
 import { ApiResponse, PagedResult } from "@/types/baseModel";
 
 export interface ProductParams {
@@ -51,6 +51,42 @@ export const productApi = createApi({
         };
       },
     }),
+
+    createProduct: builder.mutation<
+      ProductItem,
+      CreateProductRequest | FormData
+    >({
+      query: (data) => {
+        if (data instanceof FormData) {
+          return {
+            url: "/products",
+            method: "POST",
+            body: data,
+          };
+        }
+
+        const formData = new FormData();
+        formData.append("Name", data.name);
+        formData.append("CategoryId", data.categoryId);
+        if (data.description) formData.append("Description", data.description);
+        if (data.basePrice !== undefined)
+          formData.append("BasePrice", data.basePrice.toString());
+
+        if (data.images) {
+          data.images.forEach((file) => {
+            formData.append("Images", file);
+          });
+        }
+
+        return {
+          url: "/products",
+          method: "POST",
+          body: formData,
+        };
+      },
+      transformResponse: (response: ApiResponse<ProductItem>) => response.data,
+      invalidatesTags: ["Product"],
+    }),
   }),
 });
 
@@ -58,7 +94,7 @@ export const {
   useGetAllQuery: useGetAllProductsQuery,
   useGetByIdQuery: useGetProductByIdQuery,
   useSearchQuery: useSearchProductsQuery,
-  useCreateMutation: useCreateProductMutation,
+  useCreateProductMutation,
   useUpdateMutation: useUpdateProductMutation,
   useDeleteMutation: useDeleteProductMutation,
 } = productApi;

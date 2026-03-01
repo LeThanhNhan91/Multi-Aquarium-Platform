@@ -12,5 +12,7 @@ namespace Aquarium.Application.Interfaces.Products
         Task<ProductResponse> GetProductByIdAsync(Guid id);
         Task<PagedResult<ProductResponse>> GetProductsAsync(GetProductsFilter filter);
         Task DeleteProductAsync(Guid productId, Guid userId);
+        Task<ProductApprovalResponse> ApproveProductAsync(Guid productId, Guid adminUserId, ApproveProductRequest request);
+        Task<ProductApprovalResponse> RejectProductAsync(Guid productId, Guid adminUserId, RejectProductRequest request);
     }
 }

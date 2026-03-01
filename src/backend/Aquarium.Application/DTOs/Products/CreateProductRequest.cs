@@ -13,8 +13,8 @@ namespace Aquarium.Application.DTOs.Products
 
         public string? Description { get; set; }
 
-        [Range(0, double.MaxValue)]
-        public decimal BasePrice { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "BasePrice must be greater than or equal to 0")]
+        public decimal? BasePrice { get; set; }
 
         [Required]
         public Guid CategoryId { get; set; }

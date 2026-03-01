@@ -20,7 +20,9 @@ public partial class Product
 
     public decimal BasePrice { get; set; }
 
-    public string Status { get; set; }
+    public string Status { get; set; } = "Pending"; // Default to Pending
+
+    public string? RejectionReason { get; set; } // Optional reason for rejection
 
     public string Description { get; set; }
 

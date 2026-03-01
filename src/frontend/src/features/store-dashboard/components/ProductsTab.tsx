@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Plus,
   Search,
@@ -31,12 +31,15 @@ import { Badge } from "@/components/ui/badge";
 import { useGetAllProductsQuery } from "@/services/productApi";
 import { AquariumLoader } from "@/components/shared/AquariumLoader";
 import { formatCurrency } from "@/utils/utils";
+import { CreateProductDialog } from "./CreateProductDialog";
 
 interface ProductsTabProps {
   storeId: string;
 }
 
 export default function ProductsTab({ storeId }: ProductsTabProps) {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
   const { data: response, isLoading } = useGetAllProductsQuery({
     StoreId: storeId,
   });
@@ -57,11 +60,20 @@ export default function ProductsTab({ storeId }: ProductsTabProps) {
             Danh sách tất cả các sản phẩm hiện có trong cửa hàng của bạn.
           </p>
         </div>
-        <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-5 h-11 font-bold shadow-lg shadow-primary/20 transition-all active:scale-95">
+        <Button
+          onClick={() => setIsCreateOpen(true)}
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-5 h-11 font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
+        >
           <Plus className="h-5 w-5" />
           Thêm sản phẩm
         </Button>
       </div>
+
+      <CreateProductDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        storeId={storeId}
+      />
 
       <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-2xl border border-border/50">
         <div className="relative flex-1 max-w-sm">

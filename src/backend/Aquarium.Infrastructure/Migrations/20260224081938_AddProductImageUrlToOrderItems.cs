@@ -10,19 +10,29 @@ namespace Aquarium.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "ProductImageUrl",
-                table: "OrderItems",
-                type: "nvarchar(max)",
-                nullable: true);
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = 'OrderItems' AND COLUMN_NAME = 'ProductImageUrl'
+                )
+                BEGIN
+                    ALTER TABLE [OrderItems] ADD [ProductImageUrl] nvarchar(max) NULL;
+                END
+            ");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ProductImageUrl",
-                table: "OrderItems");
+            migrationBuilder.Sql(@"
+                IF EXISTS (
+                    SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = 'OrderItems' AND COLUMN_NAME = 'ProductImageUrl'
+                )
+                BEGIN
+                    ALTER TABLE [OrderItems] DROP COLUMN [ProductImageUrl];
+                END
+            ");
         }
     }
 }

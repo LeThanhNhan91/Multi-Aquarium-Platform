@@ -10,41 +10,35 @@ namespace Aquarium.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<double>(
-                name: "AverageRating",
-                table: "Stores",
-                type: "float",
-                nullable: false,
-                defaultValue: 0.0);
-
-            migrationBuilder.AddColumn<string>(
-                name: "PhoneNumber",
-                table: "Stores",
-                type: "nvarchar(max)",
-                nullable: true);
-
-            migrationBuilder.AddColumn<int>(
-                name: "TotalReviews",
-                table: "Stores",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Stores' AND COLUMN_NAME = 'AverageRating')
+                BEGIN ALTER TABLE [Stores] ADD [AverageRating] float NOT NULL DEFAULT 0.0; END
+            ");
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Stores' AND COLUMN_NAME = 'PhoneNumber')
+                BEGIN ALTER TABLE [Stores] ADD [PhoneNumber] nvarchar(max) NULL; END
+            ");
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Stores' AND COLUMN_NAME = 'TotalReviews')
+                BEGIN ALTER TABLE [Stores] ADD [TotalReviews] int NOT NULL DEFAULT 0; END
+            ");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "AverageRating",
-                table: "Stores");
-
-            migrationBuilder.DropColumn(
-                name: "PhoneNumber",
-                table: "Stores");
-
-            migrationBuilder.DropColumn(
-                name: "TotalReviews",
-                table: "Stores");
+            migrationBuilder.Sql(@"
+                IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Stores' AND COLUMN_NAME = 'AverageRating')
+                BEGIN ALTER TABLE [Stores] DROP COLUMN [AverageRating]; END
+            ");
+            migrationBuilder.Sql(@"
+                IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Stores' AND COLUMN_NAME = 'PhoneNumber')
+                BEGIN ALTER TABLE [Stores] DROP COLUMN [PhoneNumber]; END
+            ");
+            migrationBuilder.Sql(@"
+                IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Stores' AND COLUMN_NAME = 'TotalReviews')
+                BEGIN ALTER TABLE [Stores] DROP COLUMN [TotalReviews]; END
+            ");
         }
     }
 }

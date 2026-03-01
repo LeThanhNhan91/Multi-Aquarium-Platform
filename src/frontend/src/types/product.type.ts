@@ -36,3 +36,11 @@ export interface ProductItem {
   maxPrice?: number | null;
   fishInstances?: FishInstance[];
 }
+
+export interface CreateProductRequest {
+  name: string;
+  description?: string;
+  basePrice?: number;
+  categoryId: string;
+  images?: File[];
+}
