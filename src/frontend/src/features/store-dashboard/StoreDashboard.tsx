@@ -1,12 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useSearchParams } from "next/navigation";
 import { useGetStoreByIdQuery } from "@/services/storeApi";
 import { FishLoading } from "@/app/Loading";
-
-// Layout Components
-import StoreSidebar from "./components/StoreSidebar";
-import DashboardHeader from "./components/DashboardHeader";
 import DashboardStoreHeader from "./components/DashboardStoreHeader";
 
 // Tab Components
@@ -18,8 +15,8 @@ import AnalyticsTab from "./components/AnalyticsTab";
 import SettingsTab from "./components/SettingsTab";
 
 export default function StoreDashboard({ storeId }: { storeId: string }) {
-  const [activeTab, setActiveTab] = useState("overview");
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get("tab") ?? "overview";
 
   const { data: store, isLoading } = useGetStoreByIdQuery(storeId);
 
@@ -46,25 +43,11 @@ export default function StoreDashboard({ storeId }: { storeId: string }) {
   };
 
   return (
-    <div className="flex h-screen bg-secondary/20 overflow-hidden font-sans">
-      <StoreSidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isCollapsed={isSidebarCollapsed}
-        setIsCollapsed={setIsSidebarCollapsed}
-      />
-
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <DashboardHeader />
-
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-          <DashboardStoreHeader store={store} />
-
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {renderTabContent()}
-          </div>
-        </div>
-      </main>
+    <div className="p-8">
+      <DashboardStoreHeader store={store} />
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+        {renderTabContent()}
+      </div>
     </div>
   );
 }

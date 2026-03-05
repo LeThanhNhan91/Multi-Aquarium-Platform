@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   Search,
@@ -30,7 +31,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/utils/utils";
 import { CreateProductDialog } from "./CreateProductDialog";
-import { FishInstancesDialog } from "./FishInstancesDialog";
 import { useGetStoreProductsQuery } from "@/services/productApi";
 import { AquariumLoader } from "@/components/shared/AquariumLoader";
 
@@ -39,11 +39,8 @@ interface ProductsTabProps {
 }
 
 export default function ProductsTab({ storeId }: ProductsTabProps) {
+  const router = useRouter();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [fishDialogProduct, setFishDialogProduct] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
 
   const { data: response, isLoading } = useGetStoreProductsQuery({
     storeId,
@@ -79,15 +76,6 @@ export default function ProductsTab({ storeId }: ProductsTabProps) {
         onOpenChange={setIsCreateOpen}
         storeId={storeId}
       />
-
-      {fishDialogProduct && (
-        <FishInstancesDialog
-          open={!!fishDialogProduct}
-          onOpenChange={(v) => !v && setFishDialogProduct(null)}
-          productId={fishDialogProduct.id}
-          productName={fishDialogProduct.name}
-        />
-      )}
 
       <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-2xl border border-border/50">
         <div className="relative flex-1 max-w-sm">
@@ -192,10 +180,9 @@ export default function ProductsTab({ storeId }: ProductsTabProps) {
                           <DropdownMenuItem
                             className="rounded-lg gap-2 cursor-pointer"
                             onClick={() =>
-                              setFishDialogProduct({
-                                id: product.id,
-                                name: product.name,
-                              })
+                              router.push(
+                                `/dashboard/stores/${storeId}/fish-instances?productId=${product.id}`,
+                              )
                             }
                           >
                             <Plus className="h-4 w-4" />

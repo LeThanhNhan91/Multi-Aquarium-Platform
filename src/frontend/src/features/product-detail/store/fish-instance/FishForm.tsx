@@ -5,12 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Form,
   FormControl,
   FormField,
@@ -25,74 +19,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
+import { UploadCloud, X, Video, Loader2 } from "lucide-react";
 import {
-  Plus,
-  Pencil,
-  Trash2,
-  ArrowLeft,
-  UploadCloud,
-  X,
-  Fish,
-  Loader2,
-  Image as ImageIcon,
-  Video,
-} from "lucide-react";
-import {
-  useGetFishInstancesQuery,
   useCreateFishInstanceMutation,
   useUpdateFishInstanceMutation,
-  useDeleteFishInstanceMutation,
 } from "@/services/fishInstanceApi";
 import { FishInstance } from "@/types/product.type";
-import { formatToVND, formatVietnameseDate } from "@/helper/formatter";
-import { cn } from "@/utils/utils";
 import { toast } from "sonner";
-
-
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; className: string }
-> = {
-  Available: {
-    label: "Còn hàng",
-    className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-  },
-  Sold: {
-    label: "Đã bán",
-    className: "bg-slate-500/10 text-slate-600 border-slate-500/20",
-  },
-  Reserved: {
-    label: "Đã đặt",
-    className: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-  },
-  OnHold: {
-    label: "Tạm giữ",
-    className: "bg-red-500/10 text-red-600 border-red-500/20",
-  },
-};
-
-const GENDER_OPTIONS = [
-  { value: "Male", label: "Đực" },
-  { value: "Female", label: "Cái" },
-  { value: "Unknown", label: "Chưa xác định" },
-];
-
+import { STATUS_CONFIG, GENDER_OPTIONS } from "./fishInstance.constants";
 
 const fishInstanceSchema = z.object({
   price: z.number().positive("Giá phải lớn hơn 0"),
@@ -110,13 +48,13 @@ interface FilePreview {
   url: string;
 }
 
-interface FishFormProps {
+export interface FishFormProps {
   productId: string;
   editTarget?: FishInstance;
   onBack: () => void;
 }
 
-function FishForm({ productId, editTarget, onBack }: FishFormProps) {
+export function FishForm({ productId, editTarget, onBack }: FishFormProps) {
   const isEdit = !!editTarget;
 
   const [createFishInstance, { isLoading: isCreating }] =
@@ -202,17 +140,8 @@ function FishForm({ productId, editTarget, onBack }: FishFormProps) {
   const isSaving = isCreating || isUpdating;
 
   return (
-    <div className="flex flex-col h-full mx-2">
+    <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-2 rounded-xl hover:bg-muted"
-          onClick={onBack}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Quay lại
-        </Button>
         <Separator orientation="vertical" className="h-5" />
         <h3 className="font-semibold text-foreground">
           {isEdit ? "Chỉnh sửa cá cảnh" : "Thêm cá cảnh mới"}
@@ -222,7 +151,7 @@ function FishForm({ productId, editTarget, onBack }: FishFormProps) {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-4 overflow-y-auto flex-1 pr-1"
+          className="flex flex-col gap-4 pr-1"
         >
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -462,297 +391,5 @@ function FishForm({ productId, editTarget, onBack }: FishFormProps) {
         </form>
       </Form>
     </div>
-  );
-}
-
-
-interface FishCardProps {
-  fish: FishInstance;
-  onEdit: (fish: FishInstance) => void;
-  onDelete: (fish: FishInstance) => void;
-}
-
-function FishCard({ fish, onEdit, onDelete }: FishCardProps) {
-  const statusCfg = STATUS_CONFIG[fish.status] ?? {
-    label: fish.status,
-    className: "bg-muted text-muted-foreground border-muted",
-  };
-
-  return (
-    <div className="flex gap-3 rounded-2xl border border-border/50 bg-card p-3 hover:shadow-sm transition-shadow">
-      {/* Image */}
-      <div className="h-20 w-20 shrink-0 rounded-xl overflow-hidden bg-muted border border-border/40">
-        {fish.images?.[0] ? (
-          <img
-            src={fish.images[0]}
-            alt={`Cá #${fish.id.slice(0, 6)}`}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center">
-            <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
-          </div>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <p className="text-sm font-bold text-primary">
-              {formatToVND(fish.price)}
-            </p>
-            <Badge
-              variant="outline"
-              className={cn("text-xs border px-2 py-0", statusCfg.className)}
-            >
-              {statusCfg.label}
-            </Badge>
-          </div>
-          <div className="flex shrink-0 gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-lg hover:bg-primary/10 hover:text-primary"
-              onClick={() => onEdit(fish)}
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-lg hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => onDelete(fish)}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-
-        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
-          <span>
-            Kích thước: <span className="text-foreground font-medium">{fish.size}</span>
-          </span>
-          {fish.color && (
-            <span>
-              Màu: <span className="text-foreground font-medium">{fish.color}</span>
-            </span>
-          )}
-          {fish.gender && fish.gender !== "Unknown" && (
-            <span>
-              Giới tính:{" "}
-              <span className="text-foreground font-medium">
-                {fish.gender === "Male" ? "Đực" : "Cái"}
-              </span>
-            </span>
-          )}
-        </div>
-
-        {fish.features && (
-          <p className="mt-1 text-xs text-muted-foreground line-clamp-1">
-            {fish.features}
-          </p>
-        )}
-
-        {fish.videoUrl && (
-          <span className="inline-flex items-center gap-1 mt-1 text-xs text-primary">
-            <Video className="h-3 w-3" /> Có video
-          </span>
-        )}
-
-        <p className="mt-1 text-xs text-muted-foreground/60">
-          Thêm {formatVietnameseDate(fish.createdAt)}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-interface FishInstancesDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  productId: string;
-  productName: string;
-}
-
-export function FishInstancesDialog({
-  open,
-  onOpenChange,
-  productId,
-  productName,
-}: FishInstancesDialogProps) {
-  const [view, setView] = useState<"list" | "form">("list");
-  const [editTarget, setEditTarget] = useState<FishInstance | undefined>();
-  const [deleteTarget, setDeleteTarget] = useState<FishInstance | undefined>();
-
-  const { data: fishInstances = [], isLoading } = useGetFishInstancesQuery(
-    productId,
-    { skip: !open || !productId },
-  );
-
-  const [deleteFishInstance, { isLoading: isDeleting }] =
-    useDeleteFishInstanceMutation();
-
-  const handleAddNew = () => {
-    setEditTarget(undefined);
-    setView("form");
-  };
-
-  const handleEdit = (fish: FishInstance) => {
-    setEditTarget(fish);
-    setView("form");
-  };
-
-  const handleFormBack = () => {
-    setEditTarget(undefined);
-    setView("list");
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteTarget) return;
-    try {
-      await deleteFishInstance({
-        productId,
-        fishInstanceId: deleteTarget.id,
-      }).unwrap();
-      toast.success("Đã xóa cá cảnh!");
-    } catch {
-      toast.error("Không thể xóa. Vui lòng thử lại.");
-    } finally {
-      setDeleteTarget(undefined);
-    }
-  };
-
-  const availableCount = fishInstances.filter(
-    (f) => f.status === "Available",
-  ).length;
-
-  return (
-    <>
-      <Dialog
-        open={open}
-        onOpenChange={(v) => {
-          if (!v) {
-            setView("list");
-            setEditTarget(undefined);
-          }
-          onOpenChange(v);
-        }}
-      >
-        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col rounded-2xl">
-          <DialogHeader className="shrink-0">
-            <div className="flex items-center justify-between gap-4 mt-4">
-              <div className="min-w-0">
-                <DialogTitle className="flex items-center gap-2 text-base">
-                  <Fish className="h-5 w-5 text-primary shrink-0" />
-                  <span className="truncate">{productName}</span>
-                </DialogTitle>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {fishInstances.length} con · {availableCount} còn hàng
-                </p>
-              </div>
-              {view === "list" && (
-                <Button
-                  size="sm"
-                  className="shrink-0 gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={handleAddNew}
-                >
-                  <Plus className="h-4 w-4" />
-                  Thêm cá
-                </Button>
-              )}
-            </div>
-          </DialogHeader>
-
-          <Separator />
-
-          <div className="flex-1 overflow-y-auto min-h-0 py-2">
-            {view === "form" ? (
-              <FishForm
-                productId={productId}
-                editTarget={editTarget}
-                onBack={handleFormBack}
-              />
-            ) : isLoading ? (
-              <div className="flex flex-col gap-3 py-2">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="flex gap-3 rounded-2xl border border-border/50 p-3"
-                  >
-                    <Skeleton className="h-20 w-20 rounded-xl shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-1/3" />
-                      <Skeleton className="h-3 w-1/2" />
-                      <Skeleton className="h-3 w-2/3" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : fishInstances.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-4">
-                <Fish className="h-12 w-12 text-muted-foreground/30" />
-                <div className="text-center">
-                  <p className="text-sm font-medium text-foreground">
-                    Chưa có cá cảnh nào
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Nhấn "Thêm cá" để bắt đầu thêm từng con cá vào sản phẩm
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  className="gap-2 rounded-xl bg-primary text-primary-foreground"
-                  onClick={handleAddNew}
-                >
-                  <Plus className="h-4 w-4" />
-                  Thêm cá đầu tiên
-                </Button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3 py-1">
-                {fishInstances.map((fish) => (
-                  <FishCard
-                    key={fish.id}
-                    fish={fish}
-                    onEdit={handleEdit}
-                    onDelete={setDeleteTarget}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirm */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(v) => !v && setDeleteTarget(undefined)}
-      >
-        <AlertDialogContent className="rounded-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xóa cá cảnh?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Hành động này không thể hoàn tác. Con cá sẽ bị xóa vĩnh viễn
-              cùng toàn bộ ảnh/video liên quan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Hủy</AlertDialogCancel>
-            <AlertDialogAction
-              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={handleDeleteConfirm}
-              disabled={isDeleting}
-            >
-              {isDeleting && (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              )}
-              Xóa
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
   );
 }
