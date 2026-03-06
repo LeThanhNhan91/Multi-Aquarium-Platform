@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -120,12 +121,13 @@ export default function FishInstances({
           </div>
         ) : product ? (
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-12 w-12 rounded-xl overflow-hidden bg-muted border border-border/50 shrink-0">
+            <div className="h-12 w-12 relative rounded-xl overflow-hidden bg-muted border border-border/50 shrink-0">
               {product.images?.[0] ? (
-                <img
+                <Image
                   src={product.images[0]}
                   alt={product.name}
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="h-full w-full flex items-center justify-center">

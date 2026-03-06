@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Fish,
   ChevronRight,
@@ -219,8 +220,7 @@ export default function CheckoutPageClient() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
-                  Địa chỉ cụ thể{" "}
-                  <span className="text-destructive">*</span>
+                  Địa chỉ cụ thể <span className="text-destructive">*</span>
                 </label>
                 <textarea
                   value={shippingAddress}
@@ -287,9 +287,7 @@ export default function CheckoutPageClient() {
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    VNPay
-                  </p>
+                  <p className="text-sm font-semibold text-foreground">VNPay</p>
                   <p className="text-xs text-muted-foreground">
                     Thanh toán an toàn qua ví điện tử / ATM / Thẻ quốc tế
                   </p>
@@ -319,12 +317,14 @@ export default function CheckoutPageClient() {
                     {/* Product row */}
                     <div className="flex gap-3">
                       {product.images?.[0] ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={product.images[0]}
-                          alt={product.name}
-                          className="h-16 w-16 rounded-xl object-cover border border-border/50 shrink-0"
-                        />
+                        <div className="relative h-16 w-16 shrink-0">
+                          <Image
+                            src={product.images[0]}
+                            alt={product.name}
+                            fill
+                            className="rounded-xl object-cover border border-border/50"
+                          />
+                        </div>
                       ) : (
                         <div className="h-16 w-16 rounded-xl bg-secondary/30 flex items-center justify-center shrink-0">
                           <Fish className="h-6 w-6 text-muted-foreground" />
@@ -356,9 +356,7 @@ export default function CheckoutPageClient() {
                     {/* Pricing */}
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          Đơn giá
-                        </span>
+                        <span className="text-muted-foreground">Đơn giá</span>
                         <span className="font-medium">
                           {unitPrice.toLocaleString("vi-VN")}đ
                         </span>

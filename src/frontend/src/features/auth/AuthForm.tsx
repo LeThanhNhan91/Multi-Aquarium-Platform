@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image"; // Added Image import
 import {
   Fish,
   Eye,
@@ -197,10 +198,12 @@ export default function AuthForm() {
       {/* Left panel - decorative */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-foreground">
         <div className="absolute inset-0">
-          <img
+          <Image
             src="/images/login-bg.jpg"
             alt="Underwater scene"
-            className="h-full w-full object-cover opacity-40"
+            fill
+            priority
+            className="object-cover opacity-40"
           />
           <div className="absolute inset-0 bg-linear-to-br from-foreground/80 via-foreground/50 to-primary/30" />
         </div>
@@ -245,23 +248,17 @@ export default function AuthForm() {
 
             <div className="flex gap-6 mt-10">
               <div className="rounded-xl bg-background/10 backdrop-blur-sm p-4 flex-1">
-                <p className="text-2xl font-bold  text-background">
-                  500+
-                </p>
+                <p className="text-2xl font-bold  text-background">500+</p>
                 <p className="text-xs text-background/50 mt-1">
                   Verified Shops
                 </p>
               </div>
               <div className="rounded-xl bg-background/10 backdrop-blur-sm p-4 flex-1">
-                <p className="text-2xl font-bold  text-background">
-                  10K+
-                </p>
+                <p className="text-2xl font-bold  text-background">10K+</p>
                 <p className="text-xs text-background/50 mt-1">Fish Species</p>
               </div>
               <div className="rounded-xl bg-background/10 backdrop-blur-sm p-4 flex-1">
-                <p className="text-2xl font-bold  text-background">
-                  50K+
-                </p>
+                <p className="text-2xl font-bold  text-background">50K+</p>
                 <p className="text-xs text-background/50 mt-1">Customers</p>
               </div>
             </div>

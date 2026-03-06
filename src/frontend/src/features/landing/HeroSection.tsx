@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -57,7 +58,7 @@ function WaveDecoration() {
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-b from-secondary/50 via-background to-background pt-20">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-linear-to-b from-secondary/50 via-background to-background pt-20">
       <Bubbles />
       <WaveDecoration />
 
@@ -129,12 +130,14 @@ export function HeroSection() {
 
           <div className="relative hidden lg:block">
             <div className="relative aspect-square max-w-lg mx-auto">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 blur-2xl" />
-              <div className="relative rounded-3xl overflow-hidden border border-border/50 shadow-2xl shadow-primary/10">
-                <img
+              <div className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20 blur-2xl" />
+              <div className="relative rounded-3xl overflow-hidden border border-border/50 shadow-2xl shadow-primary/10 aspect-square">
+                <Image
                   src="/images/hero-aquarium.jpg"
                   alt="Beautiful aquarium with tropical fish"
-                  className="w-full h-full object-cover aspect-square"
+                  fill
+                  priority
+                  className="object-cover"
                 />
               </div>
               <div className="absolute -bottom-4 -left-4 rounded-2xl bg-card p-4 shadow-lg border border-border/50 animate-float">

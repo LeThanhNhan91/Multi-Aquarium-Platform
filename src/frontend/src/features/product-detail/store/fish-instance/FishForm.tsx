@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -314,10 +315,12 @@ export function FishForm({ productId, editTarget, onBack }: FishFormProps) {
                       key={idx}
                       className="relative h-20 w-20 rounded-xl overflow-hidden border border-border/50"
                     >
-                      <img
+                      <Image
                         src={p.url}
                         alt=""
-                        className="h-full w-full object-cover"
+                        fill
+                        unoptimized
+                        className="object-cover"
                       />
                       <button
                         type="button"

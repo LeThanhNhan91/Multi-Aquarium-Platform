@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -144,10 +145,11 @@ export function ViewDetailDialog({
               >
                 {images.length > 0 ? (
                   <div className="relative h-full w-full">
-                    <img
+                    <Image
                       src={images[imageIdx]}
                       alt={`Cá #${fish.id.slice(0, 6)}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                     {images.length > 1 && (
                       <>

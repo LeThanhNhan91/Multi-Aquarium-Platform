@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image"; // Added import for next/image
 import { User, LogOut, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
@@ -58,9 +59,11 @@ export function UserMenu({ user }: UserMenuProps) {
         className="flex items-center gap-2 rounded-full hover:opacity-80 transition-opacity"
       >
         {user.avatarUrl ? (
-          <img
+          <Image
             src={user.avatarUrl}
             alt={user.fullName}
+            width={36}
+            height={36}
             className="h-9 w-9 rounded-full object-cover border-2 border-primary/20"
           />
         ) : (

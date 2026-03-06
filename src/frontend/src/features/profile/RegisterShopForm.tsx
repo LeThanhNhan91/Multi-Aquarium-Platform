@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   Store,
   ArrowRight,
@@ -293,10 +294,12 @@ export function RegisterShopForm() {
                 <div className="relative h-24 w-24 shrink-0 rounded-2xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted/30 group">
                   {logoPreview ? (
                     <>
-                      <img
+                      <Image
                         src={logoPreview}
                         alt="Logo preview"
-                        className="h-full w-full object-cover"
+                        fill
+                        unoptimized
+                        className="object-cover"
                       />
                       <button
                         onClick={() => {
@@ -343,10 +346,12 @@ export function RegisterShopForm() {
               <div className="relative aspect-3/1 rounded-2xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted/30 group">
                 {coverPreview ? (
                   <>
-                    <img
+                    <Image
                       src={coverPreview}
                       alt="Cover preview"
-                      className="h-full w-full object-cover"
+                      fill
+                      unoptimized
+                      className="object-cover"
                     />
                     <button
                       onClick={() => {
@@ -406,20 +411,24 @@ export function RegisterShopForm() {
 
             <div className="flex gap-4">
               {logoPreview && (
-                <div className="h-20 w-20 rounded-xl overflow-hidden border border-border">
-                  <img
+                <div className="h-20 w-20 relative rounded-xl overflow-hidden border border-border">
+                  <Image
                     src={logoPreview}
                     alt="Logo"
-                    className="h-full w-full object-cover"
+                    fill
+                    unoptimized
+                    className="object-cover"
                   />
                 </div>
               )}
               {coverPreview && (
-                <div className="flex-1 rounded-xl overflow-hidden border border-border h-20">
-                  <img
+                <div className="flex-1 relative rounded-xl overflow-hidden border border-border h-20">
+                  <Image
                     src={coverPreview}
                     alt="Cover"
-                    className="h-full w-full object-cover"
+                    fill
+                    unoptimized
+                    className="object-cover"
                   />
                 </div>
               )}

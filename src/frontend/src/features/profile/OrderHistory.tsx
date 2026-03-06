@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ShoppingBag,
   Store,
@@ -137,11 +138,12 @@ function OrderCard({ order, viewAs }: OrderCardProps) {
         <div className="flex flex-col gap-3">
           {order.items.slice(0, 3).map((item) => (
             <div key={item.productId} className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-xl overflow-hidden bg-muted shrink-0">
-                <img
+              <div className="h-12 w-12 relative rounded-xl overflow-hidden bg-muted shrink-0">
+                <Image
                   src={item.productImageUrl ?? "/placeholder.svg"}
                   alt={item.productName}
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               </div>
               <div className="flex-1 min-w-0">
@@ -377,9 +379,7 @@ export function OrderHistory({ onNavigateToShops }: OrderHistoryProps) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-lg font-bold  text-foreground">
-          Lịch sử đơn hàng
-        </h2>
+        <h2 className="text-lg font-bold  text-foreground">Lịch sử đơn hàng</h2>
         <p className="text-sm text-muted-foreground mt-1">
           Theo dõi và quản lý đơn hàng của bạn
         </p>

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import {
   Settings,
   MapPin,
@@ -113,10 +114,12 @@ export default function DashboardStoreHeader({
       />
 
       <div className="relative h-48 overflow-hidden group">
-        <img
+        <Image
           src={store.coverUrl || "/images/shop-showcase.jpg"}
-          className="w-full h-full object-cover"
           alt="Store cover"
+          fill
+          priority
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
         <Button
@@ -143,10 +146,11 @@ export default function DashboardStoreHeader({
                 <Loader2 className="h-6 w-6 animate-spin text-white" />
               </div>
             )}
-            <img
+            <Image
               src={store.logoUrl || "/images/hero-aquarium.jpg"}
-              className="h-full w-full object-cover"
               alt="Store logo"
+              fill
+              className="object-cover"
             />
           </div>
           <button

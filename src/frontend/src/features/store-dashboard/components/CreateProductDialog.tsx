@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -526,10 +527,12 @@ export function CreateProductDialog({
                     key={index}
                     className="relative w-20 h-20 rounded-xl overflow-hidden border border-border/50 group"
                   >
-                    <img
+                    <Image
                       src={url}
                       alt={`Preview ${index}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      unoptimized
+                      className="object-cover"
                     />
                     <button
                       type="button"

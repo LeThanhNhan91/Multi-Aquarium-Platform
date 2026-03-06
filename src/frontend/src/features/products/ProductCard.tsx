@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import StarRating from "@/components/shared/StarRating ";
 import Link from "next/link";
+import Image from "next/image";
 
 export interface Product {
   id: string;
@@ -34,12 +35,16 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   return (
-    <Link href={`/products/${product.slug}-${product.id}`} className="group relative flex flex-col rounded-2xl border border-border/50 bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
+    <Link
+      href={`/products/${product.slug}-${product.id}`}
+      className="group relative flex flex-col rounded-2xl border border-border/50 bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
+    >
       <div className="relative aspect-4/3 overflow-hidden bg-muted">
-        <img
+        <Image
           src={product.image || "/placeholder.svg"}
           alt={product.name}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
         />
         {product.tag && (
           <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground border-0">

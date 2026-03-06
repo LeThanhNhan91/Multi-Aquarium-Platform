@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   Camera,
   MapPin,
@@ -159,10 +160,12 @@ export function ProfileHeader() {
 
         {/* Cover image */}
         <div className="relative h-56 sm:h-64 md:h-72 overflow-hidden">
-          <img
+          <Image
             src={userProfile?.coverUrl || "/images/hero-aquarium.jpg"}
             alt="Profile cover - beautiful planted aquarium"
-            className="h-full w-full object-cover"
+            fill
+            priority
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-linear-to-t from-foreground/80 via-foreground/30 to-transparent" />
 
@@ -193,11 +196,20 @@ export function ProfileHeader() {
           <div className="flex flex-col sm:flex-row sm:items-end gap-5 -mt-16 sm:-mt-12 pb-6">
             {/* Avatar */}
             <div className="relative shrink-0">
-              <Avatar className="h-28 w-28 sm:h-32 sm:w-32 border-4 border-background shadow-xl">
-                <AvatarImage
-                  src={userProfile?.avatarUrl || "/images/product-koi.jpg"}
-                  alt={userProfile?.fullName}
-                />
+              <Avatar className="h-28 w-28 sm:h-32 sm:w-32 border-4 border-background shadow-xl relative overflow-hidden">
+                {userProfile?.avatarUrl ? (
+                  <Image
+                    src={userProfile.avatarUrl}
+                    alt={userProfile.fullName || "User Avatar"}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <AvatarImage
+                    src="/images/product-koi.jpg"
+                    alt={userProfile?.fullName}
+                  />
+                )}
                 <AvatarFallback className="bg-primary text-primary-foreground text-3xl ">
                   {userProfile?.fullName
                     ?.split(" ")

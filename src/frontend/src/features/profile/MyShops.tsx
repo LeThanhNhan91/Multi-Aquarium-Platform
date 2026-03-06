@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Plus,
   Star,
@@ -40,10 +41,11 @@ function ShopCard({ shop }: { shop: StoreResponse }) {
   return (
     <Card className="group overflow-hidden border-border/50 bg-card hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 py-0">
       <div className="relative aspect-3/1 overflow-hidden">
-        <img
+        <Image
           src={shop.coverUrl || "/images/shop-showcase.jpg"}
           alt={shop.name}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-linear-to-t from-foreground/70 via-foreground/20 to-transparent" />
         <Badge
@@ -51,22 +53,17 @@ function ShopCard({ shop }: { shop: StoreResponse }) {
         >
           {shop.status}
         </Badge>
-        {/* <button
-          className="absolute top-3 left-3 h-8 w-8 rounded-full bg-card/20 backdrop-blur-sm flex items-center justify-center text-background/80 hover:bg-card/40 transition-colors"
-          aria-label="More options"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </button> */}
       </div>
 
       {/* Shop info */}
       <div className="relative px-5 pb-5">
         <div className="-mt-8 mb-3 flex items-end gap-3">
-          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border-4 border-card shadow-md bg-muted">
-            <img
+          <div className="h-16 w-16 relative shrink-0 overflow-hidden rounded-xl border-4 border-card shadow-md bg-muted">
+            <Image
               src={shop.logoUrl || "/images/hero-aquarium.jpg"}
               alt={`${shop.name} logo`}
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
             />
           </div>
           <div className="min-w-0 pb-1 flex-1">
@@ -272,9 +269,7 @@ export function MyShops() {
                   {item.trend}
                 </span>
               </div>
-              <p className="text-xl font-bold  text-foreground">
-                {item.value}
-              </p>
+              <p className="text-xl font-bold  text-foreground">{item.value}</p>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter mt-1">
                 {item.label}
               </p>

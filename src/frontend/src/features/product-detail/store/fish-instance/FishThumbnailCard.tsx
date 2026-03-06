@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import {
   Tooltip,
   TooltipContent,
@@ -9,7 +10,14 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Pencil, Trash2, Image as ImageIcon, Video } from "lucide-react";
+import {
+  Eye,
+  Edit,
+  Trash2,
+  Image as ImageIcon,
+  Video,
+  Pencil,
+} from "lucide-react";
 import { FishInstance } from "@/types/product.type";
 import { formatToVND } from "@/helper/formatter";
 import { cn } from "@/utils/utils";
@@ -36,12 +44,13 @@ export function FishThumbnailCard({
   return (
     <TooltipProvider delayDuration={200}>
       <div className="group relative rounded-2xl overflow-hidden border border-border/50 bg-card shadow-sm hover:shadow-lg transition-all duration-300">
-        <div className="aspect-square overflow-hidden bg-muted">
+        <div className="relative aspect-square overflow-hidden bg-muted">
           {fish.images?.[0] ? (
-            <img
+            <Image
               src={fish.images[0]}
               alt={`Cá #${fish.id.slice(0, 6)}`}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
             />
           ) : (
             <div className="h-full w-full flex items-center justify-center">

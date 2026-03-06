@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -120,11 +121,12 @@ export default function ProductsTab({ storeId }: ProductsTabProps) {
                   className="group hover:bg-muted/30 transition-colors"
                 >
                   <TableCell>
-                    <div className="h-12 w-12 rounded-lg overflow-hidden bg-muted border border-border/50">
-                      <img
+                    <div className="h-12 w-12 relative rounded-lg overflow-hidden bg-muted border border-border/50">
+                      <Image
                         src={product.images[0] || "/placeholder.svg"}
                         alt={product.name}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                        fill
+                        className="object-cover transition-transform group-hover:scale-110"
                       />
                     </div>
                   </TableCell>
