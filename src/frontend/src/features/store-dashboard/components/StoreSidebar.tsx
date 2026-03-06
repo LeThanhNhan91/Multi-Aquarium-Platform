@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/utils";
 import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
 
 export const menuItems = [
   { id: "overview", label: "Tổng quan", icon: LayoutDashboard },
@@ -45,16 +46,18 @@ export default function StoreSidebar({
         isCollapsed ? "w-20" : "w-64",
       )}
     >
+        <Link href={"/"}>
       <div className="p-6 flex items-center gap-3">
-        <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
-          <StoreIcon className="h-5 w-5 text-primary-foreground" />
-        </div>
-        {!isCollapsed && (
-          <span className="font-bold  text-xl tracking-tight text-foreground truncate">
-            Aqua Admin
-          </span>
-        )}
+          <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+            <StoreIcon className="h-5 w-5 text-primary-foreground" />
+          </div>
+          {!isCollapsed && (
+            <span className="font-bold  text-xl tracking-tight text-foreground truncate">
+              Aqua Admin
+            </span>
+          )}
       </div>
+        </Link>
 
       <nav className="flex-1 px-3 space-y-1 mt-4">
         {menuItems.map((item) => (

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Fish, Menu, X, ShoppingCart, Search } from "lucide-react";
+import { Fish, Menu, X, ShoppingCart, Search, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/utils";
 import { useGetProfileQuery } from "@/services/userApi";
@@ -11,9 +11,11 @@ import { tokenCookies } from "@/utils/cookies";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { logout } from "@/libs/redux/features/authSlice";
+import { ChatInbox } from "../../features/chat/ChatInbox";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [inboxOpen, setInboxOpen] = useState(false);
   const dispatch = useDispatch();
   const router = useRouter();
 
@@ -29,6 +31,7 @@ export function Navbar() {
   };
 
   return (
+    <>
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2">
@@ -84,6 +87,19 @@ export function Navbar() {
             <ShoppingCart className="h-5 w-5" />
             <span className="sr-only">Cart</span>
           </Button>
+
+          {/* Message inbox — only for logged-in users */}
+          {!isLoading && userProfile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-foreground/70 hover:text-primary relative"
+              onClick={() => setInboxOpen(true)}
+            >
+              <MessageSquare className="h-5 w-5" />
+              <span className="sr-only">Tin nhắn</span>
+            </Button>
+          )}
 
           {/* Show login buttons or user menu based on auth status */}
           {!isLoading && userProfile ? (
@@ -203,5 +219,8 @@ export function Navbar() {
         </div>
       </div>
     </header>
+
+    <ChatInbox open={inboxOpen} onClose={() => setInboxOpen(false)} />
+    </>
   );
 }

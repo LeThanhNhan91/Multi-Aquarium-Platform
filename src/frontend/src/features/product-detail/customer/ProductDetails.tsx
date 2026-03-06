@@ -14,6 +14,7 @@ import { FishInstance } from "@/types/product.type";
 import { FishLoading } from "@/app/Loading";
 import { ImageGallery } from "./ImageGallery";
 import { FishInstanceSelector } from "./FishInstanceSelector";
+import { ChatDrawer } from "../../chat/ChatDrawer";
 
 interface Props {
   productId: string;
@@ -24,6 +25,7 @@ export default function ProductDetailPage({ productId }: Props) {
   const product = response?.data;
 
   const [selectedFish, setSelectedFish] = useState<FishInstance | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const galleryImages =
     selectedFish?.images?.length
@@ -89,7 +91,11 @@ export default function ProductDetailPage({ productId }: Props) {
 
               {/* Right Column - Info & Actions */}
               <div className="space-y-6">
-                <ProductInfo product={product} selectedFish={selectedFish} />
+                <ProductInfo
+                  product={product}
+                  selectedFish={selectedFish}
+                  onContactStore={() => setChatOpen(true)}
+                />
 
                 <PurchaseActions
                   productId={product.id}
@@ -102,6 +108,7 @@ export default function ProductDetailPage({ productId }: Props) {
                 <StoreInfo
                   storeName={product.storeName}
                   storeId={product.storeId}
+                  onContactStore={() => setChatOpen(true)}
                 />
               </div>
             </div>
@@ -129,6 +136,16 @@ export default function ProductDetailPage({ productId }: Props) {
 
             <RelatedProducts categoryName={product.categoryName} />
           </div>
+        )}
+
+        {product && (
+          <ChatDrawer
+            key={product.storeId}
+            open={chatOpen}
+            onClose={() => setChatOpen(false)}
+            storeId={product.storeId}
+            storeName={product.storeName}
+          />
         )}
       </main>
     </>

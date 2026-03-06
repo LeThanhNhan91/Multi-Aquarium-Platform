@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Fish, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ type SortOption = "newest" | "price-low" | "price-high" | "rating" | "popular";
 
 export default function ProductsList() {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -31,7 +33,7 @@ export default function ProductsList() {
     const params: ProductParams = {
       pageIndex: 1,
       pageSize: 10,
-      Keyword: searchQuery || undefined,
+      Keyword: debouncedSearchQuery || undefined,
       MinPrice: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
       MaxPrice:
         filters.priceRange[1] < 10000000 ? filters.priceRange[1] : undefined,
@@ -72,7 +74,7 @@ export default function ProductsList() {
     }
 
     return params;
-  }, [searchQuery, filters, sortBy]);
+  }, [debouncedSearchQuery, filters, sortBy]);
 
   const { data: productData, isLoading } = useGetAllProductsQuery(apiParams);
 

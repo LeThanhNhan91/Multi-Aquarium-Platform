@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -42,9 +43,12 @@ interface ProductsTabProps {
 export default function ProductsTab({ storeId }: ProductsTabProps) {
   const router = useRouter();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 500);
 
   const { data: response, isLoading } = useGetStoreProductsQuery({
     storeId,
+    Keyword: debouncedSearch,
   });
   const products = response?.items || [];
 
@@ -83,6 +87,8 @@ export default function ProductsTab({ storeId }: ProductsTabProps) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Tìm kiếm sản phẩm..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 bg-card border-border/50 rounded-xl focus-visible:ring-primary/20"
           />
         </div>

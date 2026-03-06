@@ -1,4 +1,12 @@
-import { Star, Package, Calendar, Ruler, Palette, Tag, Sparkles } from "lucide-react";
+import {
+  Star,
+  Package,
+  Calendar,
+  Ruler,
+  Palette,
+  Tag,
+  Sparkles,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/utils";
 import { FishInstance, ProductItem } from "@/types/product.type";
@@ -6,9 +14,10 @@ import { FishInstance, ProductItem } from "@/types/product.type";
 interface ProductInfoProps {
   product: ProductItem;
   selectedFish: FishInstance | null;
+  onContactStore?: () => void;
 }
 
-export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
+export function ProductInfo({ product, selectedFish, onContactStore }: ProductInfoProps) {
   const isLiveFish = product.productType === "LiveFish";
 
   // Price display logic
@@ -21,7 +30,11 @@ export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
         </div>
       );
     }
-    if (isLiveFish && product.minPrice !== null && product.minPrice !== undefined) {
+    if (
+      isLiveFish &&
+      product.minPrice !== null &&
+      product.minPrice !== undefined
+    ) {
       if (product.minPrice === product.maxPrice) {
         return (
           <div className="text-4xl font-bold text-primary">
@@ -34,10 +47,14 @@ export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
         <div className="space-y-1">
           <div className="text-3xl font-bold text-primary">
             {product.minPrice.toLocaleString("vi-VN")}đ
-            <span className="text-xl text-muted-foreground font-normal mx-2">—</span>
+            <span className="text-xl text-muted-foreground font-normal mx-2">
+              —
+            </span>
             {product.maxPrice?.toLocaleString("vi-VN")}đ
           </div>
-          <p className="text-xs text-muted-foreground">Chọn cá bên dưới để xem giá cụ thể</p>
+          <p className="text-xs text-muted-foreground">
+            Chọn cá bên dưới để xem giá cụ thể
+          </p>
         </div>
       );
     }
@@ -49,7 +66,14 @@ export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
         </div>
       );
     }
-    return <div className="text-xl text-muted-foreground">Liên hệ để biết giá</div>;
+    return (
+      <button
+        onClick={onContactStore}
+        className="text-xl text-primary hover:underline font-medium transition-colors"
+      >
+        Liên hệ để biết giá
+      </button>
+    );
   };
 
   // Stock / availability
@@ -58,18 +82,40 @@ export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
       const count = product.availableFishCount ?? 0;
       return {
         label: count > 0 ? `Còn ${count} cá sẵn sàng` : "Hết hàng",
-        color: count > 0 ? (count <= 3 ? "text-orange-500" : "text-green-500") : "text-red-500",
+        color:
+          count > 0
+            ? count <= 3
+              ? "text-orange-500"
+              : "text-green-500"
+            : "text-red-500",
       };
     }
     const stock = product.availableStock ?? 0;
     return {
-      label: stock > 0 ? (stock <= 10 ? `Còn lại ${stock} sản phẩm` : "Còn hàng") : "Hết hàng",
-      color: stock > 0 ? (stock <= 10 ? "text-orange-500" : "text-green-500") : "text-red-500",
+      label:
+        stock > 0
+          ? stock <= 10
+            ? `Còn lại ${stock} sản phẩm`
+            : "Còn hàng"
+          : "Hết hàng",
+      color:
+        stock > 0
+          ? stock <= 10
+            ? "text-orange-500"
+            : "text-green-500"
+          : "text-red-500",
     };
   };
 
   const stockInfo = renderStock();
-  const { averageRating, totalReviews, categoryName, name, description , createdAt } = product;
+  const {
+    averageRating,
+    totalReviews,
+    categoryName,
+    name,
+    description,
+    createdAt,
+  } = product;
 
   const formattedDate = new Date(createdAt).toLocaleDateString("vi-VN", {
     day: "numeric",
@@ -132,23 +178,33 @@ export function ProductInfo({ product, selectedFish }: ProductInfoProps) {
       {/* Selected Fish Details */}
       {selectedFish && (
         <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
-          <p className="text-sm font-semibold text-primary">Thông tin cá đã chọn</p>
+          <p className="text-sm font-semibold text-primary">
+            Thông tin cá đã chọn
+          </p>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="flex items-center gap-2 text-foreground/80">
               <Ruler className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>Kích thước: <strong>{selectedFish.size} cm</strong></span>
+              <span>
+                Kích thước: <strong>{selectedFish.size}</strong>
+              </span>
             </div>
             <div className="flex items-center gap-2 text-foreground/80">
               <Tag className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>Giới tính: <strong>{selectedFish.gender}</strong></span>
+              <span>
+                Giới tính: <strong>{selectedFish.gender}</strong>
+              </span>
             </div>
             <div className="flex items-center gap-2 text-foreground/80 col-span-2">
               <Palette className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>Màu sắc: <strong>{selectedFish.color}</strong></span>
+              <span>
+                Màu sắc: <strong>{selectedFish.color}</strong>
+              </span>
             </div>
             <div className="flex items-start gap-2 text-foreground/80 col-span-2">
               <Sparkles className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-              <span>Đặc điểm: <strong>{selectedFish.features}</strong></span>
+              <span>
+                Đặc điểm: <strong>{selectedFish.features}</strong>
+              </span>
             </div>
           </div>
         </div>

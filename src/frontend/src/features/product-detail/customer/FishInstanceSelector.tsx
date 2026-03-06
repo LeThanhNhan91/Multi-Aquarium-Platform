@@ -12,10 +12,22 @@ interface FishInstanceSelectorProps {
   onSelect: (fish: FishInstance) => void;
 }
 
-const statusMap: Record<FishInstance["status"], { label: string; color: string }> = {
-  Available: { label: "Còn hàng", color: "bg-green-500/10 text-green-600 border-green-500/20" },
-  Sold: { label: "Đã bán", color: "bg-red-500/10 text-red-500 border-red-500/20" },
-  Reserved: { label: "Đang giữ", color: "bg-orange-500/10 text-orange-500 border-orange-500/20" },
+const statusMap: Record<
+  FishInstance["status"],
+  { label: string; color: string }
+> = {
+  Available: {
+    label: "Còn hàng",
+    color: "bg-green-500/10 text-green-600 border-green-500/20",
+  },
+  Sold: {
+    label: "Đã bán",
+    color: "bg-red-500/10 text-red-500 border-red-500/20",
+  },
+  Reserved: {
+    label: "Đang giữ",
+    color: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+  },
 };
 
 const genderMap: Record<string, string> = {
@@ -33,11 +45,10 @@ export function FishInstanceSelector({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold  text-foreground">
-          Chọn cá
-        </h3>
+        <h3 className="text-lg font-bold  text-foreground">Chọn cá</h3>
         <span className="text-sm text-muted-foreground">
-          {fishInstances.filter((f) => f.status === "Available").length} con khả dụng
+          {fishInstances.filter((f) => f.status === "Available").length} con khả
+          dụng
         </span>
       </div>
 
@@ -49,7 +60,8 @@ export function FishInstanceSelector({
             label: fish.status,
             color: "bg-muted text-muted-foreground",
           };
-          const genderLabel = genderMap[fish.gender.toLowerCase()] ?? fish.gender;
+          const genderLabel =
+            genderMap[fish.gender.toLowerCase()] ?? fish.gender;
 
           return (
             <button
@@ -83,7 +95,12 @@ export function FishInstanceSelector({
                           key={i}
                           className="relative h-8 w-8 rounded-md overflow-hidden border border-white/50"
                         >
-                          <Image src={img} alt="" fill className="object-cover" />
+                          <Image
+                            src={img}
+                            alt=""
+                            fill
+                            className="object-cover"
+                          />
                         </div>
                       ))}
                       {fish.images.length > 4 && (
@@ -122,7 +139,7 @@ export function FishInstanceSelector({
                 <div className="space-y-1.5 text-sm">
                   <div className="flex items-center gap-2 text-foreground/80">
                     <Ruler className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    <span>{fish.size} cm</span>
+                    <span>{fish.size}</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground/80">
                     <Palette className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -130,7 +147,9 @@ export function FishInstanceSelector({
                   </div>
                   <div className="flex items-start gap-2 text-foreground/80">
                     <Sparkles className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                    <span className="line-clamp-2 text-xs">{fish.features}</span>
+                    <span className="line-clamp-2 text-xs">
+                      {fish.features}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -138,8 +157,18 @@ export function FishInstanceSelector({
               {/* Selected checkmark */}
               {isSelected && (
                 <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-primary flex items-center justify-center shadow-md">
-                  <svg className="h-3.5 w-3.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <svg
+                    className="h-3.5 w-3.5 text-primary-foreground"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={3}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </div>
               )}

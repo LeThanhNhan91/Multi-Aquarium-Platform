@@ -1,7 +1,21 @@
-import { Store, Star, MapPin, MessageSquare } from 'lucide-react'
+'use client'
+
+import { useState } from 'react'
+import { Store, Star, MapPin, MessageSquare, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
 import Link from 'next/link'
+import { useRouter, usePathname } from 'next/navigation'
+import { useAppSelector } from '@/libs/redux/hook'
 
 interface StoreInfoProps {
   storeName: string
@@ -9,6 +23,7 @@ interface StoreInfoProps {
   storeRating?: number
   storeReviews?: number
   storeLocation?: string
+  onContactStore?: () => void
 }
 
 export function StoreInfo({
@@ -17,13 +32,33 @@ export function StoreInfo({
   storeRating = 4.8,
   storeReviews = 2450,
   storeLocation = 'Ho Chi Minh City',
+  onContactStore,
 }: StoreInfoProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
+  const [showLoginModal, setShowLoginModal] = useState(false)
+
+  const handleContactClick = () => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true)
+      return
+    }
+    onContactStore?.()
+  }
+
+  const handleGoLogin = () => {
+    const returnUrl = encodeURIComponent(pathname)
+    router.push(`/login?returnUrl=${returnUrl}`)
+  }
+
   return (
+    <>
     <Card className="border-border/50 bg-card rounded-2xl p-6 space-y-5">
       {/* Store Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 flex-1">
-          <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
+          <div className="h-14 w-14 rounded-xl bg-linear-to-br from-primary to-accent flex items-center justify-center shrink-0">
             <Store className="h-7 w-7 text-primary-foreground" />
           </div>
           <div className="min-w-0">
@@ -49,7 +84,7 @@ export function StoreInfo({
           </button>
         </div>
         <div className="flex items-center gap-2 text-sm text-foreground/80">
-          <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
           <span>{storeLocation}</span>
         </div>
       </div>
@@ -61,7 +96,7 @@ export function StoreInfo({
             Xem cửa hàng
           </Button>
         </Link>
-        <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-semibold gap-2">
+        <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-semibold gap-2" onClick={handleContactClick}>
           <MessageSquare className="h-4 w-4" />
           Liên hệ shop
         </Button>
@@ -80,5 +115,31 @@ export function StoreInfo({
         </div>
       </div>
     </Card>
+
+    {/* Login required modal */}
+    <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
+      <DialogContent>
+        <DialogHeader>
+          <div className="flex items-center justify-center h-14 w-14 rounded-full bg-primary/10 mx-auto mb-2">
+            <MessageSquare className="h-7 w-7 text-primary" />
+          </div>
+          <DialogTitle className="text-center">Đăng nhập để nhắn tin</DialogTitle>
+          <DialogDescription className="text-center">
+            Bạn cần đăng nhập để có thể nhắn tin với chủ cửa hàng{' '}
+            <span className="font-semibold text-foreground">{storeName}</span>.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="sm:justify-center gap-2 mt-2">
+          <DialogClose asChild>
+            <Button variant="outline">Hủy</Button>
+          </DialogClose>
+          <Button onClick={handleGoLogin}>
+            <LogIn className="h-4 w-4 mr-2" />
+            Đăng nhập ngay
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }
