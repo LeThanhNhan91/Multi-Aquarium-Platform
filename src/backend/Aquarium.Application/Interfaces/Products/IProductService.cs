@@ -9,8 +9,8 @@ namespace Aquarium.Application.Interfaces.Products
     public interface IProductService
     {
         Task<ProductResponse> CreateProductAsync(CreateProductRequest request, Guid userId);
-        Task<ProductResponse> GetProductByIdAsync(Guid id);
-        Task<PagedResult<ProductResponse>> GetProductsAsync(GetProductsFilter filter);
+        Task<ProductResponse> GetProductByIdAsync(Guid id, Guid? userId = null);
+        Task<PagedResult<ProductResponse>> GetProductsAsync(GetProductsFilter filter, Guid? userId = null);
         Task<PagedResult<ProductResponse>> GetMyStoreProductsAsync(Guid storeId, Guid userId, GetProductsFilter filter);
         Task DeleteProductAsync(Guid productId, Guid userId);
         Task<ProductApprovalResponse> ApproveProductAsync(Guid productId, Guid adminUserId, ApproveProductRequest request);

@@ -24,6 +24,7 @@ namespace Aquarium.Application.DTOs.Products
     int? AvailableFishCount,
     decimal? MinPrice,
     decimal? MaxPrice,
-    List<FishInstanceResponse>? FishInstances
+    List<FishInstanceResponse>? FishInstances,
+    bool IsOwner = false
     );
 }

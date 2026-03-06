@@ -56,8 +56,16 @@ namespace Aquarium.Application.Services
         }
 
         // Helper Mapping
-        private async Task<ProductResponse> MapToResponseAsync(Product p)
+        private async Task<ProductResponse> MapToResponseAsync(Product p, Guid? currentUserId = null)
         {
+            // Check if current user is owner of the store
+            bool isOwner = false;
+            if (currentUserId.HasValue)
+            {
+                var storeOwnId = await _storeRepository.GetStoreIdByUserIdAsync(currentUserId.Value);
+                isOwner = p.StoreId == storeOwnId;
+            }
+
             // Use precomputed rating values
             double averageRating = p.AverageRating;
             int totalReviews = p.TotalReviews;
@@ -109,7 +117,8 @@ namespace Aquarium.Application.Services
                     availableFishCount,
                     priceRange.min,
                     priceRange.max,
-                    fishResponses
+                    fishResponses,
+                    isOwner
                 );
             }
             else
@@ -137,7 +146,8 @@ namespace Aquarium.Application.Services
                     null, // AvailableFishCount
                     null, // MinPrice
                     null, // MaxPrice
-                    null  // FishInstances
+                    null,  // FishInstances
+                    isOwner
                 );
             }
         }
@@ -228,7 +238,7 @@ namespace Aquarium.Application.Services
 
             if (fullProduct == null) throw new Exception("Error creating product.");
 
-            return await MapToResponseAsync(fullProduct);
+            return await MapToResponseAsync(fullProduct, userId);
         }
 
         public async Task DeleteProductAsync(Guid productId, Guid userId)
@@ -256,21 +266,26 @@ namespace Aquarium.Application.Services
             await _productRepository.SaveChangesAsync();
         }
 
-        public async Task<ProductResponse> GetProductByIdAsync(Guid id)
+        public async Task<ProductResponse> GetProductByIdAsync(Guid id, Guid? userId = null)
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null) throw new NotFoundException("Product", id);
-            return await MapToResponseAsync(product);
+            return await MapToResponseAsync(product, userId);
         }
 
-        public async Task<PagedResult<ProductResponse>> GetProductsAsync(GetProductsFilter filter)
+        public async Task<PagedResult<ProductResponse>> GetProductsAsync(GetProductsFilter filter, Guid? userId = null)
         {
+            if (userId.HasValue && !filter.ExcludedStoreId.HasValue)
+            {
+                filter.ExcludedStoreId = await _storeRepository.GetStoreIdByUserIdAsync(userId.Value);
+            }
+
             var pagedData = await _productRepository.GetProductsByFilterAsync(filter);
 
             var productResponses = new List<ProductResponse>();
             foreach (var product in pagedData.Items)
             {
-                productResponses.Add(await MapToResponseAsync(product));
+                productResponses.Add(await MapToResponseAsync(product, userId));
             }
 
             return new PagedResult<ProductResponse>(
@@ -294,7 +309,7 @@ namespace Aquarium.Application.Services
             var productResponses = new List<ProductResponse>();
             foreach (var product in pagedData.Items)
             {
-                productResponses.Add(await MapToResponseAsync(product));
+                productResponses.Add(await MapToResponseAsync(product, userId));
             }
 
             return new PagedResult<ProductResponse>(

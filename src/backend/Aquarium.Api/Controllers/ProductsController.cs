@@ -29,7 +29,14 @@ namespace Aquarium.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetProducts([FromQuery] GetProductsFilter filter)
         {
-            var pagedData = await _productService.GetProductsAsync(filter);
+            Guid? currentUserId = null;
+            try
+            {
+                currentUserId = GetCurrentUserId();
+            }
+            catch (UnauthorizedAccessException) { /* Guest user */ }
+
+            var pagedData = await _productService.GetProductsAsync(filter, currentUserId);
 
             return Ok(new ApiResponse<PagedResult<ProductResponse>>(pagedData));
         }
@@ -38,7 +45,14 @@ namespace Aquarium.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetProductById(Guid id)
         {
-            var product = await _productService.GetProductByIdAsync(id);
+            Guid? currentUserId = null;
+            try
+            {
+                currentUserId = GetCurrentUserId();
+            }
+            catch (UnauthorizedAccessException) { /* Guest user */ }
+
+            var product = await _productService.GetProductByIdAsync(id, currentUserId);
             return Ok(new ApiResponse<ProductResponse>(product));
         }
 

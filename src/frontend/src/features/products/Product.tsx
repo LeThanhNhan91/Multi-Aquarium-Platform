@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Fish, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
@@ -27,11 +27,29 @@ export default function ProductsList() {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+
+  // A key that changes when any filter/search/sort changes
+  const filterKey = useMemo(
+    () => JSON.stringify({ debouncedSearchQuery, filters, sortBy }),
+    [debouncedSearchQuery, filters, sortBy],
+  );
+  const prevFilterKey = useRef(filterKey);
+
+  // Reset pagination whenever filters / search / sort change
+  useEffect(() => {
+    if (filterKey !== prevFilterKey.current) {
+      prevFilterKey.current = filterKey;
+      setPageIndex(1);
+      setAllProducts([]);
+    }
+  }, [filterKey]);
 
   // Construct API parameters derived from state
   const apiParams: ProductParams = useMemo(() => {
     const params: ProductParams = {
-      pageIndex: 1,
+      pageIndex,
       pageSize: 10,
       Keyword: debouncedSearchQuery || undefined,
       MinPrice: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
@@ -74,28 +92,36 @@ export default function ProductsList() {
     }
 
     return params;
-  }, [debouncedSearchQuery, filters, sortBy]);
+  }, [debouncedSearchQuery, filters, sortBy, pageIndex]);
 
-  const { data: productData, isLoading } = useGetAllProductsQuery(apiParams);
+  const { data: productData, isLoading, isFetching } = useGetAllProductsQuery(apiParams);
 
-  // Map API response to UI model
-  const products: Product[] = useMemo(() => {
-    if (!productData?.data?.items) return [];
-
-    return productData.data.items.map((item) => ({
+  // Accumulate products as pages load; replace on page 1 (filter reset)
+  useEffect(() => {
+    if (!productData?.data?.items) return;
+    const newItems: Product[] = productData.data.items.map((item) => ({
       id: item.id,
       slug: item.slug,
       name: item.name,
       shop: item.storeName,
       price: item.basePrice ?? item.minPrice ?? 0,
-      // originalPrice: item.originalPrice,
       rating: item.averageRating ?? 0,
       reviews: item.totalReviews ?? 0,
       image: item.images?.[0] || "/images/product-placeholder.jpg",
       category: item.categoryName,
-      // tag: undefined,
     }));
+    setAllProducts((prev) =>
+      productData.data.pageIndex === 1 ? newItems : [...prev, ...newItems],
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productData]);
+
+  const totalCount = productData?.data?.totalCount ?? 0;
+  const hasMore = allProducts.length < totalCount;
+
+  const fetchMoreProducts = () => {
+    if (!isFetching && hasMore) setPageIndex((p) => p + 1);
+  };
 
   const handleResetFilters = () => {
     setFilters(defaultFilters);
@@ -142,9 +168,9 @@ export default function ProductsList() {
             <div className="flex-1">
               <div className="flex items-center justify-between gap-4 mb-8">
                 <div className="text-sm text-muted-foreground">
-                  {products.length === 0
+                  {allProducts.length === 0
                     ? ""
-                    : `${productData?.data?.totalCount ?? products.length} sản phẩm`}
+                    : `${totalCount} sản phẩm`}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -189,7 +215,12 @@ export default function ProductsList() {
                 </div>
               </div>
 
-              <ProductsGrid products={products} isLoading={isLoading} />
+              <ProductsGrid
+                products={allProducts}
+                isLoading={isLoading && pageIndex === 1}
+                fetchMoreProducts={fetchMoreProducts}
+                hasMore={hasMore}
+              />
             </div>
           </div>
         </div>

@@ -27,10 +27,9 @@ export default function ProductDetailPage({ productId }: Props) {
   const [selectedFish, setSelectedFish] = useState<FishInstance | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
 
-  const galleryImages =
-    selectedFish?.images?.length
-      ? selectedFish.images
-      : product?.images ?? [];
+  const galleryImages = selectedFish?.images?.length
+    ? selectedFish.images
+    : (product?.images ?? []);
 
   const videoUrl = selectedFish?.videoUrl ?? null;
   const isLiveFish = product?.productType === "LiveFish";
@@ -94,7 +93,9 @@ export default function ProductDetailPage({ productId }: Props) {
                 <ProductInfo
                   product={product}
                   selectedFish={selectedFish}
-                  onContactStore={() => setChatOpen(true)}
+                  onContactStore={
+                    product.isOwner ? undefined : () => setChatOpen(true)
+                  }
                 />
 
                 <PurchaseActions
@@ -103,12 +104,15 @@ export default function ProductDetailPage({ productId }: Props) {
                   isLiveFish={isLiveFish}
                   availableStock={product.availableStock ?? 0}
                   selectedFish={selectedFish}
+                  isOwner={product.isOwner}
                 />
 
                 <StoreInfo
                   storeName={product.storeName}
                   storeId={product.storeId}
-                  onContactStore={() => setChatOpen(true)}
+                  onContactStore={
+                    product.isOwner ? undefined : () => setChatOpen(true)
+                  }
                 />
               </div>
             </div>
@@ -122,6 +126,7 @@ export default function ProductDetailPage({ productId }: Props) {
                 availableStock={product.availableStock ?? 0}
                 selectedFish={selectedFish}
                 isSticky
+                isOwner={product.isOwner}
               />
             </div>
 
@@ -151,4 +156,3 @@ export default function ProductDetailPage({ productId }: Props) {
     </>
   );
 }
-

@@ -185,15 +185,13 @@ namespace Aquarium.Application.Services
 
             var myRoles = await _storeRepository.GetUserRolesInStoresAsync(currentUserId, storeIds);
 
+            var storeCounts = await _storeRepository.GetStoreCountsAsync(storeIds);
+
             foreach (var store in pagedData.Items)
             {
                 string role = myRoles.ContainsKey(store.Id) ? myRoles[store.Id] : "Guest";
 
-                double averageRating = store.AverageRating;
-                int totalReviews = store.TotalReviews;
-
-                int productCount = store.Products?.Count ?? 0;
-                int orderCount = store.Orders?.Count ?? 0;
+                var (productCount, orderCount) = storeCounts.GetValueOrDefault(store.Id, (0, 0));
 
                 response.Add(new StoreResponse(
                     store.Id,
@@ -201,8 +199,8 @@ namespace Aquarium.Application.Services
                     store.Slug,
                     store.Status,
                     role,
-                    Math.Round(averageRating, 1),
-                    totalReviews,
+                    Math.Round(store.AverageRating, 1),
+                    store.TotalReviews,
                     store.PhoneNumber,
                     store.Address,
                     store.DeliveryArea,
@@ -400,20 +398,17 @@ namespace Aquarium.Application.Services
                 throw new NotFoundException("Store", storeId);
             }
 
-            double averageRating = store.AverageRating;
-            int totalReviews = store.TotalReviews;
-
-            int productCount = store.Products?.Count ?? 0;
-            int orderCount = store.Orders?.Count ?? 0;
+            var counts = await _storeRepository.GetStoreCountsAsync([storeId]);
+            var (productCount, orderCount) = counts.GetValueOrDefault(storeId, (0, 0));
 
             return new StoreResponse(
                 store.Id,
                 store.Name,
                 store.Slug,
                 store.Status,
-                "Guest", // Role not relevant for public view
-                Math.Round(averageRating, 1),
-                totalReviews,
+                "Guest",
+                Math.Round(store.AverageRating, 1),
+                store.TotalReviews,
                 store.PhoneNumber,
                 store.Address,
                 store.DeliveryArea,

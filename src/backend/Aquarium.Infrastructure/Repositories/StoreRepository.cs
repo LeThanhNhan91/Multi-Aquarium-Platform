@@ -135,6 +135,29 @@ namespace Aquarium.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Dictionary<Guid, (int ProductCount, int OrderCount)>> GetStoreCountsAsync(List<Guid> storeIds)
+        {
+            var productCounts = await _context.Products
+                .Where(p => storeIds.Contains(p.StoreId))
+                .GroupBy(p => p.StoreId)
+                .Select(g => new { StoreId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.StoreId, x => x.Count);
+
+            var orderCounts = await _context.Orders
+                .Where(o => storeIds.Contains(o.StoreId))
+                .GroupBy(o => o.StoreId)
+                .Select(g => new { StoreId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.StoreId, x => x.Count);
+
+            return storeIds.ToDictionary(
+                id => id,
+                id => (
+                    ProductCount: productCounts.GetValueOrDefault(id, 0),
+                    OrderCount: orderCounts.GetValueOrDefault(id, 0)
+                )
+            );
+        }
+
         public async Task<List<Store>> GetStoresByUserIdAsync(Guid userId)
         {
             var storeIds = await _context.StoreUsers

@@ -20,6 +20,7 @@ import { ChatMessage } from "@/types/chat.type";
 import { cn } from "@/utils/utils";
 import { format } from "date-fns";
 
+
 function parseUtcDate(ts: string): Date {
   return new Date(ts.endsWith("Z") ? ts : ts + "Z");
 }
@@ -208,124 +209,71 @@ export function ChatDrawer({ open, onClose, storeId, storeName }: Props) {
   };
 
   return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-md flex flex-col p-0 gap-0"
-      >
-        {/* Header */}
-        <SheetHeader className="px-4 pt-4 pb-3 border-b border-border/50 space-y-0">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <MessageSquare className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <SheetTitle className="text-base font-semibold text-foreground">
-                {storeName}
-              </SheetTitle>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <div
-                  className={cn(
-                    "h-2 w-2 rounded-full",
-                    isConnected ? "bg-green-500" : "bg-muted-foreground/50",
-                  )}
-                />
-                <span className="text-xs text-muted-foreground">
-                  {isConnected ? "Đang hoạt động" : "Đang kết nối..."}
-                </span>
-              </div>
-            </div>
-          </div>
+    <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent side="right" className="w-full sm:w-105 flex flex-col p-0">
+        <SheetHeader className="px-4 py-3 border-b flex-row items-center gap-2 space-y-0">
+          <MessageSquare className="h-5 w-5 text-primary shrink-0" />
+          <SheetTitle className="flex-1 text-left">{storeName}</SheetTitle>
+          {isConnected ? (
+            <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" />
+          ) : (
+            <WifiOff className="h-4 w-4 text-muted-foreground shrink-0" />
+          )}
         </SheetHeader>
 
-        {/* Messages */}
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-0"
-        >
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground py-16 gap-3">
-              <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
-                <MessageSquare className="h-7 w-7 text-primary/60" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">
-                  Liên hệ với {storeName}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Gửi tin nhắn để hỏi về sản phẩm hoặc đặt hàng
-                </p>
-              </div>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+          {messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3 pt-16">
+              <MessageSquare className="h-12 w-12 opacity-20" />
+              <p className="text-sm text-center">Bắt đầu cuộc trò chuyện với<br /><span className="font-medium">{storeName}</span></p>
             </div>
-          ) : (
-            messages.map((msg) => (
+          )}
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={cn(
+                "flex flex-col gap-1 max-w-[80%]",
+                msg.isOwn ? "ml-auto items-end" : "items-start",
+              )}
+            >
+              <span className="text-xs text-muted-foreground">{msg.senderName}</span>
               <div
-                key={msg.id}
                 className={cn(
-                  "flex",
-                  msg.isOwn ? "justify-end" : "justify-start",
+                  "rounded-2xl px-4 py-2 text-sm wrap-break-word",
+                  msg.isOwn
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground",
                 )}
               >
-                <div
-                  className={cn(
-                    "max-w-[78%] rounded-2xl px-3.5 py-2.5 text-sm wrap-break-word",
-                    msg.isOwn
-                      ? "bg-primary text-primary-foreground rounded-br-sm"
-                      : "bg-secondary text-secondary-foreground rounded-bl-sm",
-                  )}
-                >
-                  {!msg.isOwn && (
-                    <p className="text-xs font-semibold mb-1 opacity-60">
-                      {msg.senderName}
-                    </p>
-                  )}
-                  <p className="leading-relaxed whitespace-pre-wrap">
-                    {msg.content}
-                  </p>
-                  <p
-                    className={cn(
-                      "text-[10px] mt-1 opacity-60",
-                      msg.isOwn ? "text-right" : "text-left",
-                    )}
-                  >
-                    {format(parseUtcDate(msg.sentAt), "HH:mm")}
-                  </p>
-                </div>
+                {msg.content}
               </div>
-            ))
-          )}
+              <span className="text-xs text-muted-foreground">
+                {format(parseUtcDate(msg.sentAt), "HH:mm")}
+              </span>
+            </div>
+          ))}
         </div>
 
-        {/* Input area */}
-        <div className="px-4 py-3 border-t border-border/50 bg-background shrink-0">
-          {!isConnected && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-              <WifiOff className="h-3.5 w-3.5" />
-              <span>Mất kết nối – đang thử lại...</span>
-            </div>
-          )}
-          <div className="flex gap-2">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Nhập tin nhắn..."
-              className="flex-1 rounded-xl border-border/60 bg-secondary/30 focus-visible:ring-primary/50"
-              disabled={!isConnected}
-            />
-            <Button
-              onClick={sendMessage}
-              disabled={!input.trim() || !isConnected || isSending}
-              size="icon"
-              className="rounded-xl shrink-0"
-            >
-              {isSending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+        <div className="p-4 border-t flex gap-2">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Nhập tin nhắn..."
+            disabled={!isConnected || isSending}
+            className="flex-1"
+          />
+          <Button
+            size="icon"
+            onClick={sendMessage}
+            disabled={!isConnected || isSending || !input.trim()}
+          >
+            {isSending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
         </div>
       </SheetContent>
     </Sheet>

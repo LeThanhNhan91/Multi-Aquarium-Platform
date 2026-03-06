@@ -17,7 +17,11 @@ interface ProductInfoProps {
   onContactStore?: () => void;
 }
 
-export function ProductInfo({ product, selectedFish, onContactStore }: ProductInfoProps) {
+export function ProductInfo({
+  product,
+  selectedFish,
+  onContactStore,
+}: ProductInfoProps) {
   const isLiveFish = product.productType === "LiveFish";
 
   // Price display logic
@@ -69,9 +73,15 @@ export function ProductInfo({ product, selectedFish, onContactStore }: ProductIn
     return (
       <button
         onClick={onContactStore}
-        className="text-xl text-primary hover:underline font-medium transition-colors"
+        disabled={!onContactStore}
+        className={cn(
+          "text-xl font-medium transition-colors",
+          onContactStore
+            ? "text-primary hover:underline"
+            : "text-muted-foreground cursor-not-allowed",
+        )}
       >
-        Liên hệ để biết giá
+        {onContactStore ? "Liên hệ để biết giá" : "Sản phẩm của bạn"}
       </button>
     );
   };

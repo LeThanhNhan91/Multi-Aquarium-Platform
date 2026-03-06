@@ -15,6 +15,7 @@ interface PurchaseActionsProps {
   availableStock: number;
   selectedFish: FishInstance | null;
   isSticky?: boolean;
+  isOwner?: boolean;
 }
 
 export function PurchaseActions({
@@ -24,6 +25,7 @@ export function PurchaseActions({
   availableStock,
   selectedFish,
   isSticky = false,
+  isOwner = false,
 }: PurchaseActionsProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
@@ -31,15 +33,16 @@ export function PurchaseActions({
   const [isAdding, setIsAdding] = useState(false);
 
   // For live fish: enabled only when a fish is selected and it's available
-  const canBuy = isLiveFish
-    ? selectedFish?.status === "Available"
-    : availableStock > 0;
+  const canBuy =
+    (isLiveFish ? selectedFish?.status === "Available" : availableStock > 0) &&
+    !isOwner;
 
   const handleQuantityChange = (value: number) => {
     setQuantity(Math.max(1, Math.min(value, availableStock || 1)));
   };
 
   const handleAddToCart = async () => {
+    if (isOwner) return;
     setIsAdding(true);
     try {
       const params = new URLSearchParams({
@@ -81,6 +84,16 @@ export function PurchaseActions({
           isSticky && "sm:rounded-2xl",
         )}
       >
+        {/* Ownership Warning */}
+        {isOwner && (
+          <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+            <p className="text-xs font-semibold text-primary">
+              ℹ️ Đây là sản phẩm của bạn. Bạn không thể tự mua sản phẩm của
+              chính mình.
+            </p>
+          </div>
+        )}
+
         {/* Quantity (only for non-live-fish) */}
         {!isLiveFish && (
           <div className="space-y-3">
@@ -89,7 +102,7 @@ export function PurchaseActions({
               <button
                 onClick={() => handleQuantityChange(quantity - 1)}
                 className="p-1 hover:bg-secondary rounded transition-colors"
-                disabled={quantity <= 1}
+                disabled={quantity <= 1 || isOwner}
               >
                 <Minus className="h-4 w-4 text-foreground/70" />
               </button>
@@ -102,11 +115,12 @@ export function PurchaseActions({
                 className="w-12 bg-transparent text-center font-semibold text-foreground outline-none"
                 min="1"
                 max={availableStock}
+                disabled={isOwner}
               />
               <button
                 onClick={() => handleQuantityChange(quantity + 1)}
                 className="p-1 hover:bg-secondary rounded transition-colors"
-                disabled={quantity >= availableStock}
+                disabled={quantity >= availableStock || isOwner}
               >
                 <Plus className="h-4 w-4 text-foreground/70" />
               </button>
@@ -139,16 +153,22 @@ export function PurchaseActions({
             {isLiveFish ? (
               <>
                 <Fish className="h-5 w-5 mr-2" />
-                {!selectedFish
-                  ? "Chọn cá trước"
-                  : selectedFish.status === "Available"
-                    ? "Đặt mua ngay"
-                    : "Cá không khả dụng"}
+                {isOwner
+                  ? "Sản phẩm của bạn"
+                  : !selectedFish
+                    ? "Chọn cá trước"
+                    : selectedFish.status === "Available"
+                      ? "Đặt mua ngay"
+                      : "Cá không khả dụng"}
               </>
             ) : (
               <>
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                {availableStock > 0 ? "Thêm vào giỏ hàng" : "Hết hàng"}
+                {isOwner
+                  ? "Sản phẩm của bạn"
+                  : availableStock > 0
+                    ? "Thêm vào giỏ hàng"
+                    : "Hết hàng"}
               </>
             )}
           </Button>
@@ -162,6 +182,7 @@ export function PurchaseActions({
                 isWishlisted &&
                   "bg-red-500/10 text-red-500 border-red-500/30 hover:bg-red-500/20",
               )}
+              disabled={isOwner}
             >
               <Heart
                 className={cn("h-5 w-5", isWishlisted && "fill-current")}

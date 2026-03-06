@@ -11,13 +11,16 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { ArrowUpRightIcon, SearchAlertIcon } from "lucide-react";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 interface ProductsGridProps {
   products: Product[];
   isLoading?: boolean;
+  fetchMoreProducts?: () => void;
+  hasMore?: boolean;
 }
 
-export function ProductsGrid({ products, isLoading }: ProductsGridProps) {
+export function ProductsGrid({ products, isLoading, fetchMoreProducts, hasMore }: ProductsGridProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -65,10 +68,32 @@ export function ProductsGrid({ products, isLoading }: ProductsGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
-    </div>
+    <InfiniteScroll
+      dataLength={products.length}
+      next={fetchMoreProducts ?? (() => {})}
+      hasMore={hasMore ?? false}
+      loader={
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-2xl border border-border/50 bg-card overflow-hidden animate-pulse"
+            >
+              <div className="aspect-4/3 bg-muted" />
+              <div className="p-5 space-y-3">
+                <div className="h-4 bg-muted rounded w-3/4" />
+                <div className="h-4 bg-muted rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      }
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+    </InfiniteScroll>
   );
 }

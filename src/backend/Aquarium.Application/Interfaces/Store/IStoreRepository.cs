@@ -25,6 +25,7 @@ namespace Aquarium.Application.Interfaces
         Task<List<Guid>> GetStoreStaffIdsAsync(Guid storeId);
         Task<Guid?> GetStoreIdByUserIdAsync(Guid userId);
         Task<List<StoreEntity>> GetStoresByUserIdAsync(Guid userId);
+        Task<Dictionary<Guid, (int ProductCount, int OrderCount)>> GetStoreCountsAsync(List<Guid> storeIds);
         Task UpdateStoreRatingAsync(Guid storeId);
     }
 }

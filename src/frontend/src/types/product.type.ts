@@ -35,6 +35,7 @@ export interface ProductItem {
   minPrice?: number | null;
   maxPrice?: number | null;
   fishInstances?: FishInstance[];
+  isOwner?: boolean;
 }
 
 export interface CreateProductRequest {

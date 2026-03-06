@@ -22,8 +22,55 @@ import { tokenCookies } from "@/utils/cookies";
 import { cn } from "@/utils/utils";
 import { format } from "date-fns";
 import { useAppDispatch } from "@/libs/redux/hook";
+import { List, RowComponentProps } from "react-window";
 
-// Ensures timestamps without 'Z' are treated as UTC before formatting
+type ConvRowProps = {
+  conversations: ConversationDto[];
+  onSelect: (id: string) => void;
+};
+
+const ConversationRow = ({
+  index,
+  style,
+  conversations,
+  onSelect,
+}: RowComponentProps<ConvRowProps>) => {
+  const conv = conversations[index];
+  return (
+    <button
+      style={style}
+      onClick={() => onSelect(conv.id)}
+      className="w-full flex items-start gap-3 px-4 py-3.5 hover:bg-muted/50 transition-colors text-left border-b border-border/50"
+    >
+      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+        <User className="h-5 w-5 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-0.5">
+          <span className="text-sm font-semibold text-foreground truncate">
+            {conv.partnerName}
+          </span>
+          {conv.lastMessageAt && (
+            <span className="text-[10px] text-muted-foreground shrink-0 ml-2">
+              {format(parseUtcDate(conv.lastMessageAt), "HH:mm")}
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground truncate">
+          {conv.lastMessage || "Bắt đầu cuộc trò chuyện"}
+        </p>
+      </div>
+      {conv.unreadCount > 0 && (
+        <div className="h-5 min-w-5 rounded-full bg-primary flex items-center justify-center px-1.5 shrink-0 mt-0.5">
+          <span className="text-[10px] font-bold text-primary-foreground">
+            {conv.unreadCount}
+          </span>
+        </div>
+      )}
+    </button>
+  );
+};
+
 function parseUtcDate(ts: string): Date {
   return new Date(ts.endsWith("Z") ? ts : ts + "Z");
 }
@@ -388,7 +435,7 @@ export function ChatInbox({ open, onClose }: ChatInboxProps) {
               </div>
             </SheetHeader>
 
-            <div className="flex-1 overflow-y-auto divide-y divide-border/50">
+            <div className="flex-1 overflow-hidden">
               {isLoading && (
                 <div className="flex items-center justify-center py-16">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -407,39 +454,18 @@ export function ChatInbox({ open, onClose }: ChatInboxProps) {
                 </div>
               )}
 
-              {conversations?.map((conv) => (
-                <button
-                  key={conv.id}
-                  onClick={() => setSelectedConversationId(conv.id)}
-                  className="w-full flex items-start gap-3 px-4 py-3.5 hover:bg-muted/50 transition-colors text-left"
-                >
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <User className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-sm font-semibold text-foreground truncate">
-                        {conv.partnerName}
-                      </span>
-                      {conv.lastMessageAt && (
-                        <span className="text-[10px] text-muted-foreground shrink-0 ml-2">
-                          {format(parseUtcDate(conv.lastMessageAt), "HH:mm")}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {conv.lastMessage || "Bắt đầu cuộc trò chuyện"}
-                    </p>
-                  </div>
-                  {conv.unreadCount > 0 && (
-                    <div className="h-5 min-w-5 rounded-full bg-primary flex items-center justify-center px-1.5 shrink-0 mt-0.5">
-                      <span className="text-[10px] font-bold text-primary-foreground">
-                        {conv.unreadCount}
-                      </span>
-                    </div>
-                  )}
-                </button>
-              ))}
+              {conversations && conversations.length > 0 && (
+                <List<ConvRowProps>
+                  rowCount={conversations.length}
+                  rowHeight={72}
+                  style={{ height: "calc(100vh - 80px)" }}
+                  rowComponent={ConversationRow}
+                  rowProps={{
+                    conversations,
+                    onSelect: setSelectedConversationId,
+                  }}
+                />
+              )}
             </div>
           </>
         )}
