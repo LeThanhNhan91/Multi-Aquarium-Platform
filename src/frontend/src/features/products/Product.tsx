@@ -59,9 +59,9 @@ export default function ProductsList() {
         filters.selectedRatings.length > 0
           ? Math.min(...filters.selectedRatings)
           : undefined,
-      CategoryId:
+      CategoryIds:
         filters.selectedCategories.length > 0
-          ? filters.selectedCategories[0]
+          ? filters.selectedCategories
           : undefined,
     };
 
@@ -94,7 +94,11 @@ export default function ProductsList() {
     return params;
   }, [debouncedSearchQuery, filters, sortBy, pageIndex]);
 
-  const { data: productData, isLoading, isFetching } = useGetAllProductsQuery(apiParams);
+  const {
+    data: productData,
+    isLoading,
+    isFetching,
+  } = useGetAllProductsQuery(apiParams);
 
   // Accumulate products as pages load; replace on page 1 (filter reset)
   useEffect(() => {
@@ -113,7 +117,7 @@ export default function ProductsList() {
     setAllProducts((prev) =>
       productData.data.pageIndex === 1 ? newItems : [...prev, ...newItems],
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productData]);
 
   const totalCount = productData?.data?.totalCount ?? 0;
@@ -132,7 +136,7 @@ export default function ProductsList() {
     <>
       <FishLoading isLoading={isLoading} />
       <main className="min-h-screen bg-background">
-        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50">
+        <header className="sticky top-15 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50">
           <div className="mx-auto max-w-7xl px-6 py-4">
             <div className="flex items-center justify-between gap-4 mb-4">
               <Link
@@ -147,14 +151,14 @@ export default function ProductsList() {
           </div>
         </header>
         <div className="mx-auto max-w-7xl px-6 py-8">
-          <div className="mb-8">
+          {/* <div className="mb-8">
             <h1 className="text-3xl font-bold  text-foreground mb-2">
               Sản Phẩm
             </h1>
             <p className="text-muted-foreground">
               Tìm kiếm cá, bể, phụ kiện từ các cửa hàng tốt nhất
             </p>
-          </div>
+          </div> */}
 
           <div className="flex gap-8">
             <div className="hidden md:block w-80 shrink-0">
@@ -168,9 +172,7 @@ export default function ProductsList() {
             <div className="flex-1">
               <div className="flex items-center justify-between gap-4 mb-8">
                 <div className="text-sm text-muted-foreground">
-                  {allProducts.length === 0
-                    ? ""
-                    : `${totalCount} sản phẩm`}
+                  {allProducts.length === 0 ? "" : `${totalCount} sản phẩm`}
                 </div>
 
                 <div className="flex items-center gap-2">

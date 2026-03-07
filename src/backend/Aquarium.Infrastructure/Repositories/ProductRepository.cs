@@ -68,16 +68,19 @@ namespace Aquarium.Infrastructure.Repositories
                                          p.Description.Contains(filter.Keyword));
             }
 
-            if (filter.CategoryId.HasValue)
+            if (filter.CategoryIds != null && filter.CategoryIds.Any())
             {
-                // Get all descendant category IDs
-                var descendantIds = await _categoryRepository.GetAllDescendantIdsAsync(filter.CategoryId.Value);
+                var allCategoryIds = new HashSet<Guid>();
+                foreach (var catId in filter.CategoryIds)
+                {
+                    allCategoryIds.Add(catId);
+                    var descendantIds = await _categoryRepository.GetAllDescendantIdsAsync(catId);
+                    foreach (var descId in descendantIds)
+                    {
+                        allCategoryIds.Add(descId);
+                    }
+                }
                 
-                // Include the parent category + all descendants
-                var allCategoryIds = new List<Guid> { filter.CategoryId.Value };
-                allCategoryIds.AddRange(descendantIds);
-                
-                // Filter products in any of these categories
                 query = query.Where(p => allCategoryIds.Contains(p.CategoryId));
             }
 
