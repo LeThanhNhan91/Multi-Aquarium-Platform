@@ -549,16 +549,34 @@ namespace Aquarium.Application.Services
             }
 
             // Status Transition Logic
-            if (order.Status == OrderStatus.Completed || order.Status == OrderStatus.Cancelled)
-            {
-                throw new BadRequestException($"Cannot update status of a {order.Status} order.");
-            }
+            var statusOrder = new List<string> 
+            { 
+                OrderStatus.Pending, 
+                OrderStatus.Confirmed, 
+                OrderStatus.Processing, 
+                OrderStatus.Shipping, 
+                OrderStatus.Completed 
+            };
+
+            int currentIndex = statusOrder.IndexOf(order.Status);
+            int newIndex = statusOrder.IndexOf(request.Status);
 
             // Special handling for Cancellation
             if (request.Status == OrderStatus.Cancelled)
             {
+                // Can only cancel if not already Shipping or Completed
+                if (currentIndex >= statusOrder.IndexOf(OrderStatus.Shipping))
+                {
+                    throw new BadRequestException($"Cannot cancel an order that is already {order.Status}.");
+                }
                 await CancelOrderAsync(orderId, userId, "Cancelled by Store: " + request.Note);
                 return;
+            }
+
+            // Normal transition: Must move forward
+            if (newIndex <= currentIndex)
+            {
+                throw new BadRequestException($"Cannot move order status backwards from {order.Status} to {request.Status}.");
             }
 
             order.Status = request.Status;

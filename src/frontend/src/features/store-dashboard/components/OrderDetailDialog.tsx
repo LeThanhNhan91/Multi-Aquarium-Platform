@@ -62,6 +62,29 @@ export function OrderDetailDialog({
 
   const order = response?.data;
 
+  const getAvailableTransitions = (currentStatus: string): OrderStatus[] => {
+    const statusOrder: OrderStatus[] = [
+      "Pending",
+      "Confirmed",
+      "Processing",
+      "Shipping",
+      "Completed",
+    ];
+    const currentIndex = statusOrder.indexOf(currentStatus as OrderStatus);
+
+    if (currentStatus === "Cancelled" || currentStatus === "Completed")
+      return [];
+
+    const forwardTransitions = statusOrder.slice(currentIndex + 1);
+
+    // Add "Cancelled" if not yet Shipping or Completed
+    if (currentIndex < statusOrder.indexOf("Shipping")) {
+      return [...forwardTransitions, "Cancelled"];
+    }
+
+    return forwardTransitions;
+  };
+
   const handleUpdateStatus = async (newStatus: OrderStatus) => {
     if (!orderId) return;
     try {
@@ -266,29 +289,27 @@ export function OrderDetailDialog({
                     onChange={(e) => setNote(e.target.value)}
                   />
                   <div className="flex flex-wrap gap-2">
-                    {statusOptions
-                      .filter((s) => s !== order.status)
-                      .map((status) => (
-                        <Button
-                          key={status}
-                          size="sm"
-                          variant={
-                            status === "Cancelled" ? "destructive" : "outline"
-                          }
-                          disabled={isUpdating}
-                          onClick={() => handleUpdateStatus(status)}
-                          className={cn(
-                            "rounded-lg text-xs font-semibold gap-1.5 h-8 px-3",
-                            status !== "Cancelled" &&
-                              "hover:bg-primary/10 hover:text-primary hover:border-primary/50",
-                          )}
-                        >
-                          {status !== "Cancelled" && (
-                            <ArrowRight className="h-3 w-3" />
-                          )}
-                          {ORDER_STATUS_LABELS[status]}
-                        </Button>
-                      ))}
+                    {getAvailableTransitions(order.status).map((status) => (
+                      <Button
+                        key={status}
+                        size="sm"
+                        variant={
+                          status === "Cancelled" ? "destructive" : "outline"
+                        }
+                        disabled={isUpdating}
+                        onClick={() => handleUpdateStatus(status)}
+                        className={cn(
+                          "rounded-lg text-xs font-semibold gap-1.5 h-8 px-3",
+                          status !== "Cancelled" &&
+                            "hover:bg-primary/10 hover:text-primary hover:border-primary/50",
+                        )}
+                      >
+                        {status !== "Cancelled" && (
+                          <ArrowRight className="h-3 w-3" />
+                        )}
+                        {ORDER_STATUS_LABELS[status]}
+                      </Button>
+                    ))}
                   </div>
                 </div>
               )}
