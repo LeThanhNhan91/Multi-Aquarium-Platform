@@ -77,12 +77,19 @@ export const baseQueryWithReauth: BaseQueryFn<
 
   if (result.error) {
     if (result.error.status === 401) {
-      api.dispatch(logout());
+      // Check if we are already logged out to prevent infinite loops
+      const state = api.getState() as RootState;
+      const isAuthenticated = state.auth.isAuthenticated;
+
+      if (isAuthenticated || tokenCookies.hasTokens()) {
+        api.dispatch(logout());
+      }
+    } else {
+      // Only show toast for other actual API errors
+      const errorMessage =
+        (result.error.data as any)?.message || "Something went wrong";
+      toast.error(errorMessage);
     }
-    // Only show toast for actual API errors
-    const errorMessage =
-      (result.error.data as any)?.message || "Something went wrong";
-    toast.error(errorMessage);
   }
 
   return result;

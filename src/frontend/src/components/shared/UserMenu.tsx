@@ -37,7 +37,7 @@ export function UserMenu({ user }: UserMenuProps) {
   const handleLogout = () => {
     dispatch(logout());
     setIsOpen(false);
-    router.push("/");
+    router.replace("/");
   };
 
   // Get initials from full name
