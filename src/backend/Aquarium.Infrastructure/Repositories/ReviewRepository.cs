@@ -211,6 +211,23 @@ namespace Aquarium.Infrastructure.Repositories
                     && o.Status == "Completed");
         }
 
+        public async Task<Guid?> GetEligibleOrderIdForReviewAsync(Guid userId, Guid productId)
+        {
+            var eligibleOrder = await _context.OrderItems
+                .Where(oi => oi.Order.CustomerId == userId 
+                    && oi.ProductId == productId 
+                    && oi.Order.Status == "Completed")
+                .Select(oi => oi.OrderId)
+                .FirstOrDefaultAsync();
+
+            if (eligibleOrder == Guid.Empty) return null;
+
+            var alreadyReviewed = await _context.ProductReviews
+                .AnyAsync(r => r.UserId == userId && r.ProductId == productId && r.OrderId == eligibleOrder);
+
+            return alreadyReviewed ? null : eligibleOrder;
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

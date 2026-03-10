@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, ZoomIn, Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Maximize,
+} from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/utils/utils";
 
@@ -66,8 +75,8 @@ export function ImageGallery({ images, videoUrl }: ImageGalleryProps) {
     );
   }
 
-  const currentSlide = slides[selected];
-  const isVideo = currentSlide.type === "video";
+  const currentSlide = slides[selected] || slides[0];
+  const isVideo = currentSlide?.type === "video";
   const isYoutube = isVideo && /youtube|youtu\.be/.test(currentSlide.src);
   const youtubeId = isYoutube
     ? currentSlide.src.match(/(?:v=|youtu\.be\/)([\w-]+)/)?.[1]
@@ -75,16 +84,14 @@ export function ImageGallery({ images, videoUrl }: ImageGalleryProps) {
 
   return (
     <div className="space-y-4">
-      {/* Main Slide */}
       <div className="relative w-full aspect-square bg-secondary/20 rounded-2xl overflow-hidden group">
-        {/* Image slide */}
         {!isVideo && (
           <Image
             src={currentSlide.src}
             alt="Product image"
             fill
             className={cn(
-              "object-cover transition-transform duration-300",
+              "transition-transform duration-300",
               zoom ? "scale-150 cursor-zoom-out" : "cursor-zoom-in",
             )}
             onClick={() => setZoom(!zoom)}
@@ -101,7 +108,6 @@ export function ImageGallery({ images, videoUrl }: ImageGalleryProps) {
           />
         )}
 
-        {/* Native video */}
         {isVideo && !isYoutube && (
           <>
             <video
@@ -113,7 +119,6 @@ export function ImageGallery({ images, videoUrl }: ImageGalleryProps) {
               onEnded={() => setIsPlaying(false)}
               playsInline
             />
-            {/* Centre play/pause */}
             <div
               className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={togglePlay}
@@ -126,23 +131,25 @@ export function ImageGallery({ images, videoUrl }: ImageGalleryProps) {
                 )}
               </div>
             </div>
-            {/* Static play button when paused */}
+
             {!isPlaying && (
-              <div
-                className="absolute inset-0 flex items-center justify-center group-hover:opacity-0 transition-opacity pointer-events-none"
-              >
+              <div className="absolute inset-0 flex items-center justify-center group-hover:opacity-0 transition-opacity pointer-events-none">
                 <div className="h-16 w-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
                   <Play className="h-7 w-7 text-white fill-white ml-1" />
                 </div>
               </div>
             )}
-            {/* Bottom controls */}
+
             <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity bg-linear-to-t from-black/60 to-transparent">
               <button
                 onClick={toggleMute}
                 className="p-1.5 rounded-lg text-white hover:bg-white/20 transition-colors"
               >
-                {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                {isMuted ? (
+                  <VolumeX className="h-4 w-4" />
+                ) : (
+                  <Volume2 className="h-4 w-4" />
+                )}
               </button>
               <button
                 onClick={() => videoRef.current?.requestFullscreen()}
@@ -154,7 +161,6 @@ export function ImageGallery({ images, videoUrl }: ImageGalleryProps) {
           </>
         )}
 
-        {/* Zoom button (images only) */}
         {!isVideo && (
           <button
             onClick={() => setZoom(!zoom)}
@@ -164,7 +170,6 @@ export function ImageGallery({ images, videoUrl }: ImageGalleryProps) {
           </button>
         )}
 
-        {/* Navigation Arrows */}
         {slides.length > 1 && (
           <>
             <button
@@ -182,13 +187,11 @@ export function ImageGallery({ images, videoUrl }: ImageGalleryProps) {
           </>
         )}
 
-        {/* Counter */}
         <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-semibold text-foreground">
           {selected + 1} / {slides.length}
         </div>
       </div>
 
-      {/* Thumbnails */}
       {slides.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-2">
           {slides.map((slide, index) => (

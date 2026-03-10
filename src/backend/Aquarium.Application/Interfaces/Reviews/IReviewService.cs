@@ -13,6 +13,7 @@ namespace Aquarium.Application.Interfaces.Reviews
         Task DeleteProductReviewAsync(Guid productId, Guid reviewId, Guid userId);
         Task<PagedResult<ReviewResponse>> GetProductReviewsAsync(Guid productId, GetReviewsFilter filter);
         Task<ReviewSummary> GetProductReviewSummaryAsync(Guid productId);
+        Task<CanReviewResponse> CanReviewProductAsync(Guid productId, Guid userId);
 
         // Store Reviews
         Task<ReviewResponse> CreateStoreReviewAsync(Guid storeId, CreateReviewRequest request, Guid userId);

@@ -56,5 +56,14 @@ namespace Aquarium.Api.Controllers
                 new ApiResponse<OrderResponse>(response, "Order created successfully")
             );
         }
+
+        [HttpPatch("{id}/status")]
+        [Authorize]
+        public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusRequest request)
+        {
+            var userId = GetCurrentUserId();
+            await _orderService.UpdateOrderStatusAsync(id, request, userId);
+            return Ok(new ApiResponse<string>("Order status updated successfully"));
+        }
     }
 }

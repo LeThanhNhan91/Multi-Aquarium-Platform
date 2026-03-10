@@ -1,5 +1,5 @@
 import { authApi } from "@/services/authApi";
-import { combineReducers } from "@reduxjs/toolkit";
+import { combineReducers, Action } from "@reduxjs/toolkit";
 import authReducer from "./features/authSlice";
 import { logout } from "./features/authSlice";
 import { productApi } from "@/services/productApi";
@@ -9,6 +9,7 @@ import { orderApi } from "@/services/orderApi";
 import { storeApi } from "@/services/storeApi";
 import { fishInstanceApi } from "@/services/fishInstanceApi";
 import { chatApi } from "@/services/chatApi";
+import { reviewApi } from "@/services/reviewApi";
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -21,6 +22,7 @@ const appReducer = combineReducers({
   [storeApi.reducerPath]: storeApi.reducer,
   [fishInstanceApi.reducerPath]: fishInstanceApi.reducer,
   [chatApi.reducerPath]: chatApi.reducer,
+  [reviewApi.reducerPath]: reviewApi.reducer,
 });
 
 export const rootReducer = (state: any, action: any) => {

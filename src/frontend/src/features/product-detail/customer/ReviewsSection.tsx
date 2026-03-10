@@ -1,60 +1,93 @@
+import { useState } from "react";
 import { Star, MessageCircle, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/utils/utils";
-
-interface ReviewItem {
-  id: string;
-  author: string;
-  rating: number;
-  title: string;
-  content: string;
-  date: string;
-  helpful: number;
-}
+import {
+  useGetProductReviewsQuery,
+  useCanReviewProductQuery,
+  useGetProductReviewSummaryQuery,
+} from "@/services/reviewApi";
+import { ReviewForm } from "./ReviewForm";
+import { useSelector } from "react-redux";
+import { RootState } from "@/libs/redux/store";
 
 interface ReviewsSectionProps {
-  averageRating: number;
-  totalReviews: number;
+  productId: string;
+  initialAverageRating: number;
+  initialTotalReviews: number;
 }
 
-const mockReviews: ReviewItem[] = [
-  {
-    id: "1",
-    author: "Nguyễn Văn A",
-    rating: 5,
-    title: "Sản phẩm tuyệt vời!",
-    content:
-      "Cá rất khỏe mạnh, giao hàng nhanh chóng. Rất hài lòng với chất lượng sản phẩm.",
-    date: "2024-02-20",
-    helpful: 45,
-  },
-  {
-    id: "2",
-    author: "Trần Thị B",
-    rating: 4,
-    title: "Tốt nhưng có thể tốt hơn",
-    content:
-      "Sản phẩm chất lượng, nhưng đóng gói có thể cẩn thận hơn một chút.",
-    date: "2024-02-15",
-    helpful: 12,
-  },
-];
-
-const ratingDistribution = [
-  { rating: 5, count: 1842, percentage: 65 },
-  { rating: 4, count: 580, percentage: 21 },
-  { rating: 3, count: 180, percentage: 8 },
-  { rating: 2, count: 50, percentage: 3 },
-  { rating: 1, count: 30, percentage: 1 },
-];
-
 export function ReviewsSection({
-  averageRating,
-  totalReviews,
+  productId,
+  initialAverageRating,
+  initialTotalReviews,
 }: ReviewsSectionProps) {
+  const [pageIndex, setPageIndex] = useState(1);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+  const { data: reviewsResponse, isFetching: isReviewsLoading } =
+    useGetProductReviewsQuery({
+      productId,
+      filter: {
+        pageIndex,
+        pageSize: 5,
+        sortBy: "CreatedAt",
+        isDescending: true,
+      },
+    });
+
+  const { data: summaryResponse } = useGetProductReviewSummaryQuery(productId);
+  const { data: canReviewResponse } = useCanReviewProductQuery(productId, {
+    skip: !isAuthenticated,
+  });
+
+  const summary = summaryResponse?.data;
+  const reviews = reviewsResponse?.data?.items ?? [];
+  const totalCount = reviewsResponse?.data?.totalCount ?? initialTotalReviews;
+  const averageRating = summary?.averageRating ?? initialAverageRating;
+
+  const ratingDistribution = [
+    {
+      rating: 5,
+      count: summary?.fiveStarCount ?? 0,
+      percentage: summary
+        ? (summary.fiveStarCount / summary.totalReviews) * 100
+        : 0,
+    },
+    {
+      rating: 4,
+      count: summary?.fourStarCount ?? 0,
+      percentage: summary
+        ? (summary.fourStarCount / summary.totalReviews) * 100
+        : 0,
+    },
+    {
+      rating: 3,
+      count: summary?.threeStarCount ?? 0,
+      percentage: summary
+        ? (summary.threeStarCount / summary.totalReviews) * 100
+        : 0,
+    },
+    {
+      rating: 2,
+      count: summary?.twoStarCount ?? 0,
+      percentage: summary
+        ? (summary.twoStarCount / summary.totalReviews) * 100
+        : 0,
+    },
+    {
+      rating: 1,
+      count: summary?.oneStarCount ?? 0,
+      percentage: summary
+        ? (summary.oneStarCount / summary.totalReviews) * 100
+        : 0,
+    },
+  ];
+
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold  text-foreground">
@@ -83,7 +116,7 @@ export function ReviewsSection({
                 ))}
               </div>
               <p className="text-sm text-muted-foreground">
-                Dựa trên {totalReviews} đánh giá
+                Dựa trên {totalCount} đánh giá
               </p>
             </div>
 
@@ -93,31 +126,49 @@ export function ReviewsSection({
             <div className="space-y-3">
               {ratingDistribution.map((item) => (
                 <div key={item.rating} className="flex items-center gap-3">
-                  <button className="flex items-center gap-1 text-xs font-medium text-primary hover:underline whitespace-nowrap">
-                    {item.rating} <Star className="h-3 w-3 fill-amber-400" />
-                  </button>
+                  <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground whitespace-nowrap min-w-[30px]">
+                    {item.rating}{" "}
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  </span>
                   <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
                     <div
                       className="h-full bg-linear-to-r from-primary to-accent"
-                      style={{ width: `${item.percentage}%` }}
+                      style={{ width: `${item.percentage || 0}%` }}
                     />
                   </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap min-w-[30px]">
                     {item.count}
                   </span>
                 </div>
               ))}
             </div>
 
-            <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-semibold">
-              Viết đánh giá
-            </Button>
+            {canReviewResponse?.data?.canReview && (
+              <Button
+                onClick={() => setIsFormOpen(true)}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-semibold"
+              >
+                Viết đánh giá
+              </Button>
+            )}
+
+            {!isAuthenticated && (
+              <p className="text-xs text-center text-muted-foreground">
+                Bạn cần đăng nhập để viết đánh giá
+              </p>
+            )}
           </Card>
         </div>
 
         {/* Reviews List */}
         <div className="md:col-span-2 space-y-4">
-          {mockReviews.map((review) => (
+          {reviews.length === 0 && !isReviewsLoading && (
+            <div className="text-center py-12 text-muted-foreground">
+              Chưa có đánh giá nào cho sản phẩm này.
+            </div>
+          )}
+
+          {reviews.map((review) => (
             <Card
               key={review.id}
               className="border-border/50 bg-card rounded-2xl p-6 space-y-4 hover:shadow-md transition-shadow"
@@ -126,13 +177,17 @@ export function ReviewsSection({
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 flex-1">
                   <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarImage
+                      src={review.userAvatarUrl || ""}
+                      alt={review.userName}
+                    />
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {review.author.charAt(0)}
+                      {review.userName.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-foreground">
-                      {review.author}
+                      {review.userName}
                     </p>
                     <div className="flex gap-2 mt-1">
                       <div className="flex gap-0.5">
@@ -149,7 +204,7 @@ export function ReviewsSection({
                         ))}
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(review.date).toLocaleDateString("vi-VN")}
+                        {new Date(review.createdAt).toLocaleDateString("vi-VN")}
                       </span>
                     </div>
                   </div>
@@ -158,11 +213,8 @@ export function ReviewsSection({
 
               {/* Review Title and Content */}
               <div className="space-y-2">
-                <h4 className="font-semibold text-foreground">
-                  {review.title}
-                </h4>
-                <p className="text-sm text-foreground/70 leading-relaxed">
-                  {review.content}
+                <p className="text-sm text-foreground/80 leading-relaxed">
+                  {review.comment}
                 </p>
               </div>
 
@@ -170,7 +222,7 @@ export function ReviewsSection({
               <div className="flex items-center gap-4 pt-4 border-t border-border/30">
                 <button className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
                   <ThumbsUp className="h-4 w-4" />
-                  Hữu ích ({review.helpful})
+                  Hữu ích (0)
                 </button>
                 <button className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
                   <MessageCircle className="h-4 w-4" />
@@ -180,14 +232,27 @@ export function ReviewsSection({
             </Card>
           ))}
 
-          <Button
-            variant="outline"
-            className="w-full border-primary/30 text-primary hover:bg-primary/5 rounded-lg font-semibold py-3"
-          >
-            Xem thêm đánh giá
-          </Button>
+          {totalCount > reviews.length && (
+            <Button
+              variant="outline"
+              onClick={() => setPageIndex((p) => p + 1)}
+              disabled={isReviewsLoading}
+              className="w-full border-primary/30 text-primary hover:bg-primary/5 rounded-lg font-semibold py-3"
+            >
+              {isReviewsLoading ? "Đang tải..." : "Xem thêm đánh giá"}
+            </Button>
+          )}
         </div>
       </div>
+
+      {canReviewResponse?.data?.orderId && (
+        <ReviewForm
+          productId={productId}
+          orderId={canReviewResponse.data.orderId}
+          open={isFormOpen}
+          onOpenChange={setIsFormOpen}
+        />
+      )}
     </div>
   );
 }

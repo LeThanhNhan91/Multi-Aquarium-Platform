@@ -535,5 +535,40 @@ namespace Aquarium.Application.Services
                 throw;
             }
         }
+
+        public async Task UpdateOrderStatusAsync(Guid orderId, UpdateOrderStatusRequest request, Guid userId)
+        {
+            var order = await _orderRepository.GetByIdWithDetailsAsync(orderId);
+            if (order == null) throw new NotFoundException("Order", orderId);
+
+            // Security Check
+            var storeUser = await _storeRepository.GetStoreUserAsync(order.StoreId, userId);
+            if (storeUser == null || (storeUser.Role != "Owner" && storeUser.Role != "Manager"))
+            {
+                throw new ForbiddenException("Only store owners or managers can update order status.");
+            }
+
+            // Status Transition Logic
+            if (order.Status == OrderStatus.Completed || order.Status == OrderStatus.Cancelled)
+            {
+                throw new BadRequestException($"Cannot update status of a {order.Status} order.");
+            }
+
+            // Special handling for Cancellation
+            if (request.Status == OrderStatus.Cancelled)
+            {
+                await CancelOrderAsync(orderId, userId, "Cancelled by Store: " + request.Note);
+                return;
+            }
+
+            order.Status = request.Status;
+            if (!string.IsNullOrEmpty(request.Note))
+            {
+                order.Note += $" | Update: {request.Note}";
+            }
+
+            await _orderRepository.SaveChangesAsync();
+            _logger.LogInformation($"Order {orderId} status updated to {request.Status} by user {userId}.");
+        }
     }
 }

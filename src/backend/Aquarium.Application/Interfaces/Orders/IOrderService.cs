@@ -20,5 +20,7 @@ namespace Aquarium.Application.Interfaces.Orders
         Task<bool> HandlePaymentCallbackAsync(IQueryCollection collections);
 
         Task CancelOrderAsync(Guid orderId, Guid userId, string reason);
+        
+        Task UpdateOrderStatusAsync(Guid orderId, UpdateOrderStatusRequest request, Guid userId);
     }
 }

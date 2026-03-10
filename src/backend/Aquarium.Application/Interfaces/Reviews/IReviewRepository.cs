@@ -30,6 +30,7 @@ namespace Aquarium.Application.Interfaces.Reviews
         // Order verification
         Task<bool> HasUserPurchasedProductAsync(Guid userId, Guid productId, Guid orderId);
         Task<bool> HasUserPurchasedFromStoreAsync(Guid userId, Guid storeId, Guid orderId);
+        Task<Guid?> GetEligibleOrderIdForReviewAsync(Guid userId, Guid productId);
 
         Task<bool> SaveChangesAsync();
     }

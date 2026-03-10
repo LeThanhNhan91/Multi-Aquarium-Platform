@@ -148,6 +148,27 @@ namespace Aquarium.Application.Services
             return await _reviewRepository.GetProductReviewSummaryAsync(productId);
         }
 
+        public async Task<CanReviewResponse> CanReviewProductAsync(Guid productId, Guid userId)
+        {
+            var orderId = await _reviewRepository.GetEligibleOrderIdForReviewAsync(userId, productId);
+
+            if (orderId == null)
+            {
+                return new CanReviewResponse
+                {
+                    CanReview = false,
+                    Message = "You can only review products you have purchased and received (order must be completed and not already reviewed)."
+                };
+            }
+
+            return new CanReviewResponse
+            {
+                CanReview = true,
+                OrderId = orderId.Value,
+                Message = "You can review this product."
+            };
+        }
+
         // Store Reviews
         public async Task<ReviewResponse> CreateStoreReviewAsync(Guid storeId, CreateReviewRequest request, Guid userId)
         {

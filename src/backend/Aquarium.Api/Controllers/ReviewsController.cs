@@ -71,6 +71,15 @@ namespace Aquarium.Api.Controllers
             return Ok(new ApiResponse<ReviewSummary>(summary));
         }
 
+        [HttpGet("products/{productId}/can-review")]
+        [Authorize]
+        public async Task<IActionResult> CanReviewProduct(Guid productId)
+        {
+            var userId = GetCurrentUserId();
+            var result = await _reviewService.CanReviewProductAsync(productId, userId);
+            return Ok(new ApiResponse<CanReviewResponse>(result));
+        }
+
         // Store Reviews
         [HttpPost("stores/{storeId}/reviews")]
         [Authorize]

@@ -62,6 +62,7 @@ export interface PaymentLinkDto {
 }
 
 export type OrderStatus =
+  | "Confirmed"
   | "Pending"
   | "Processing"
   | "Shipping"
@@ -97,6 +98,7 @@ export interface GetOrdersFilter {
 }
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  Confirmed: "Đã xác nhận",
   Pending: "Chờ thanh toán",
   Processing: "Đang xử lý",
   Shipping: "Đang giao hàng",
@@ -105,6 +107,7 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 };
 
 export const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
+  Confirmed: "text-yellow-600 bg-yellow-50 border-yellow-200",
   Pending: "text-yellow-600 bg-yellow-50 border-yellow-200",
   Processing: "text-blue-600 bg-blue-50 border-blue-200",
   Shipping: "text-purple-600 bg-purple-50 border-purple-200",

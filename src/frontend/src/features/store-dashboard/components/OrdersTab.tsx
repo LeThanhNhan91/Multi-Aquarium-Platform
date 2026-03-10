@@ -41,6 +41,7 @@ import {
 } from "@/types/order.type";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import { OrderDetailDialog } from "./OrderDetailDialog";
 
 interface OrdersTabProps {
   storeId: string;
@@ -48,7 +49,17 @@ interface OrdersTabProps {
 
 export default function OrdersTab({ storeId }: OrdersTabProps) {
   const { data: response, isLoading } = useGetOrdersQuery({ storeId: storeId });
+  const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(
+    null,
+  );
+  const [isDetailOpen, setIsDetailOpen] = React.useState(false);
+
   const orders = response?.data?.items || [];
+
+  const handleOpenDetail = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    setIsDetailOpen(true);
+  };
 
   if (isLoading) {
     return <AquariumLoader />;
@@ -174,11 +185,17 @@ export default function OrdersTab({ storeId }: OrdersTabProps) {
                         <DropdownMenuLabel className="px-2 py-1.5 text-xs text-muted-foreground uppercase font-bold tracking-wider">
                           Đơn hàng
                         </DropdownMenuLabel>
-                        <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer">
+                        <DropdownMenuItem
+                          className="rounded-lg gap-2 cursor-pointer"
+                          onClick={() => handleOpenDetail(order.id)}
+                        >
                           <Eye className="h-4 w-4" />
                           Xem chi tiết
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer">
+                        <DropdownMenuItem
+                          className="rounded-lg gap-2 cursor-pointer"
+                          onClick={() => handleOpenDetail(order.id)}
+                        >
                           <ShoppingBag className="h-4 w-4" />
                           Cập nhật trạng thái
                         </DropdownMenuItem>
@@ -191,6 +208,12 @@ export default function OrdersTab({ storeId }: OrdersTabProps) {
           </TableBody>
         </Table>
       </div>
+
+      <OrderDetailDialog
+        orderId={selectedOrderId}
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+      />
     </div>
   );
 }

@@ -63,4 +63,11 @@ namespace Aquarium.Application.DTOs.Reviews
         public int PageIndex { get; set; } = 1;
         public int PageSize { get; set; } = 10;
     }
+
+    public class CanReviewResponse
+    {
+        public bool CanReview { get; set; }
+        public Guid? OrderId { get; set; }
+        public string Message { get; set; }
+    }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Fish, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
@@ -26,6 +26,10 @@ export default function ProductDetailPage({ productId }: Props) {
 
   const [selectedFish, setSelectedFish] = useState<FishInstance | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [productId]);
 
   const galleryImages = selectedFish?.images?.length
     ? selectedFish.images
@@ -72,9 +76,7 @@ export default function ProductDetailPage({ productId }: Props) {
 
         {product && (
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-            {/* Main Product Section */}
             <div className="grid lg:grid-cols-3 gap-8 mb-12">
-              {/* Left Column - Gallery, Video, Fish Instances */}
               <div className="lg:col-span-2 space-y-8">
                 <ImageGallery images={galleryImages} videoUrl={videoUrl} />
                 {isLiveFish &&
@@ -88,7 +90,6 @@ export default function ProductDetailPage({ productId }: Props) {
                   )}
               </div>
 
-              {/* Right Column - Info & Actions */}
               <div className="space-y-6">
                 <ProductInfo
                   product={product}
@@ -133,8 +134,9 @@ export default function ProductDetailPage({ productId }: Props) {
             <Separator className="my-12 bg-border/30" />
 
             <ReviewsSection
-              averageRating={product.averageRating}
-              totalReviews={product.totalReviews}
+              productId={product.id}
+              initialAverageRating={product.averageRating}
+              initialTotalReviews={product.totalReviews}
             />
 
             <Separator className="my-12 bg-border/30" />

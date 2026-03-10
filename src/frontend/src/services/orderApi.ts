@@ -15,7 +15,10 @@ export const orderApi = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ["Order"],
   endpoints: (builder) => ({
-    createOrder: builder.mutation<ApiResponse<OrderResponse>, CreateOrderRequest>({
+    createOrder: builder.mutation<
+      ApiResponse<OrderResponse>,
+      CreateOrderRequest
+    >({
       query: (body) => ({
         url: "/orders",
         method: "POST",
@@ -24,7 +27,10 @@ export const orderApi = createApi({
       invalidatesTags: [{ type: "Order", id: "LIST" }],
     }),
 
-    getOrders: builder.query<ApiResponse<PagedResult<OrderResponse>>, GetOrdersFilter>({
+    getOrders: builder.query<
+      ApiResponse<PagedResult<OrderResponse>>,
+      GetOrdersFilter
+    >({
       query: (filter) => ({
         url: "/orders",
         params: filter,
@@ -37,16 +43,30 @@ export const orderApi = createApi({
       providesTags: (result, error, id) => [{ type: "Order", id }],
     }),
 
-    createPaymentUrl: builder.mutation<
-      PaymentLinkDto,
-      CreatePaymentUrlRequest
+    updateOrderStatus: builder.mutation<
+      ApiResponse<string>,
+      { id: string; status: string; note?: string }
     >({
-      query: (body) => ({
-        url: "/payment/create-url",
-        method: "POST",
+      query: ({ id, ...body }) => ({
+        url: `/orders/${id}/status`,
+        method: "PATCH",
         body,
       }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Order", id: "LIST" },
+        { type: "Order", id },
+      ],
     }),
+
+    createPaymentUrl: builder.mutation<PaymentLinkDto, CreatePaymentUrlRequest>(
+      {
+        query: (body) => ({
+          url: "/payment/create-url",
+          method: "POST",
+          body,
+        }),
+      },
+    ),
   }),
 });
 
@@ -54,5 +74,6 @@ export const {
   useGetOrdersQuery,
   useCreateOrderMutation,
   useGetOrderByIdQuery,
+  useUpdateOrderStatusMutation,
   useCreatePaymentUrlMutation,
 } = orderApi;
