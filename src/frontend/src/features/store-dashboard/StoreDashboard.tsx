@@ -7,12 +7,12 @@ import { FishLoading } from "@/app/Loading";
 import DashboardStoreHeader from "./components/DashboardStoreHeader";
 
 // Tab Components
-import OverviewTab from "./components/OverviewTab";
-import OrdersTab from "./components/OrdersTab";
-import ProductsTab from "./components/ProductsTab";
-import CustomersTab from "./components/CustomersTab";
-import AnalyticsTab from "./components/AnalyticsTab";
-import SettingsTab from "./components/SettingsTab";
+import OverviewTab from "./components/overview/OverviewTab";
+import OrdersTab from "./components/orders/OrdersTab";
+import ProductsTab from "./components/products/ProductsTab";
+import CustomersTab from "./components/customers/CustomersTab";
+import AnalyticsTab from "./components/analytic/AnalyticsTab";
+import SettingsTab from "./components/settings/SettingsTab";
 
 export default function StoreDashboard({ storeId }: { storeId: string }) {
   const searchParams = useSearchParams();

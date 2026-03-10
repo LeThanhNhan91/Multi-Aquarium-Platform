@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import StoreSidebar, {
   menuItems,
 } from "@/features/store-dashboard/components/StoreSidebar";
@@ -22,14 +22,18 @@ export default function StoreDashboardLayout({
 }: StoreDashboardLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Derive the active tab from the current pathname
-  // /dashboard/stores/[id]        → overview (default)
-  // /dashboard/stores/[id]/fish-instances → keep "products" highlighted
+  // Derive the active tab from the current pathname or search params
   const getActiveTab = () => {
     if (pathname.includes("/fish-instances")) return "products";
-    // Fall back to overview — the main page handles its own activeTab state
+
+    const tab = searchParams.get("tab");
+    if (tab && menuItems.some((item) => item.id === tab)) {
+      return tab;
+    }
+
     return "overview";
   };
 

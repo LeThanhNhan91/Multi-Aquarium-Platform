@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Settings } from "lucide-react";
-import TabPlaceholder from "./TabPlaceholder";
+import TabPlaceholder from "../TabPlaceholder";
 
 interface SettingsTabProps {
   storeId: string;

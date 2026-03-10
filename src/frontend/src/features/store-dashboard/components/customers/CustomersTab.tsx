@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Users } from "lucide-react";
-import TabPlaceholder from "./TabPlaceholder";
+import TabPlaceholder from "../TabPlaceholder";
 
 interface CustomersTabProps {
   storeId: string;
