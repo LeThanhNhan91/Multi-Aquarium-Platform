@@ -58,10 +58,9 @@ const baseQuery = fetchBaseQuery({
         }
 
         // Debug log to help identify claim names in DevTools
-        if (process.env.NODE_ENV === "development") {
-          console.log("JWT Payload:", decodedPayload);
-          if (storeId) console.log("Resolved StoreId:", storeId);
-        }
+        // if (process.env.NODE_ENV === "development") {
+        //   if (storeId) console.log("Resolved StoreId:", storeId);
+        // }
       }
     }
     return headers;

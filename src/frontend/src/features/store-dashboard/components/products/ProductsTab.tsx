@@ -33,8 +33,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/utils/utils";
 import { CreateProductDialog } from "./CreateProductDialog";
+import { EditProductDialog } from "./EditProductDialog";
+import { DeleteProductDialog } from "./DeleteProductDialog";
 import { useGetStoreProductsQuery } from "@/services/productApi";
 import { AquariumLoader } from "@/components/shared/AquariumLoader";
+import { ProductItem } from "@/types/product.type";
 
 interface ProductsTabProps {
   storeId: string;
@@ -43,6 +46,11 @@ interface ProductsTabProps {
 export default function ProductsTab({ storeId }: ProductsTabProps) {
   const router = useRouter();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(
+    null,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 500);
 
@@ -80,6 +88,18 @@ export default function ProductsTab({ storeId }: ProductsTabProps) {
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         storeId={storeId}
+      />
+
+      <EditProductDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        product={selectedProduct}
+      />
+
+      <DeleteProductDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        product={selectedProduct}
       />
 
       <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-2xl border border-border/50">
@@ -180,7 +200,13 @@ export default function ProductsTab({ storeId }: ProductsTabProps) {
                         <DropdownMenuLabel className="px-2 py-1.5 text-xs text-muted-foreground uppercase font-bold tracking-wider">
                           Thao tác
                         </DropdownMenuLabel>
-                        <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer">
+                        <DropdownMenuItem
+                          className="rounded-lg gap-2 cursor-pointer"
+                          onClick={() => {
+                            setSelectedProduct(product);
+                            setIsEditOpen(true);
+                          }}
+                        >
                           <Edit className="h-4 w-4" />
                           Chỉnh sửa
                         </DropdownMenuItem>
@@ -202,7 +228,13 @@ export default function ProductsTab({ storeId }: ProductsTabProps) {
                           Quản lý tồn kho
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="rounded-lg gap-2 text-destructive cursor-pointer hover:bg-destructive/10">
+                        <DropdownMenuItem
+                          className="rounded-lg gap-2 text-destructive cursor-pointer hover:bg-destructive/10"
+                          onClick={() => {
+                            setSelectedProduct(product);
+                            setIsDeleteOpen(true);
+                          }}
+                        >
                           <Trash2 className="h-4 w-4" />
                           Xóa sản phẩm
                         </DropdownMenuItem>

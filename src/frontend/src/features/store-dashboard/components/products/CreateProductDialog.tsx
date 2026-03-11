@@ -61,6 +61,7 @@ const createProductSchema = z.object({
   name: z.string().min(2, "Tên sản phẩm phải có ít nhất 2 ký tự"),
   description: z.string().optional(),
   basePrice: z.number().min(0, "Giá phải lớn hơn hoặc bằng 0").optional(),
+  stock: z.number().min(0, "Số lượng phải lớn hơn hoặc bằng 0").optional(),
   categoryId: z.string().min(1, "Vui lòng chọn danh mục"),
   images: z.any().optional(), // Handled manually for FileList
 });
@@ -176,6 +177,7 @@ export function CreateProductDialog({
       name: "",
       description: "",
       basePrice: 0,
+      stock: 0,
       categoryId: "",
     },
   });
@@ -204,6 +206,7 @@ export function CreateProductDialog({
   useEffect(() => {
     if (isLiveFish) {
       form.setValue("basePrice", undefined);
+      form.setValue("stock", undefined);
     }
   }, [isLiveFish, form]);
 
@@ -241,8 +244,9 @@ export function CreateProductDialog({
         name: data.name,
         categoryId: data.categoryId,
         description: data.description,
-        // Exclude basePrice if it's Live Fish
+        // Exclude basePrice and stock if it's Live Fish
         basePrice: isLiveFish ? undefined : data.basePrice,
+        stock: isLiveFish ? undefined : data.stock,
         images: selectedImages,
       };
 
@@ -426,7 +430,7 @@ export function CreateProductDialog({
                                     <span
                                       className={cn(
                                         "font-medium text-foreground group-hover:text-primary transition-colors",
-                                        !hasChildren && "font-bold",
+                                        !hasChildren,
                                       )}
                                     >
                                       {node.name}
@@ -490,9 +494,33 @@ export function CreateProductDialog({
                           disabled={isLoading}
                         />
                       </FormControl>
-                      <FormDescription>
-                        Nhập 0 nếu đây là Cá Cảnh (giá tính theo từng cá thể).
-                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="stock"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Số lượng hàng có sẵn</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          placeholder="0"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value === ""
+                                ? undefined
+                                : Number(e.target.value),
+                            )
+                          }
+                          disabled={isLoading}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

@@ -1,7 +1,11 @@
 import { buildCrudEndpoints } from "@/libs/redux/baseCrudApi";
 import { baseQueryWithReauth } from "@/libs/redux/baseApi";
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { ProductItem, CreateProductRequest } from "@/types/product.type";
+import {
+  ProductItem,
+  CreateProductRequest,
+  UpdateProductRequest,
+} from "@/types/product.type";
 import { ApiResponse, PagedResult } from "@/types/baseModel";
 
 export interface ProductParams {
@@ -74,6 +78,8 @@ export const productApi = createApi({
         if (data.description) formData.append("Description", data.description);
         if (data.basePrice !== undefined)
           formData.append("BasePrice", data.basePrice.toString());
+        if (data.stock !== undefined)
+          formData.append("Stock", data.stock.toString());
 
         if (data.images) {
           data.images.forEach((file) => {
@@ -137,6 +143,41 @@ export const productApi = createApi({
             ]
           : [{ type: "Product", id: "PARTIAL-LIST" }],
     }),
+    updateProduct: builder.mutation<
+      ProductItem,
+      { id: string; data: UpdateProductRequest }
+    >({
+      query: ({ id, data }) => {
+        const formData = new FormData();
+        formData.append("Name", data.name);
+        if (data.description) formData.append("Description", data.description);
+        if (data.basePrice !== undefined)
+          formData.append("BasePrice", data.basePrice.toString());
+
+        if (data.newImages) {
+          data.newImages.forEach((file: File) => {
+            formData.append("NewImages", file);
+          });
+        }
+
+        if (data.removeImageIds) {
+          data.removeImageIds.forEach((id: string) => {
+            formData.append("RemoveImageIds", id);
+          });
+        }
+
+        return {
+          url: `/products/${id}`,
+          method: "PUT",
+          body: formData,
+        };
+      },
+      transformResponse: (response: ApiResponse<ProductItem>) => response.data,
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Product", id },
+        { type: "Product", id: "PARTIAL-LIST" },
+      ],
+    }),
   }),
 });
 
@@ -145,7 +186,8 @@ export const {
   useGetByIdQuery: useGetProductByIdQuery,
   useSearchQuery: useSearchProductsQuery,
   useCreateProductMutation,
+  useUpdateProductMutation,
   useGetStoreProductsQuery,
-  useUpdateMutation: useUpdateProductMutation,
+  useUpdateMutation: useUpdateProductMutationBase,
   useDeleteMutation: useDeleteProductMutation,
 } = productApi;

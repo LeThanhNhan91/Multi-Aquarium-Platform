@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.FishInstances;
@@ -14,6 +14,7 @@ namespace Aquarium.Application.DTOs.Products
     decimal? BasePrice,
     string StoreName,
     Guid StoreId,
+    Guid CategoryId,
     string CategoryName,
     List<string> Images,
     DateTime CreatedAt,

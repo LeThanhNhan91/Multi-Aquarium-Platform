@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.FishInstances;
@@ -25,6 +25,7 @@ namespace Aquarium.Application.Services
         private readonly IInventoryService _inventoryService;
         private readonly IFishInstanceRepository _fishInstanceRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IInventoryRepository _inventoryRepository;
 
         public ProductService(
             IProductRepository productRepository, 
@@ -33,7 +34,8 @@ namespace Aquarium.Application.Services
             IMediaService mediaService, 
             IInventoryService inventoryService,
             IFishInstanceRepository fishInstanceRepository,
-            ICategoryRepository categoryRepository)
+            ICategoryRepository categoryRepository,
+            IInventoryRepository inventoryRepository)
         {
             _productRepository = productRepository;
             _storeRepository = storeRepository;
@@ -42,6 +44,7 @@ namespace Aquarium.Application.Services
             _inventoryService = inventoryService;
             _fishInstanceRepository = fishInstanceRepository;
             _categoryRepository = categoryRepository;
+            _inventoryRepository = inventoryRepository;
         }
 
         //Author Helper
@@ -107,6 +110,7 @@ namespace Aquarium.Application.Services
                     null, // BasePrice
                     p.Store?.Name ?? "Unknown Store",
                     p.StoreId,
+                    p.CategoryId,
                     p.Category?.Name ?? "Uncategorized",
                     p.ProductMedia.Select(m => m.MediaUrl).ToList(),
                     p.CreatedAt,
@@ -136,6 +140,7 @@ namespace Aquarium.Application.Services
                     p.BasePrice,
                     p.Store?.Name ?? "Unknown Store",
                     p.StoreId,
+                    p.CategoryId,
                     p.Category?.Name ?? "Uncategorized",
                     p.ProductMedia.Select(m => m.MediaUrl).ToList(),
                     p.CreatedAt,
@@ -150,6 +155,87 @@ namespace Aquarium.Application.Services
                     isOwner
                 );
             }
+        }
+
+        public async Task<ProductResponse> UpdateProductAsync(Guid productId, UpdateProductRequest request, Guid userId)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null)
+                throw new NotFoundException("Product", productId);
+
+            await EnsureStoreAccessAsync(product.StoreId, userId);
+
+            // Determine product type based on existing category
+            var rootCategory = await _categoryRepository.GetRootCategoryAsync(product.CategoryId);
+            string baseSlug = Helper.GetBaseSlug(rootCategory?.Slug ?? "");
+            bool isLiveFish = baseSlug == "ca-canh";
+
+            if (isLiveFish)
+            {
+                if (request.BasePrice.HasValue && request.BasePrice.Value > 0)
+                {
+                    throw new BadRequestException("Sản phẩm Cá Cảnh không có giá cơ bản. Giá được xác định theo từng cá thể.");
+                }
+                product.BasePrice = 0;
+            }
+            else
+            {
+                if (!request.BasePrice.HasValue || request.BasePrice.Value <= 0)
+                {
+                    throw new BadRequestException("Sản phẩm thiết bị/phụ kiện phải có giá lớn hơn 0.");
+                }
+                product.BasePrice = request.BasePrice.Value;
+            }
+
+            product.Name = request.Name;
+            product.Slug = Helper.GenerateSlug(request.Name);
+            product.Description = request.Description;
+
+            // Handle Image Removal
+            if (request.RemoveImageIds != null && request.RemoveImageIds.Any())
+            {
+                var mediaToRemove = product.ProductMedia
+                    .Where(m => request.RemoveImageIds.Contains(m.Id))
+                    .ToList();
+
+                foreach (var media in mediaToRemove)
+                {
+                    if (!string.IsNullOrEmpty(media.PublicId))
+                    {
+                        await _mediaService.DeleteMediaAsync(media.PublicId);
+                    }
+                    product.ProductMedia.Remove(media);
+                }
+            }
+
+            // Handle New Images
+            if (request.NewImages != null && request.NewImages.Any())
+            {
+                // If there are no primary images left, make the first new one primary
+                bool hasPrimary = product.ProductMedia.Any(m => m.IsPrimary == true);
+                
+                foreach (var imageFile in request.NewImages)
+                {
+                    var uploadResult = await _mediaService.UploadImageAsync(imageFile);
+                    
+                    product.ProductMedia.Add(new ProductMedia
+                    {
+                        Id = Guid.NewGuid(),
+                        MediaUrl = uploadResult.Url,
+                        PublicId = uploadResult.PublicId,
+                        MediaType = "Image",
+                        IsPrimary = !hasPrimary
+                    });
+                    
+                    hasPrimary = true;
+                }
+            }
+
+            await _productRepository.UpdateAsync(product);
+            await _productRepository.SaveChangesAsync();
+
+            var updatedProduct = await _productRepository.GetByIdAsync(product.Id);
+            return await MapToResponseAsync(updatedProduct!, userId);
         }
 
         public async Task<ProductResponse> CreateProductAsync(CreateProductRequest request, Guid userId)
@@ -231,7 +317,7 @@ namespace Aquarium.Application.Services
             // Only init inventory for Equipment products
             if (!isLiveFish)
             {
-                await _inventoryService.InitInventoryAsync(product.Id);
+                await _inventoryService.InitInventoryAsync(product.Id, request.Stock ?? 0, userId);
             }
 
             var fullProduct = await _productRepository.GetByIdAsync(product.Id);
@@ -250,16 +336,49 @@ namespace Aquarium.Application.Services
 
             await EnsureStoreAccessAsync(product.StoreId, userId);
 
+            // Check if product has any orders
+            if (product.OrderItems != null && product.OrderItems.Any())
+            {
+                throw new BadRequestException("Không thể xóa sản phẩm đã có đơn hàng. Bạn nên chuyển trạng thái sản phẩm sang ngưng kinh doanh thay vì xóa.");
+            }
+
             if (product.ProductMedia != null)
             {
                 foreach (var media in product.ProductMedia)
                 {
                     if (!string.IsNullOrEmpty(media.PublicId))
                     {
-                        // Fire-and-forget (only await if want 100% sure)
                         await _mediaService.DeleteMediaAsync(media.PublicId);
                     }
                 }
+            }
+
+            // Delete FishInstance media and videos from Cloudinary
+            if (product.FishInstances != null)
+            {
+                foreach (var fish in product.FishInstances)
+                {
+                    // Delete images
+                    foreach (var media in fish.FishInstanceMedia)
+                    {
+                        if (!string.IsNullOrEmpty(media.PublicId))
+                        {
+                            await _mediaService.DeleteMediaAsync(media.PublicId);
+                        }
+                    }
+
+                    // Delete video
+                    if (!string.IsNullOrEmpty(fish.VideoPublicId))
+                    {
+                        await _mediaService.DeleteMediaAsync(fish.VideoPublicId);
+                    }
+                }
+            }
+
+            // Handle related entities that might block deletion
+            if (product.Inventory != null)
+            {
+                await _inventoryRepository.DeleteAsync(product.Inventory);
             }
 
             await _productRepository.DeleteAsync(product);

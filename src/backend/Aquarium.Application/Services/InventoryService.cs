@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Inventory;
@@ -37,7 +37,7 @@ namespace Aquarium.Application.Services
             return new InventoryResponse(productId, inventory.Quantity, inventory.QuantityReserved, inventory.AvailableStock, inventory.LastUpdated);
         }
 
-        public async Task InitInventoryAsync(Guid productId)
+        public async Task InitInventoryAsync(Guid productId, int initialQuantity = 0, Guid? userId = null)
         {
             var exists = await _inventoryRepository.GetByProductIdAsync(productId);
             if (exists != null) return;
@@ -46,11 +46,28 @@ namespace Aquarium.Application.Services
             {
                 Id = Guid.NewGuid(),
                 ProductId = productId,
-                Quantity = 0,
+                Quantity = initialQuantity,
                 QuantityReserved = 0,
                 LastUpdated = DateTime.UtcNow
             };
             await _inventoryRepository.AddAsync(inventory);
+
+            if (initialQuantity > 0 && userId.HasValue)
+            {
+                var history = new InventoryHistory
+                {
+                    Id = Guid.NewGuid(),
+                    InventoryId = inventory.Id,
+                    ActionType = "Import",
+                    QuantityChange = initialQuantity,
+                    RemainingQuantity = initialQuantity,
+                    Note = "Initial stock during product creation",
+                    CreatedBy = userId.Value,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _inventoryRepository.AddHistoryAsync(history);
+            }
+
             await _inventoryRepository.SaveChangesAsync();
         }
 

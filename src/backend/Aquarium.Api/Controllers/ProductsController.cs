@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Aquarium.Application.DTOs.Products;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Wrappers;
@@ -79,6 +79,16 @@ namespace Aquarium.Api.Controllers
                 new { id = response.Id },
                 new ApiResponse<ProductResponse>(response, "Product created successfully")
             );
+        }
+
+        [HttpPut("products/{id}")]
+        [Authorize]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateProduct(Guid id, [FromForm] UpdateProductRequest request)
+        {
+            var userId = GetCurrentUserId();
+            var response = await _productService.UpdateProductAsync(id, request, userId);
+            return Ok(new ApiResponse<ProductResponse>(response, "Sản phẩm đã được cập nhật thành công"));
         }
 
         [HttpDelete("products/{id}")]

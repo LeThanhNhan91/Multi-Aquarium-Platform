@@ -23,6 +23,7 @@ export interface ProductItem {
   basePrice: number | null;
   storeName: string;
   storeId: string;
+  categoryId: string;
   categoryName: string;
   images: string[];
   videos?: string[];
@@ -43,7 +44,16 @@ export interface CreateProductRequest {
   description?: string;
   basePrice?: number;
   categoryId: string;
+  stock?: number;
   images?: File[];
+}
+
+export interface UpdateProductRequest {
+  name: string;
+  description?: string;
+  basePrice?: number;
+  newImages?: File[];
+  removeImageIds?: string[];
 }
 
 export interface CreateFishInstanceRequest {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.Interfaces.Inventory;
@@ -47,6 +47,12 @@ namespace Aquarium.Infrastructure.Repositories
                 .OrderByDescending(h => h.CreatedAt)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task DeleteAsync(Inventory inventory)
+        {
+            _context.Inventories.Remove(inventory);
+            await Task.CompletedTask;
         }
 
         public async Task<bool> SaveChangesAsync()

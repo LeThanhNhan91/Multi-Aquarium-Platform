@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -18,6 +18,9 @@ namespace Aquarium.Application.DTOs.Products
 
         [Required]
         public Guid CategoryId { get; set; }
+
+        [Range(0, int.MaxValue, ErrorMessage = "Stock must be greater than or equal to 0")]
+        public int? Stock { get; set; }
 
         public List<IFormFile>? Images { get; set; }
     }

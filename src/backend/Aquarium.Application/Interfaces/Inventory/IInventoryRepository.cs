@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Domain.Entities;
@@ -13,6 +13,7 @@ namespace Aquarium.Application.Interfaces.Inventory
         Task UpdateAsync(InventoryEntity inventory);
         Task AddHistoryAsync(InventoryHistory history);
         Task<List<InventoryHistory>> GetHistoryByProductIdAsync(Guid productId);
+        Task DeleteAsync(InventoryEntity inventory);
         Task<bool> SaveChangesAsync();
     }
 }

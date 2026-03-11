@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Products;
@@ -45,6 +45,9 @@ namespace Aquarium.Infrastructure.Repositories
                 .Include(p => p.Store)
                 .Include(p => p.Category)
                 .Include(p => p.ProductMedia)
+                .Include(p => p.Inventory)
+                .Include(p => p.FishInstances)
+                .Include(p => p.OrderItems)
                 .Include(p => p.ProductReviews.Where(r => r.Status == "Active"))
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
