@@ -14,6 +14,8 @@ namespace Aquarium.Application.Interfaces.Reviews
         Task<PagedResult<ReviewResponse>> GetProductReviewsAsync(Guid productId, GetReviewsFilter filter);
         Task<ReviewSummary> GetProductReviewSummaryAsync(Guid productId);
         Task<CanReviewResponse> CanReviewProductAsync(Guid productId, Guid userId);
+        Task<ReviewResponse?> GetProductReviewByOrderAsync(Guid productId, Guid orderId, Guid userId);
+        Task<IEnumerable<ReviewResponse>> GetOrderReviewsAsync(Guid orderId, Guid userId);
 
         // Store Reviews
         Task<ReviewResponse> CreateStoreReviewAsync(Guid storeId, CreateReviewRequest request, Guid userId);

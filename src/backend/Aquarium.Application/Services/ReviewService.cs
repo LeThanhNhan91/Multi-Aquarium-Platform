@@ -169,6 +169,18 @@ namespace Aquarium.Application.Services
             };
         }
 
+        public async Task<ReviewResponse?> GetProductReviewByOrderAsync(Guid productId, Guid orderId, Guid userId)
+        {
+            var review = await _reviewRepository.GetProductReviewByUserAndOrderAsync(productId, userId, orderId);
+            return review != null ? MapToReviewResponse(review) : null;
+        }
+
+        public async Task<IEnumerable<ReviewResponse>> GetOrderReviewsAsync(Guid orderId, Guid userId)
+        {
+            var reviews = await _reviewRepository.GetProductReviewsByOrderAsync(orderId, userId);
+            return reviews.Select(r => MapToReviewResponse(r));
+        }
+
         // Store Reviews
         public async Task<ReviewResponse> CreateStoreReviewAsync(Guid storeId, CreateReviewRequest request, Guid userId)
         {

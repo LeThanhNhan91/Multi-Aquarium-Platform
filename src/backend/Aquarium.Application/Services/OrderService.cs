@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Orders;
@@ -8,6 +8,7 @@ using Aquarium.Application.Interfaces.FishInstances;
 using Aquarium.Application.Interfaces.Orders;
 using Aquarium.Application.Interfaces.Payments;
 using Aquarium.Application.Interfaces.Products;
+using Aquarium.Application.Interfaces.Reviews;
 using Aquarium.Application.Wrappers;
 using Aquarium.Domain.Constants;
 using Aquarium.Domain.Entities;
@@ -26,6 +27,7 @@ namespace Aquarium.Application.Services
         private readonly IPaymentGateway _paymentGateway;
         private readonly IFishInstanceRepository _fishInstanceRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IReviewRepository _reviewRepository;
 
         public OrderService(
             IProductRepository productRepository,
@@ -34,6 +36,7 @@ namespace Aquarium.Application.Services
             IPaymentGateway paymentGateway,
             IFishInstanceRepository fishInstanceRepository,
             ICategoryRepository categoryRepository,
+            IReviewRepository reviewRepository,
             ILogger<OrderService> logger)
         {
             _productRepository = productRepository;
@@ -42,6 +45,7 @@ namespace Aquarium.Application.Services
             _paymentGateway = paymentGateway;
             _fishInstanceRepository = fishInstanceRepository;
             _categoryRepository = categoryRepository;
+            _reviewRepository = reviewRepository;
             _logger = logger;
         }
 
@@ -288,6 +292,9 @@ namespace Aquarium.Application.Services
                 throw new ForbiddenException("You are not allowed to view this order.");
             }
 
+            var reviews = await _reviewRepository.GetProductReviewsByOrderAsync(orderId, userId);
+            var reviewedProductIds = reviews.Select(r => r.ProductId).ToHashSet();
+
             return new OrderDetailResponse(
                 order.Id,
                 order.StoreId,
@@ -317,9 +324,11 @@ namespace Aquarium.Application.Services
                         i.PriceAtPurchase * i.Quantity,
                         i.ProductImageUrl,
                         fishImages,
-                        fishVideo
+                        fishVideo,
+                        reviewedProductIds.Contains(i.ProductId)
                     );
-                }).ToList()
+                }).ToList(),
+                reviews.Any()
             );
         }
 
@@ -343,6 +352,12 @@ namespace Aquarium.Application.Services
             // Recalculate total count after security filter
             var totalAccessible = accessibleOrders.Count;
 
+            // Fetch reviews for these orders
+            var orderIds = accessibleOrders.Select(o => o.Id).ToList();
+            var userReviews = await _reviewRepository.GetProductReviewsByOrderIdsAsync(orderIds, userId);
+            var reviewedOrderIds = userReviews.Select(r => r.OrderId).ToHashSet();
+            var reviewedOrderItemKeys = userReviews.Select(r => $"{r.OrderId}_{r.ProductId}").ToHashSet();
+
             var orderResponses = accessibleOrders.Select(o => new OrderResponse(
                 o.Id,
                 o.StoreId,
@@ -364,8 +379,10 @@ namespace Aquarium.Application.Services
                     i.PriceAtPurchase * i.Quantity,
                     i.ProductImageUrl,
                     null,
-                    null
-                )).ToList()
+                    null,
+                    reviewedOrderItemKeys.Contains($"{o.Id}_{i.ProductId}")
+                )).ToList(),
+                reviewedOrderIds.Contains(o.Id)
             )).ToList();
 
             return new PagedResult<OrderResponse>(

@@ -80,6 +80,24 @@ namespace Aquarium.Api.Controllers
             return Ok(new ApiResponse<CanReviewResponse>(result));
         }
 
+        [HttpGet("orders/{orderId}/reviews")]
+        [Authorize]
+        public async Task<IActionResult> GetOrderReviews(Guid orderId)
+        {
+            var userId = GetCurrentUserId();
+            var reviews = await _reviewService.GetOrderReviewsAsync(orderId, userId);
+            return Ok(new ApiResponse<IEnumerable<ReviewResponse>>(reviews));
+        }
+
+        [HttpGet("products/{productId}/orders/{orderId}/review")]
+        [Authorize]
+        public async Task<IActionResult> GetProductReviewByOrder(Guid productId, Guid orderId)
+        {
+            var userId = GetCurrentUserId();
+            var review = await _reviewService.GetProductReviewByOrderAsync(productId, orderId, userId);
+            return Ok(new ApiResponse<ReviewResponse>(review));
+        }
+
         // Store Reviews
         [HttpPost("stores/{storeId}/reviews")]
         [Authorize]

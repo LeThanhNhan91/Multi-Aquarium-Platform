@@ -35,6 +35,21 @@ namespace Aquarium.Infrastructure.Repositories
                 .FirstOrDefaultAsync(r => r.ProductId == productId && r.UserId == userId && r.OrderId == orderId);
         }
 
+        public async Task<List<ProductReview>> GetProductReviewsByOrderAsync(Guid orderId, Guid userId)
+        {
+            return await _context.ProductReviews
+                .Include(r => r.User)
+                .Where(r => r.OrderId == orderId && r.UserId == userId)
+                .ToListAsync();
+        }
+
+        public async Task<List<ProductReview>> GetProductReviewsByOrderIdsAsync(List<Guid> orderIds, Guid userId)
+        {
+            return await _context.ProductReviews
+                .Where(r => orderIds.Contains(r.OrderId) && r.UserId == userId)
+                .ToListAsync();
+        }
+
         public async Task<PagedResult<ProductReview>> GetProductReviewsAsync(Guid productId, GetReviewsFilter filter)
         {
             var query = _context.ProductReviews

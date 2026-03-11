@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
+  Star,
 } from "lucide-react";
 import { StoreOwnerCTA } from "@/features/profile/StoreOwnerCTA";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,7 @@ import {
 import { formatToVND, formatVietnameseDate } from "@/helper/formatter";
 import { cn } from "@/utils/utils";
 import { toast } from "sonner";
+import { OrderReviewDialog } from "@/features/profile/OrderReviewDialog";
 
 const PAGE_SIZE = 8;
 
@@ -48,6 +50,7 @@ interface OrderCardProps {
 function OrderCard({ order, viewAs }: OrderCardProps) {
   const [createPaymentUrl, { isLoading: paymentLoading }] =
     useCreatePaymentUrlMutation();
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
 
   const statusClass =
     ORDER_STATUS_COLORS[order.status as OrderStatus] ??
@@ -181,6 +184,23 @@ function OrderCard({ order, viewAs }: OrderCardProps) {
           </Link>
         </Button>
 
+        {viewAs === "buyer" && order.status === "Completed" && (
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+               "gap-1.5 text-xs",
+               order.isReviewed 
+                ? "text-amber-600 border-amber-200 hover:bg-amber-50" 
+                : "text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700"
+            )}
+            onClick={() => setReviewDialogOpen(true)}
+          >
+            <Star className={cn("h-3.5 w-3.5", order.isReviewed && "fill-current")} />
+            {order.isReviewed ? "Sửa đánh giá" : "Đánh giá"}
+          </Button>
+        )}
+
         {canPay && (
           <Button
             size="sm"
@@ -197,6 +217,12 @@ function OrderCard({ order, viewAs }: OrderCardProps) {
           </Button>
         )}
       </div>
+
+      <OrderReviewDialog
+        order={order}
+        open={reviewDialogOpen}
+        onOpenChange={setReviewDialogOpen}
+      />
     </div>
   );
 }

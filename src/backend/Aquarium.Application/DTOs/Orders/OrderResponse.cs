@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -16,6 +16,7 @@ namespace Aquarium.Application.DTOs.Orders
         string ShippingAddress,
         string? Note,
         DateTime CreatedAt,
-        List<OrderItemResponse> Items
+        List<OrderItemResponse> Items,
+        bool IsReviewed = false
     );
 }

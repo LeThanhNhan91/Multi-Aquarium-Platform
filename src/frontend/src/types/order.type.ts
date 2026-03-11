@@ -25,6 +25,7 @@ export interface OrderResponse {
   note?: string;
   createdAt: string;
   items: OrderItemResponse[];
+  isReviewed?: boolean;
 }
 
 export interface OrderItemResponse {
@@ -37,6 +38,7 @@ export interface OrderItemResponse {
   productImageUrl?: string | null;
   fishImages?: string[] | null;
   fishVideoUrl?: string | null;
+  isReviewed?: boolean;
 }
 
 export interface OrderDetailResponse {
@@ -50,6 +52,7 @@ export interface OrderDetailResponse {
   note?: string;
   createdAt: string;
   items: OrderItemResponse[];
+  isReviewed?: boolean;
 }
 
 export interface CreatePaymentUrlRequest {
@@ -62,8 +65,8 @@ export interface PaymentLinkDto {
 }
 
 export type OrderStatus =
-  | "Confirmed"
   | "Pending"
+  | "Confirmed"
   | "Processing"
   | "Shipping"
   | "Completed"

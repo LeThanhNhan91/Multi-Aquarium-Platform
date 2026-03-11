@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,7 +13,8 @@ namespace Aquarium.Application.DTOs.Orders
         decimal TotalLineAmount,
         string? ProductImageUrl,
         List<string>? FishImages,
-        string? FishVideoUrl
+        string? FishVideoUrl,
+        bool IsReviewed = false
     );
 
     public record OrderDetailResponse(
@@ -26,6 +27,7 @@ namespace Aquarium.Application.DTOs.Orders
         string ShippingAddress,
         string? Note,
         DateTime CreatedAt,
-        List<OrderItemResponse> Items
+        List<OrderItemResponse> Items,
+        bool IsReviewed = false
     );
 }

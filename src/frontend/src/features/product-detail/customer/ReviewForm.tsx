@@ -102,7 +102,7 @@ export function ReviewForm({
               name="rating"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-center">
-                  <FormLabel className="text-base">Số sao</FormLabel>
+                  <FormLabel className="text-base">Đánh giá của bạn</FormLabel>
                   <FormControl>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (

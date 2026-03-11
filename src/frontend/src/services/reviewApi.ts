@@ -49,11 +49,16 @@ export const reviewApi = createApi({
         method: "POST",
         body: request,
       }),
-      invalidatesTags: (result, error, { productId }) => [
+      invalidatesTags: (result, error, { productId, request }) => [
         { type: "Review", id: productId },
         { type: "Review", id: `CAN_REVIEW_${productId}` },
         { type: "ProductRating", id: productId },
+        { type: "Review", id: `ORDER_${request.orderId}` },
       ],
+    }),
+    getOrderReviews: builder.query<ApiResponse<Review[]>, string>({
+      query: (orderId) => `/orders/${orderId}/reviews`,
+      providesTags: (result, error, orderId) => [{ type: "Review", id: `ORDER_${orderId}` }],
     }),
   }),
 });
@@ -63,4 +68,5 @@ export const {
   useGetProductReviewSummaryQuery,
   useCanReviewProductQuery,
   useCreateProductReviewMutation,
+  useGetOrderReviewsQuery,
 } = reviewApi;
