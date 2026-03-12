@@ -13,6 +13,7 @@ interface RelatedProduct {
   reviews: number;
   shop: string;
   category: string;
+  productType: string
 }
 
 interface RelatedProductsProps {
@@ -29,7 +30,8 @@ const mockRelatedProducts: RelatedProduct[] = [
     rating: 4.8,
     reviews: 234,
     shop: "Aqua Paradise",
-    category: "Tropical Fish",
+        category: "Tropical Fish",
+        productType: "fish"
   },
   {
     id: "2",
@@ -41,6 +43,7 @@ const mockRelatedProducts: RelatedProduct[] = [
     reviews: 156,
     shop: "Pro Equipment",
     category: "Equipment",
+    productType: "equipment"
   },
   {
     id: "3",
@@ -52,6 +55,7 @@ const mockRelatedProducts: RelatedProduct[] = [
     reviews: 189,
     shop: "Lighting Experts",
     category: "Supplies",
+    productType: "equipment"
   },
   {
     id: "4",
@@ -63,6 +67,7 @@ const mockRelatedProducts: RelatedProduct[] = [
     reviews: 45,
     shop: "Exotic Fish VN",
     category: "Tropical Fish",
+    productType: "fish"
   },
 ];
 
