@@ -34,9 +34,13 @@ import {
   useGetOrderByIdQuery,
   useCreatePaymentUrlMutation,
 } from "@/services/orderApi";
-import { useGetOrderReviewsQuery } from "@/services/reviewApi";
+import {
+  useGetOrderReviewsQuery,
+  useGetStoreReviewByOrderQuery,
+} from "@/services/reviewApi";
 import { Review } from "@/types/review.type";
-import { ReviewForm } from "@/features/product-detail/customer/ReviewForm";
+import { ReviewForm } from "@/features/reviews/ReviewForm";
+import { StoreReviewForm } from "@/features/reviews/StoreReviewForm";
 import {
   ORDER_STATUS_COLORS,
   ORDER_STATUS_LABELS,
@@ -49,7 +53,7 @@ interface Props {
   orderId: string;
 }
 
-// ── Status stepper ─────────────────────────────────────────────────────────────
+// Status stepper
 const STATUS_STEPS: {
   key: OrderStatus;
   label: string;
@@ -349,6 +353,13 @@ export default function OrderDetailClient({ orderId }: Props) {
   const [reviewingProductId, setReviewingProductId] = useState<string | null>(
     null,
   );
+  const [isStoreReviewOpen, setIsStoreReviewOpen] = useState(false);
+
+  const { data: storeReviewResponse } = useGetStoreReviewByOrderQuery(
+    { storeId: order?.storeId ?? "", orderId },
+    { skip: !order || order.status !== "Completed" },
+  );
+  const existingStoreReview = storeReviewResponse?.data;
 
   const [createPaymentUrl, { isLoading: paymentLoading }] =
     useCreatePaymentUrlMutation();
@@ -470,10 +481,64 @@ export default function OrderDetailClient({ orderId }: Props) {
           </span>
         </div>
 
-        {/* ── Status stepper ── */}
+        {/* Status stepper */}
         <Card className="border-border/50 rounded-2xl p-5">
           <StatusStepper status={order.status as OrderStatus} />
         </Card>
+
+        {/* Store review card */}
+        {order.status === "Completed" && (
+          <Card className="border-border/50 rounded-2xl overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-border/50 bg-muted/20 flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-500 shrink-0" />
+              <span className="text-sm font-semibold text-foreground">
+                Đánh giá cửa hàng
+              </span>
+            </div>
+            <div className="px-5 py-4">
+              {existingStoreReview ? (
+                <div className="space-y-1">
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={cn(
+                          "h-4 w-4",
+                          i < existingStoreReview.rating
+                            ? "fill-amber-400 text-amber-400"
+                            : "fill-muted text-muted",
+                        )}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm text-foreground/80 leading-relaxed italic">
+                    &ldquo;{existingStoreReview.comment}&rdquo;
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Đã đánh giá{" "}
+                    {new Date(existingStoreReview.createdAt).toLocaleDateString(
+                      "vi-VN",
+                    )}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm text-muted-foreground">
+                    Bạn chưa đánh giá cửa hàng cho đơn hàng này.
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => setIsStoreReviewOpen(true)}
+                    className="shrink-0 rounded-lg"
+                  >
+                    <Star className="h-3.5 w-3.5 mr-1.5" />
+                    Đánh giá
+                  </Button>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
 
         {/* ── Order items ── */}
         <Card className="border-border/50 rounded-2xl overflow-hidden">
@@ -618,13 +683,23 @@ export default function OrderDetailClient({ orderId }: Props) {
         </div>
       </div>
 
-      {/* Review Form */}
+      {/* Product Review Form */}
       <ReviewForm
         productId={reviewingProductId || ""}
         orderId={orderId}
         open={!!reviewingProductId}
         onOpenChange={(open) => !open && setReviewingProductId(null)}
       />
+
+      {/* Store Review Form */}
+      {order.storeId && (
+        <StoreReviewForm
+          storeId={order.storeId}
+          orderId={orderId}
+          open={isStoreReviewOpen}
+          onOpenChange={setIsStoreReviewOpen}
+        />
+      )}
     </main>
   );
 }

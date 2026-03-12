@@ -11,6 +11,7 @@ export interface Review {
   status: string;
   createdAt: string;
   updatedAt: string | null;
+  mediaUrls: string[];
 }
 
 export interface ReviewSummary {
@@ -42,10 +43,18 @@ export interface CreateReviewRequest {
   orderId: string;
   rating: number;
   comment: string;
+  images?: File[];
 }
 
 export interface CanReviewResponse {
   canReview: boolean;
   orderId: string | null;
   message: string;
+}
+
+export interface StoreBadgeResponse {
+  badgeType: string;
+  displayName: string;
+  description: string;
+  awardedAt: string;
 }

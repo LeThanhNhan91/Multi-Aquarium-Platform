@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Star } from "lucide-react";
+import { ImagePlus, Star, X } from "lucide-react";
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,9 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/utils/utils";
-import { useCreateProductReviewMutation } from "@/services/reviewApi";
+import {
+  useCreateProductReviewMutation,
+} from "@/services/reviewApi";
 import { toast } from "sonner";
 
 const reviewSchema = z.object({
@@ -53,28 +56,49 @@ export function ReviewForm({
   onSuccess,
 }: ReviewFormProps) {
   const [createReview, { isLoading }] = useCreateProductReviewMutation();
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewSchema),
-    defaultValues: {
-      rating: 5,
-      comment: "",
-    },
+    defaultValues: { rating: 5, comment: "" },
   });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    const remaining = 5 - imageFiles.length;
+    const toAdd = files.slice(0, remaining);
+    setImageFiles((prev) => [...prev, ...toAdd]);
+    toAdd.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () =>
+        setImagePreviews((prev) => [...prev, reader.result as string]);
+      reader.readAsDataURL(file);
+    });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeImage = (idx: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== idx));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const resetForm = () => {
+    form.reset();
+    setImageFiles([]);
+    setImagePreviews([]);
+  };
 
   const onSubmit = async (values: ReviewFormValues) => {
     try {
       await createReview({
         productId,
-        request: {
-          orderId,
-          rating: values.rating,
-          comment: values.comment,
-        },
+        request: { orderId, rating: values.rating, comment: values.comment, images: imageFiles },
       }).unwrap();
 
       toast.success("Cảm ơn bạn đã đánh giá sản phẩm!");
-      form.reset();
+      resetForm();
       onOpenChange(false);
       onSuccess?.();
     } catch (error: any) {
@@ -84,8 +108,10 @@ export function ReviewForm({
     }
   };
 
+  const busy = isLoading;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { if (!busy) { resetForm(); onOpenChange(v); } }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Viết đánh giá sản phẩm</DialogTitle>
@@ -96,7 +122,7 @@ export function ReviewForm({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <FormField
               control={form.control}
               name="rating"
@@ -138,7 +164,7 @@ export function ReviewForm({
                   <FormControl>
                     <Textarea
                       placeholder="Hãy cho chúng tôi biết bạn thích gì ở sản phẩm này..."
-                      className="min-h-[120px] resize-none"
+                      className="min-h-25 resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -147,16 +173,63 @@ export function ReviewForm({
               )}
             />
 
+            {/* Image upload */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium">
+                Hình ảnh{" "}
+                <span className="text-muted-foreground font-normal">
+                  (tối đa 5)
+                </span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {imagePreviews.map((src, i) => (
+                  <div
+                    key={i}
+                    className="relative h-20 w-20 rounded-lg overflow-hidden border border-border/50"
+                  >
+                    <Image src={src} alt="" fill className="object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 hover:bg-black/80"
+                    >
+                      <X className="h-3 w-3 text-white" />
+                    </button>
+                  </div>
+                ))}
+                {imageFiles.length < 5 && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-20 w-20 rounded-lg border-2 border-dashed border-border/50 flex flex-col items-center justify-center gap-1 hover:bg-muted/40 transition-colors"
+                  >
+                    <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground">
+                      Thêm ảnh
+                    </span>
+                  </button>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+
             <DialogFooter className="sm:justify-end">
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
+                onClick={() => { resetForm(); onOpenChange(false); }}
+                disabled={busy}
               >
                 Hủy
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={busy}>
                 {isLoading ? "Đang gửi..." : "Gửi đánh giá"}
               </Button>
             </DialogFooter>

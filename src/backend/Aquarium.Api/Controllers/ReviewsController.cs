@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Aquarium.Application.DTOs.Reviews;
+using Aquarium.Application.Interfaces.Media;
 using Aquarium.Application.Interfaces.Reviews;
 using Aquarium.Application.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -14,10 +16,12 @@ namespace Aquarium.Api.Controllers
     public class ReviewsController : ControllerBase
     {
         private readonly IReviewService _reviewService;
+        private readonly IMediaService _mediaService;
 
-        public ReviewsController(IReviewService reviewService)
+        public ReviewsController(IReviewService reviewService, IMediaService mediaService)
         {
             _reviewService = reviewService;
+            _mediaService = mediaService;
         }
 
         private Guid GetCurrentUserId()
@@ -30,9 +34,21 @@ namespace Aquarium.Api.Controllers
         // Product Reviews
         [HttpPost("products/{productId}/reviews")]
         [Authorize]
-        public async Task<IActionResult> CreateProductReview(Guid productId, [FromBody] CreateReviewRequest request)
+        public async Task<IActionResult> CreateProductReview(Guid productId, [FromForm] CreateReviewFormRequest formRequest)
         {
             var userId = GetCurrentUserId();
+            var mediaUrls = new List<string>();
+            if (formRequest.Images?.Count > 0)
+                foreach (var image in formRequest.Images)
+                    mediaUrls.Add((await _mediaService.UploadImageAsync(image)).Url);
+
+            var request = new CreateReviewRequest
+            {
+                OrderId = formRequest.OrderId,
+                Rating = formRequest.Rating,
+                Comment = formRequest.Comment,
+                MediaUrls = mediaUrls.Count > 0 ? mediaUrls : null
+            };
             var review = await _reviewService.CreateProductReviewAsync(productId, request, userId);
             return Ok(new ApiResponse<ReviewResponse>(review, "Product review created successfully"));
         }
@@ -101,9 +117,21 @@ namespace Aquarium.Api.Controllers
         // Store Reviews
         [HttpPost("stores/{storeId}/reviews")]
         [Authorize]
-        public async Task<IActionResult> CreateStoreReview(Guid storeId, [FromBody] CreateReviewRequest request)
+        public async Task<IActionResult> CreateStoreReview(Guid storeId, [FromForm] CreateReviewFormRequest formRequest)
         {
             var userId = GetCurrentUserId();
+            var mediaUrls = new List<string>();
+            if (formRequest.Images?.Count > 0)
+                foreach (var image in formRequest.Images)
+                    mediaUrls.Add((await _mediaService.UploadImageAsync(image)).Url);
+
+            var request = new CreateReviewRequest
+            {
+                OrderId = formRequest.OrderId,
+                Rating = formRequest.Rating,
+                Comment = formRequest.Comment,
+                MediaUrls = mediaUrls.Count > 0 ? mediaUrls : null
+            };
             var review = await _reviewService.CreateStoreReviewAsync(storeId, request, userId);
             return Ok(new ApiResponse<ReviewResponse>(review, "Store review created successfully"));
         }

@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { OrderResponse, OrderItemResponse } from "@/types/order.type";
-import { ReviewForm } from "@/features/product-detail/customer/ReviewForm";
+import { ReviewForm } from "@/features/reviews/ReviewForm";
 import { formatToVND } from "@/helper/formatter";
 import Link from "next/link";
 import { orderApi } from "@/services/orderApi";

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace Aquarium.Application.DTOs.Reviews
 {
@@ -18,6 +19,22 @@ namespace Aquarium.Application.DTOs.Reviews
         public string Comment { get; set; }
 
         public List<string>? MediaUrls { get; set; }
+    }
+
+    public class CreateReviewFormRequest
+    {
+        [Required]
+        public Guid OrderId { get; set; }
+
+        [Required]
+        [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5")]
+        public int Rating { get; set; }
+
+        [Required]
+        [StringLength(1000, MinimumLength = 10, ErrorMessage = "Comment must be between 10 and 1000 characters")]
+        public string Comment { get; set; }
+
+        public List<IFormFile>? Images { get; set; }
     }
 
     public class UpdateReviewRequest

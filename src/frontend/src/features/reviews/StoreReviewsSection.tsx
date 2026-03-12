@@ -1,4 +1,7 @@
+"use client";
+
 import { useState } from "react";
+import Image from "next/image";
 import { Star, MessageCircle, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,32 +9,20 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/utils/utils";
 import {
-  useGetProductReviewsQuery,
-  useCanReviewProductQuery,
-  useGetProductReviewSummaryQuery,
+  useGetStoreReviewsQuery,
+  useGetStoreReviewSummaryQuery,
 } from "@/services/reviewApi";
-import { ReviewForm } from "./ReviewForm";
-import { useSelector } from "react-redux";
-import { RootState } from "@/libs/redux/store";
 
-interface ReviewsSectionProps {
-  productId: string;
-  initialAverageRating: number;
-  initialTotalReviews: number;
+interface StoreReviewsSectionProps {
+  storeId: string;
 }
 
-export function ReviewsSection({
-  productId,
-  initialAverageRating,
-  initialTotalReviews,
-}: ReviewsSectionProps) {
+export function StoreReviewsSection({ storeId }: StoreReviewsSectionProps) {
   const [pageIndex, setPageIndex] = useState(1);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   const { data: reviewsResponse, isFetching: isReviewsLoading } =
-    useGetProductReviewsQuery({
-      productId,
+    useGetStoreReviewsQuery({
+      storeId,
       filter: {
         pageIndex,
         pageSize: 5,
@@ -40,49 +31,46 @@ export function ReviewsSection({
       },
     });
 
-  const { data: summaryResponse } = useGetProductReviewSummaryQuery(productId);
-  const { data: canReviewResponse } = useCanReviewProductQuery(productId, {
-    skip: !isAuthenticated,
-  });
+  const { data: summaryResponse } = useGetStoreReviewSummaryQuery(storeId);
 
   const summary = summaryResponse?.data;
   const reviews = reviewsResponse?.data?.items ?? [];
-  const totalCount = reviewsResponse?.data?.totalCount ?? initialTotalReviews;
-  const averageRating = summary?.averageRating ?? initialAverageRating;
+  const totalCount = reviewsResponse?.data?.totalCount ?? 0;
+  const averageRating = summary?.averageRating ?? 0;
 
   const ratingDistribution = [
     {
       rating: 5,
       count: summary?.fiveStarCount ?? 0,
-      percentage: summary
+      percentage: summary?.totalReviews
         ? (summary.fiveStarCount / summary.totalReviews) * 100
         : 0,
     },
     {
       rating: 4,
       count: summary?.fourStarCount ?? 0,
-      percentage: summary
+      percentage: summary?.totalReviews
         ? (summary.fourStarCount / summary.totalReviews) * 100
         : 0,
     },
     {
       rating: 3,
       count: summary?.threeStarCount ?? 0,
-      percentage: summary
+      percentage: summary?.totalReviews
         ? (summary.threeStarCount / summary.totalReviews) * 100
         : 0,
     },
     {
       rating: 2,
       count: summary?.twoStarCount ?? 0,
-      percentage: summary
+      percentage: summary?.totalReviews
         ? (summary.twoStarCount / summary.totalReviews) * 100
         : 0,
     },
     {
       rating: 1,
       count: summary?.oneStarCount ?? 0,
-      percentage: summary
+      percentage: summary?.totalReviews
         ? (summary.oneStarCount / summary.totalReviews) * 100
         : 0,
     },
@@ -90,8 +78,8 @@ export function ReviewsSection({
 
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold  text-foreground">
-        Đánh giá & Nhận xét
+      <h2 className="text-2xl font-bold text-foreground">
+        Đánh giá cửa hàng
       </h2>
 
       <div className="grid md:grid-cols-3 gap-8">
@@ -126,7 +114,7 @@ export function ReviewsSection({
             <div className="space-y-3">
               {ratingDistribution.map((item) => (
                 <div key={item.rating} className="flex items-center gap-3">
-                  <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground whitespace-nowrap min-w-[30px]">
+                  <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground whitespace-nowrap min-w-7.5">
                     {item.rating}{" "}
                     <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                   </span>
@@ -136,27 +124,12 @@ export function ReviewsSection({
                       style={{ width: `${item.percentage || 0}%` }}
                     />
                   </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap min-w-[30px]">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap min-w-7.5">
                     {item.count}
                   </span>
                 </div>
               ))}
             </div>
-
-            {canReviewResponse?.data?.canReview && (
-              <Button
-                onClick={() => setIsFormOpen(true)}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-semibold"
-              >
-                Viết đánh giá
-              </Button>
-            )}
-
-            {!isAuthenticated && (
-              <p className="text-xs text-center text-muted-foreground">
-                Bạn cần đăng nhập để viết đánh giá
-              </p>
-            )}
           </Card>
         </div>
 
@@ -164,7 +137,7 @@ export function ReviewsSection({
         <div className="md:col-span-2 space-y-4">
           {reviews.length === 0 && !isReviewsLoading && (
             <div className="text-center py-12 text-muted-foreground">
-              Chưa có đánh giá nào cho sản phẩm này.
+              Chưa có đánh giá nào cho cửa hàng này.
             </div>
           )}
 
@@ -211,11 +184,25 @@ export function ReviewsSection({
                 </div>
               </div>
 
-              {/* Review Title and Content */}
+              {/* Review Content */}
               <div className="space-y-2">
                 <p className="text-sm text-foreground/80 leading-relaxed">
                   {review.comment}
                 </p>
+
+                {/* Review images */}
+                {review.mediaUrls?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {review.mediaUrls.map((url, i) => (
+                      <div
+                        key={i}
+                        className="relative h-20 w-20 rounded-lg overflow-hidden border border-border/50"
+                      >
+                        <Image src={url} alt="" fill className="object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Review Footer */}
@@ -244,15 +231,6 @@ export function ReviewsSection({
           )}
         </div>
       </div>
-
-      {canReviewResponse?.data?.orderId && (
-        <ReviewForm
-          productId={productId}
-          orderId={canReviewResponse.data.orderId}
-          open={isFormOpen}
-          onOpenChange={setIsFormOpen}
-        />
-      )}
     </div>
   );
 }

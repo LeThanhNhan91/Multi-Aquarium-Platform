@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAppSelector } from "@/libs/redux/hook";
+import { StoreBadges } from "@/components/shared/StoreBadges";
 
 interface StoreInfoProps {
   storeName: string;
@@ -122,6 +123,7 @@ export function StoreInfo({
           <p className="text-xs font-semibold text-foreground/70 uppercase">
             Chứng thực
           </p>
+          <StoreBadges storeId={storeId} />
           <div className="flex gap-2">
             <div className="px-2.5 py-1.5 bg-green-500/10 border border-green-500/30 rounded-lg">
               <p className="text-xs font-semibold text-green-600">

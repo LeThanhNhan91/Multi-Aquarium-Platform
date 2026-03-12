@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { ProductInfo } from "./ProductInfo";
 import { PurchaseActions } from "./PurchaseActions";
 import { StoreInfo } from "./StoreInfo";
-import { ReviewsSection } from "./ReviewsSection";
+import { ReviewsSection } from "../../reviews/ReviewsSection";
 import { RelatedProducts } from "./RelatedProducts";
 import { useGetProductByIdQuery } from "@/services/productApi";
 import { FishInstance } from "@/types/product.type";
