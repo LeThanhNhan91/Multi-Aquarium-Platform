@@ -59,6 +59,10 @@ public partial class MultiStoreAquariumDBContext : DbContext
 
     public virtual DbSet<FishInstanceMedia> FishInstanceMedias { get; set; }
 
+    public virtual DbSet<DoaRequest> DoaRequests { get; set; }
+
+    public virtual DbSet<DoaRequestMedia> DoaRequestMedias { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -437,6 +441,55 @@ public partial class MultiStoreAquariumDBContext : DbContext
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_FishInstances_Products");
+        });
+
+        modelBuilder.Entity<DoaRequest>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Reason).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50).HasDefaultValue("Pending");
+            entity.Property(e => e.ReviewNote).HasMaxLength(500);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+
+            // One DOA request per order (enforced by unique index)
+            entity.HasIndex(e => e.OrderId).IsUnique();
+
+            entity.HasOne(d => d.Order)
+                .WithMany()
+                .HasForeignKey(d => d.OrderId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_DoaRequests_Orders");
+
+            entity.HasOne(d => d.Customer)
+                .WithMany()
+                .HasForeignKey(d => d.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_DoaRequests_Users_Customer");
+
+            entity.HasOne(d => d.ReviewedByUser)
+                .WithMany()
+                .HasForeignKey(d => d.ReviewedBy)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false)
+                .HasConstraintName("FK_DoaRequests_Users_ReviewedBy");
+        });
+
+        modelBuilder.Entity<DoaRequestMedia>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.MediaUrl).IsRequired();
+            entity.Property(e => e.MediaType).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.PublicId).HasMaxLength(255);
+            entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+
+            entity.HasOne(d => d.DoaRequest)
+                .WithMany(p => p.Media)
+                .HasForeignKey(d => d.DoaRequestId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_DoaRequestMedias_DoaRequests");
         });
 
         OnModelCreatingPartial(modelBuilder);

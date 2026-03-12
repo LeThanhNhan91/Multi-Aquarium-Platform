@@ -12,6 +12,8 @@ namespace Aquarium.Domain.Constants
         public const string Shipping = "Shipping";
         public const string Completed = "Completed";
         public const string Cancelled = "Cancelled";
+        public const string DoaRequested = "DoaRequested";
+        public const string DoaApproved = "DoaApproved";
     }
 
     public static class PaymentsStatus

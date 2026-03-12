@@ -597,6 +597,10 @@ namespace Aquarium.Application.Services
             }
 
             order.Status = request.Status;
+            if (request.Status == OrderStatus.Completed)
+            {
+                order.CompletedAt = DateTime.UtcNow;
+            }
             if (!string.IsNullOrEmpty(request.Note))
             {
                 order.Note += $" | Update: {request.Note}";

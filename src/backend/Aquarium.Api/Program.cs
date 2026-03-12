@@ -12,6 +12,7 @@ using Aquarium.Application.Interfaces.Orders;
 using Aquarium.Application.Interfaces.Payments;
 using Aquarium.Application.Interfaces.Posts;
 using Aquarium.Application.Interfaces.Products;
+using Aquarium.Application.Interfaces.Doa;
 using Aquarium.Application.Interfaces.Reviews;
 using Aquarium.Application.Interfaces.Store;
 using Aquarium.Application.Interfaces.Users;
@@ -74,6 +75,7 @@ builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IFishInstanceRepository, FishInstanceRepository>();
+builder.Services.AddScoped<IDoaRepository, DoaRepository>();
 
 // Dependency Injection for Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -88,6 +90,7 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IFishInstanceService, FishInstanceService>();
+builder.Services.AddScoped<IDoaService, DoaService>();
 
 builder.Services.AddSignalR();
 
