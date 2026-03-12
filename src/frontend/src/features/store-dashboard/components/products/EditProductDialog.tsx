@@ -27,13 +27,14 @@ import { useUpdateProductMutation } from "@/services/productApi";
 import { toast } from "sonner";
 import { useGetAllCategoriesQuery } from "@/services/categoryApi";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ImagePlus, X } from "lucide-react";
+  ImagePlus,
+  X,
+  Lock,
+  Loader2,
+  Tag,
+  FileText,
+  Images,
+} from "lucide-react";
 import Image from "next/image";
 
 const editProductSchema = z.object({
@@ -57,20 +58,17 @@ export function EditProductDialog({
 }: EditProductDialogProps) {
   const [updateProduct, { isLoading }] = useUpdateProductMutation();
   const { data: categoriesResponse } = useGetAllCategoriesQuery();
-  const categories = categoriesResponse?.data.items || [];
 
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [removedImageUrls, setRemovedImageUrls] = useState<string[]>([]);
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
 
   const isLiveFish = product?.productType === "LiveFish";
 
   const form = useForm<EditProductFormValues>({
     resolver: zodResolver(editProductSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      basePrice: 0,
-    },
+    defaultValues: { name: "", description: "", basePrice: 0 },
   });
 
   useEffect(() => {
@@ -80,6 +78,10 @@ export function EditProductDialog({
         description: product.description || "",
         basePrice: product.basePrice || 0,
       });
+      setCurrentImages(product.images || []);
+      setRemovedImageUrls([]);
+      setSelectedImages([]);
+      setPreviewUrls([]);
     }
   }, [product, form]);
 
@@ -92,185 +94,256 @@ export function EditProductDialog({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setSelectedImages((prev) => [...prev, ...files]);
-
-    const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
-    setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+    setPreviewUrls((prev) => [
+      ...prev,
+      ...files.map((f) => URL.createObjectURL(f)),
+    ]);
   };
 
-  const removeImage = (index: number) => {
-    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+  const removeNewImage = (index: number) => {
     URL.revokeObjectURL(previewUrls[index]);
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = (url: string) => {
+    setRemovedImageUrls((prev) => [...prev, url]);
+    setCurrentImages((prev) => prev.filter((img) => img !== url));
   };
 
   const onSubmit = async (data: EditProductFormValues) => {
     if (!product) return;
-
     try {
-      const updateRequest: UpdateProductRequest = {
-        name: data.name,
-        description: data.description,
-        basePrice: isLiveFish ? undefined : data.basePrice,
-        newImages: selectedImages,
-      };
-
-      await updateProduct({ id: product.id, data: updateRequest }).unwrap();
+      await updateProduct({
+        id: product.id,
+        data: {
+          name: data.name,
+          description: data.description,
+          basePrice: isLiveFish ? undefined : data.basePrice,
+          newImages: selectedImages,
+          removeImageUrls: removedImageUrls,
+        },
+      }).unwrap();
       toast.success("Cập nhật sản phẩm thành công");
       onOpenChange(false);
-      form.reset();
-      setSelectedImages([]);
-      setPreviewUrls([]);
     } catch (error: any) {
       toast.error(error.data?.message || "Không thể cập nhật sản phẩm");
     }
   };
 
+  const totalImages = currentImages.length + selectedImages.length;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border-border/50">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Chỉnh sửa sản phẩm</DialogTitle>
-          <DialogDescription>
-            Cập nhật thông tin chi tiết cho sản phẩm của bạn.
-          </DialogDescription>
-        </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tên sản phẩm</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Nhập tên sản phẩm..."
-                      {...field}
-                      disabled={isLoading}
-                      className="rounded-xl border-border/50 h-11"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+      <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden rounded-2xl border-border/40 shadow-2xl flex flex-col gap-0">
+        <div className="px-6 pt-6 pb-5 border-b border-border/50 bg-muted/20 shrink-0">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-foreground tracking-tight">
+              Chỉnh sửa sản phẩm
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground mt-0.5">
+              {product?.name && (
+                <span className="font-medium text-foreground/70">
+                  "{product.name}"
+                </span>
               )}
-            />
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-            <div className="space-y-2">
-              <FormLabel>Danh mục</FormLabel>
-              <div className="px-4 py-2.5 bg-muted/50 rounded-xl border border-border/50 text-muted-foreground font-medium">
-                {product?.categoryName}
-              </div>
-              <p className="text-[0.8rem] text-muted-foreground">
-                Danh mục cố định để đảm bảo tính nhất quán của loại sản phẩm.
-              </p>
-            </div>
-
-            {!isLiveFish && (
+        <div className="overflow-y-auto flex-1 px-6 py-5">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 control={form.control}
-                name="basePrice"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Giá bán cơ bản (VND)</FormLabel>
+                    <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Tên sản phẩm
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        min={0}
-                        placeholder="0"
+                        placeholder="Nhập tên sản phẩm..."
                         {...field}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value === "" ? 0 : Number(e.target.value),
-                          )
-                        }
                         disabled={isLoading}
-                        className="rounded-xl border-border/50 h-11"
+                        className="rounded-xl border-border/50 bg-muted/30 h-10 px-3 text-sm font-medium focus:ring-primary/20"
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mô tả sản phẩm</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Nhập mô tả chi tiết sản phẩm..."
-                      className="min-h-[120px] rounded-xl border-border/50 resize-none"
-                      {...field}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                    <Tag className="h-3 w-3" /> Danh mục
+                  </p>
+                  <div className="flex items-center gap-2 h-10 px-3 bg-muted/50 rounded-xl border border-border/40 text-sm font-medium text-foreground/70">
+                    <Lock className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+                    <span className="truncate">{product?.categoryName}</span>
+                  </div>
+                </div>
+
+                {!isLiveFish && (
+                  <FormField
+                    control={form.control}
+                    name="basePrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          Giá bán (VND)
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={0}
+                            placeholder="0"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value === ""
+                                  ? 0
+                                  : Number(e.target.value),
+                              )
+                            }
+                            disabled={isLoading}
+                            className="rounded-xl border-border/50 bg-muted/30 h-10 px-3 text-sm font-bold text-primary focus:ring-primary/20"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+
+              {/* Mô tả */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                      <FileText className="h-3 w-3" /> Mô tả sản phẩm
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Mô tả chi tiết sản phẩm của bạn..."
+                        className="min-h-[100px] rounded-xl border-border/50 bg-muted/30 p-3 text-sm resize-none focus:ring-primary/20"
+                        {...field}
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                    <Images className="h-3 w-3" /> Hình ảnh sản phẩm
+                  </p>
+                  <span className="text-xs text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                    {totalImages} ảnh
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5">
+                  {currentImages.map((url, index) => (
+                    <div
+                      key={`current-${index}`}
+                      className="relative aspect-square rounded-xl overflow-hidden border border-border/40 group bg-muted/20"
+                    >
+                      <Image
+                        src={url}
+                        alt="Current"
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105 duration-300"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeExistingImage(url)}
+                        className="absolute top-1.5 right-1.5 p-1 bg-black/60 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Ảnh mới */}
+                  {previewUrls.map((url, index) => (
+                    <div
+                      key={`new-${index}`}
+                      className="relative aspect-square rounded-xl overflow-hidden border-2 border-primary/30 group bg-primary/5"
+                    >
+                      <Image
+                        src={url}
+                        alt="New Preview"
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105 duration-300"
+                      />
+                      <div className="absolute top-1.5 left-1.5 bg-primary text-[9px] text-white px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                        Mới
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeNewImage(index)}
+                        className="absolute top-1.5 right-1.5 p-1 bg-black/60 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+
+                  <label className="border-2 border-dashed border-border/50 rounded-xl aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group">
+                    <ImagePlus className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors mb-1" />
+                    <span className="text-[10px] font-semibold text-muted-foreground group-hover:text-primary transition-colors uppercase tracking-wide">
+                      Thêm
+                    </span>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageChange}
                       disabled={isLoading}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="space-y-4">
-              <FormLabel>Thêm hình ảnh mới</FormLabel>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {previewUrls.map((url, index) => (
-                  <div
-                    key={index}
-                    className="relative aspect-square rounded-xl overflow-hidden border border-border/50 group"
-                  >
-                    <Image
-                      src={url}
-                      alt="Preview"
-                      fill
-                      className="object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 p-1 bg-destructive/80 text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-                <label className="border-2 border-dashed border-border/50 rounded-xl aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary">
-                  <ImagePlus className="h-8 w-8 mb-2" />
-                  <span className="text-xs font-medium">Thêm ảnh</span>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
-                    disabled={isLoading}
-                  />
-                </label>
+                  </label>
+                </div>
               </div>
-            </div>
+            </form>
+          </Form>
+        </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-border/50">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
-                className="rounded-xl px-6 h-11"
-              >
-                Hủy
-              </Button>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="rounded-xl px-8 h-11 bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-lg shadow-primary/20"
-              >
-                {isLoading ? "Đang cập nhật..." : "Lưu thay đổi"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+        <div className="shrink-0 px-6 py-4 border-t border-border/50 bg-muted/20 flex items-center justify-end gap-3">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+            className="rounded-xl px-5 h-9 text-sm font-semibold hover:bg-muted text-muted-foreground"
+          >
+            Hủy bỏ
+          </Button>
+          <Button
+            type="submit"
+            disabled={isLoading}
+            onClick={form.handleSubmit(onSubmit)}
+            className="rounded-xl px-6 h-9 text-sm font-bold"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />
+                Đang lưu...
+              </>
+            ) : (
+              "Lưu thay đổi"
+            )}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -54,6 +54,7 @@ export interface UpdateProductRequest {
   basePrice?: number;
   newImages?: File[];
   removeImageIds?: string[];
+  removeImageUrls?: string[];
 }
 
 export interface CreateFishInstanceRequest {

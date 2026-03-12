@@ -16,5 +16,7 @@ namespace Aquarium.Application.DTOs.Products
         public List<IFormFile>? NewImages { get; set; }
         
         public List<Guid>? RemoveImageIds { get; set; }
+
+        public List<string>? RemoveImageUrls { get; set; }
     }
 }

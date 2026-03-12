@@ -191,11 +191,28 @@ namespace Aquarium.Application.Services
             product.Slug = Helper.GenerateSlug(request.Name);
             product.Description = request.Description;
 
-            // Handle Image Removal
+            // Handle Image Removal by ID
             if (request.RemoveImageIds != null && request.RemoveImageIds.Any())
             {
                 var mediaToRemove = product.ProductMedia
                     .Where(m => request.RemoveImageIds.Contains(m.Id))
+                    .ToList();
+
+                foreach (var media in mediaToRemove)
+                {
+                    if (!string.IsNullOrEmpty(media.PublicId))
+                    {
+                        await _mediaService.DeleteMediaAsync(media.PublicId);
+                    }
+                    product.ProductMedia.Remove(media);
+                }
+            }
+
+            // Handle Image Removal by URL
+            if (request.RemoveImageUrls != null && request.RemoveImageUrls.Any())
+            {
+                var mediaToRemove = product.ProductMedia
+                    .Where(m => request.RemoveImageUrls.Contains(m.MediaUrl))
                     .ToList();
 
                 foreach (var media in mediaToRemove)
