@@ -31,6 +31,8 @@ export function FeaturedProducts() {
     reviews: item.totalReviews ?? 0,
     image: item.images?.[0] || "/placeholder.svg",
     category: item.categoryName,
+    productType: item.productType,
+    availableFishCount: item.availableFishCount,
   }));
 
   if (!isLoading && products.length === 0)

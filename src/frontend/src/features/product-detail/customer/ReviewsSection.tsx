@@ -171,7 +171,7 @@ export function ReviewsSection({
           {reviews.map((review) => (
             <Card
               key={review.id}
-              className="border-border/50 bg-card rounded-2xl p-6 space-y-4 hover:shadow-md transition-shadow"
+              className="border-border/50 bg-card rounded-2xl p-6 space-y-2 hover:shadow-md transition-shadow"
             >
               {/* Review Header */}
               <div className="flex items-start justify-between gap-4">

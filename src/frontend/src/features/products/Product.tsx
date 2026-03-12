@@ -113,6 +113,8 @@ export default function ProductsList() {
       reviews: item.totalReviews ?? 0,
       image: item.images?.[0] || "/images/product-placeholder.jpg",
       category: item.categoryName,
+      productType: item.productType,
+      availableFishCount: item.availableFishCount,
     }));
     setAllProducts((prev) =>
       productData.data.pageIndex === 1 ? newItems : [...prev, ...newItems],

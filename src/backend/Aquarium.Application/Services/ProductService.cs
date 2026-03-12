@@ -83,7 +83,7 @@ namespace Aquarium.Application.Services
                 // For LiveFish products
                 var availableFishCount = await _fishInstanceRepository.GetAvailableCountByProductIdAsync(p.Id);
                 var priceRange = await _fishInstanceRepository.GetPriceRangeByProductIdAsync(p.Id);
-                var fishInstances = await _fishInstanceRepository.GetAvailableByProductIdAsync(p.Id);
+                var fishInstances = await _fishInstanceRepository.GetByProductIdAsync(p.Id);
 
                 var fishResponses = fishInstances.Select(f => new FishInstanceResponse(
                     f.Id,

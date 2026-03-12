@@ -22,7 +22,7 @@ const statusMap: Record<
   },
   Sold: {
     label: "Đã bán",
-    color: "bg-red-500/10 text-red-500 border-red-500/20",
+    color: "bg-muted text-muted-foreground border-border",
   },
   Reserved: {
     label: "Đang giữ",
@@ -72,7 +72,7 @@ export function FishInstanceSelector({
                 "relative flex flex-col rounded-2xl border-2 overflow-hidden text-left transition-all duration-200",
                 isAvailable
                   ? "cursor-pointer hover:shadow-md hover:-translate-y-0.5"
-                  : "cursor-not-allowed opacity-60",
+                  : "cursor-not-allowed bg-muted/30 grayscale-[0.3]",
                 isSelected
                   ? "border-primary ring-2 ring-primary/30"
                   : "border-border/50 hover:border-primary/40",

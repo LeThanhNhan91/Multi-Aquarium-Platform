@@ -20,6 +20,8 @@ export interface Product {
   image: string;
   tag?: string;
   category: string;
+  productType: string;
+  availableFishCount?: number;
 }
 
 interface ProductCardProps {
@@ -90,9 +92,16 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex items-center justify-between mt-auto pt-2">
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-primary">
-              {product.price.toLocaleString()}đ
-            </span>
+            {product.productType === "LiveFish" &&
+            product.availableFishCount === 0 ? (
+              <span className="text-lg font-bold text-muted-foreground">
+                Hết hàng
+              </span>
+            ) : (
+              <span className="text-lg font-bold text-primary">
+                {product.price.toLocaleString()}đ
+              </span>
+            )}
             {product.originalPrice && (
               <span className="text-sm text-muted-foreground line-through">
                 {product.originalPrice.toLocaleString()}đ
