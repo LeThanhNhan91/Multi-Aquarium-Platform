@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Aquarium.Application.DTOs.Reviews
@@ -15,6 +16,8 @@ namespace Aquarium.Application.DTOs.Reviews
         [Required]
         [StringLength(1000, MinimumLength = 10, ErrorMessage = "Comment must be between 10 and 1000 characters")]
         public string Comment { get; set; }
+
+        public List<string>? MediaUrls { get; set; }
     }
 
     public class UpdateReviewRequest
@@ -42,6 +45,15 @@ namespace Aquarium.Application.DTOs.Reviews
         public string Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public List<string> MediaUrls { get; set; } = new();
+    }
+
+    public class StoreBadgeResponse
+    {
+        public string BadgeType { get; set; }
+        public string DisplayName { get; set; }
+        public string Description { get; set; }
+        public DateTime AwardedAt { get; set; }
     }
 
     public class ReviewSummary

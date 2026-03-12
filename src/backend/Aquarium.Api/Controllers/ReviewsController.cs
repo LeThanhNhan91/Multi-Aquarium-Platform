@@ -141,5 +141,22 @@ namespace Aquarium.Api.Controllers
             var summary = await _reviewService.GetStoreReviewSummaryAsync(storeId);
             return Ok(new ApiResponse<ReviewSummary>(summary));
         }
+
+        [HttpGet("stores/{storeId}/orders/{orderId}/review")]
+        [Authorize]
+        public async Task<IActionResult> GetStoreReviewByOrder(Guid storeId, Guid orderId)
+        {
+            var userId = GetCurrentUserId();
+            var review = await _reviewService.GetStoreReviewByOrderAsync(storeId, orderId, userId);
+            return Ok(new ApiResponse<ReviewResponse?>(review));
+        }
+
+        [HttpGet("stores/{storeId}/badges")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetStoreBadges(Guid storeId)
+        {
+            var badges = await _reviewService.GetStoreBadgesAsync(storeId);
+            return Ok(new ApiResponse<IEnumerable<StoreBadgeResponse>>(badges));
+        }
     }
 }

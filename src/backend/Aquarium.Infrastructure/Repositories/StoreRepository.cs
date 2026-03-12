@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Stores;
 using Aquarium.Application.Interfaces;
 using Aquarium.Application.Wrappers;
+using Aquarium.Domain.Constants;
 using Aquarium.Domain.Entities;
 using Aquarium.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -192,7 +193,41 @@ namespace Aquarium.Infrastructure.Repositories
                 }
 
                 _context.Stores.Update(store);
+
+                // Evaluate and award/revoke badges
+                var existingBadges = await _context.StoreBadges
+                    .Where(b => b.StoreId == storeId)
+                    .ToListAsync();
+
+                foreach (var criteria in BadgeCriteria.All)
+                {
+                    bool meetsCondition = store.AverageRating >= criteria.MinRating
+                        && store.TotalReviews >= criteria.MinReviews;
+                    var existing = existingBadges.FirstOrDefault(b => b.BadgeType == criteria.Type);
+
+                    if (meetsCondition && existing == null)
+                    {
+                        await _context.StoreBadges.AddAsync(new StoreBadge
+                        {
+                            Id = Guid.NewGuid(),
+                            StoreId = storeId,
+                            BadgeType = criteria.Type,
+                            AwardedAt = DateTime.UtcNow
+                        });
+                    }
+                    else if (!meetsCondition && existing != null)
+                    {
+                        _context.StoreBadges.Remove(existing);
+                    }
+                }
             }
+        }
+
+        public async Task<IEnumerable<StoreBadge>> GetStoreBadgesAsync(Guid storeId)
+        {
+            return await _context.StoreBadges
+                .Where(b => b.StoreId == storeId)
+                .ToListAsync();
         }
 
         public async Task<bool> SaveChangesAsync()

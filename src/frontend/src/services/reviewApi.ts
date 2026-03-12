@@ -58,7 +58,9 @@ export const reviewApi = createApi({
     }),
     getOrderReviews: builder.query<ApiResponse<Review[]>, string>({
       query: (orderId) => `/orders/${orderId}/reviews`,
-      providesTags: (result, error, orderId) => [{ type: "Review", id: `ORDER_${orderId}` }],
+      providesTags: (result, error, orderId) => [
+        { type: "Review", id: `ORDER_${orderId}` },
+      ],
     }),
   }),
 });

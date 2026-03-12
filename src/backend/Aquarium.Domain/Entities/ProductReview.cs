@@ -30,4 +30,6 @@ public partial class ProductReview
     public virtual User User { get; set; }
 
     public virtual Order Order { get; set; }
+
+    public virtual ICollection<ProductReviewMedia> Media { get; set; } = new List<ProductReviewMedia>();
 }

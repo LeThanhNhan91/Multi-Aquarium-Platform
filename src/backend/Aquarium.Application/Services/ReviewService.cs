@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Aquarium.Application.DTOs.Reviews;
@@ -6,6 +7,7 @@ using Aquarium.Application.Interfaces;
 using Aquarium.Application.Interfaces.Products;
 using Aquarium.Application.Interfaces.Reviews;
 using Aquarium.Application.Wrappers;
+using Aquarium.Domain.Constants;
 using Aquarium.Domain.Entities;
 using Aquarium.Domain.Exceptions;
 
@@ -58,6 +60,21 @@ namespace Aquarium.Application.Services
 
             await _reviewRepository.AddProductReviewAsync(review);
             await _reviewRepository.SaveChangesAsync();
+
+            // Save media if provided
+            if (request.MediaUrls?.Count > 0)
+            {
+                var mediaItems = request.MediaUrls.Select((url, i) => new ProductReviewMedia
+                {
+                    Id = Guid.NewGuid(),
+                    ProductReviewId = review.Id,
+                    MediaUrl = url,
+                    DisplayOrder = i,
+                    CreatedAt = DateTime.UtcNow
+                });
+                await _reviewRepository.AddProductReviewMediaAsync(mediaItems);
+                await _reviewRepository.SaveChangesAsync();
+            }
 
             // Update product rating
             await _productRepository.UpdateProductRatingAsync(productId);
@@ -121,6 +138,7 @@ namespace Aquarium.Application.Services
                 throw new ForbiddenException("You can only delete your own reviews.");
             }
 
+            await _reviewRepository.DeleteProductReviewMediaByReviewIdAsync(reviewId);
             await _reviewRepository.DeleteProductReviewAsync(review);
             await _reviewRepository.SaveChangesAsync();
 
@@ -213,6 +231,21 @@ namespace Aquarium.Application.Services
             await _reviewRepository.AddStoreReviewAsync(review);
             await _reviewRepository.SaveChangesAsync();
 
+            // Save media if provided
+            if (request.MediaUrls?.Count > 0)
+            {
+                var mediaItems = request.MediaUrls.Select((url, i) => new StoreReviewMedia
+                {
+                    Id = Guid.NewGuid(),
+                    StoreReviewId = review.Id,
+                    MediaUrl = url,
+                    DisplayOrder = i,
+                    CreatedAt = DateTime.UtcNow
+                });
+                await _reviewRepository.AddStoreReviewMediaAsync(mediaItems);
+                await _reviewRepository.SaveChangesAsync();
+            }
+
             await _storeRepository.UpdateStoreRatingAsync(storeId);
             await _storeRepository.SaveChangesAsync();
 
@@ -273,6 +306,7 @@ namespace Aquarium.Application.Services
                 throw new ForbiddenException("You can only delete your own reviews.");
             }
 
+            await _reviewRepository.DeleteStoreReviewMediaByReviewIdAsync(reviewId);
             await _reviewRepository.DeleteStoreReviewAsync(review);
             await _reviewRepository.SaveChangesAsync();
 
@@ -299,6 +333,28 @@ namespace Aquarium.Application.Services
             return await _reviewRepository.GetStoreReviewSummaryAsync(storeId);
         }
 
+        public async Task<ReviewResponse?> GetStoreReviewByOrderAsync(Guid storeId, Guid orderId, Guid userId)
+        {
+            var review = await _reviewRepository.GetStoreReviewByUserAndOrderAsync(storeId, userId, orderId);
+            return review != null ? MapToStoreReviewResponse(review) : null;
+        }
+
+        public async Task<IEnumerable<StoreBadgeResponse>> GetStoreBadgesAsync(Guid storeId)
+        {
+            var badges = await _storeRepository.GetStoreBadgesAsync(storeId);
+            return badges.Select(b =>
+            {
+                var matched = BadgeCriteria.All.Where(c => c.Type == b.BadgeType).ToList();
+                return new StoreBadgeResponse
+                {
+                    BadgeType = b.BadgeType,
+                    DisplayName = matched.Count > 0 ? matched[0].DisplayName : b.BadgeType,
+                    Description = matched.Count > 0 ? matched[0].Description : string.Empty,
+                    AwardedAt = b.AwardedAt
+                };
+            });
+        }
+
         // Helper methods
         private ReviewResponse MapToReviewResponse(ProductReview review)
         {
@@ -315,7 +371,8 @@ namespace Aquarium.Application.Services
                 Comment = review.Comment,
                 Status = review.Status,
                 CreatedAt = review.CreatedAt,
-                UpdatedAt = review.UpdatedAt
+                UpdatedAt = review.UpdatedAt,
+                MediaUrls = review.Media?.OrderBy(m => m.DisplayOrder).Select(m => m.MediaUrl).ToList() ?? new()
             };
         }
 
@@ -334,7 +391,8 @@ namespace Aquarium.Application.Services
                 Comment = review.Comment,
                 Status = review.Status,
                 CreatedAt = review.CreatedAt,
-                UpdatedAt = review.UpdatedAt
+                UpdatedAt = review.UpdatedAt,
+                MediaUrls = review.Media?.OrderBy(m => m.DisplayOrder).Select(m => m.MediaUrl).ToList() ?? new()
             };
         }
     }

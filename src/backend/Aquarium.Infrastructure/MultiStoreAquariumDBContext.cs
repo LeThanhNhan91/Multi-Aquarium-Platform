@@ -49,6 +49,12 @@ public partial class MultiStoreAquariumDBContext : DbContext
 
     public virtual DbSet<StoreReview> StoreReviews { get; set; }
 
+    public virtual DbSet<ProductReviewMedia> ProductReviewMedias { get; set; }
+
+    public virtual DbSet<StoreReviewMedia> StoreReviewMedias { get; set; }
+
+    public virtual DbSet<StoreBadge> StoreBadges { get; set; }
+
     public virtual DbSet<FishInstance> FishInstances { get; set; }
 
     public virtual DbSet<FishInstanceMedia> FishInstanceMedias { get; set; }
@@ -350,6 +356,54 @@ public partial class MultiStoreAquariumDBContext : DbContext
                 .IsRequired()
                 .HasMaxLength(50)
                 .HasDefaultValue("Active");
+        });
+
+        modelBuilder.Entity<ProductReviewMedia>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.MediaUrl).IsRequired();
+            entity.Property(e => e.PublicId).HasMaxLength(255);
+            entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+
+            entity.HasOne(d => d.ProductReview)
+                .WithMany(p => p.Media)
+                .HasForeignKey(d => d.ProductReviewId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_ProductReviewMedias_ProductReviews");
+        });
+
+        modelBuilder.Entity<StoreReviewMedia>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.MediaUrl).IsRequired();
+            entity.Property(e => e.PublicId).HasMaxLength(255);
+            entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+
+            entity.HasOne(d => d.StoreReview)
+                .WithMany(p => p.Media)
+                .HasForeignKey(d => d.StoreReviewId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_StoreReviewMedias_StoreReviews");
+        });
+
+        modelBuilder.Entity<StoreBadge>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.BadgeType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.AwardedAt).HasDefaultValueSql("(getutcdate())");
+
+            entity.HasIndex(e => new { e.StoreId, e.BadgeType }).IsUnique();
+
+            entity.HasOne(d => d.Store)
+                .WithMany(p => p.Badges)
+                .HasForeignKey(d => d.StoreId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_StoreBadges_Stores");
         });
 
         // Configure FishInstanceMedia to map to correct table name

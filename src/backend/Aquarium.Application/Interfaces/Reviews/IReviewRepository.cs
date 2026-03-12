@@ -29,6 +29,12 @@ namespace Aquarium.Application.Interfaces.Reviews
         Task UpdateStoreReviewAsync(StoreReview review);
         Task DeleteStoreReviewAsync(StoreReview review);
 
+        // Media
+        Task AddProductReviewMediaAsync(IEnumerable<ProductReviewMedia> media);
+        Task AddStoreReviewMediaAsync(IEnumerable<StoreReviewMedia> media);
+        Task DeleteProductReviewMediaByReviewIdAsync(Guid reviewId);
+        Task DeleteStoreReviewMediaByReviewIdAsync(Guid reviewId);
+
         // Order verification
         Task<bool> HasUserPurchasedProductAsync(Guid userId, Guid productId, Guid orderId);
         Task<bool> HasUserPurchasedFromStoreAsync(Guid userId, Guid storeId, Guid orderId);

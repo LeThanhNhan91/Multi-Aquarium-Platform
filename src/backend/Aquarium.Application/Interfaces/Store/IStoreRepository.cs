@@ -27,5 +27,6 @@ namespace Aquarium.Application.Interfaces
         Task<List<StoreEntity>> GetStoresByUserIdAsync(Guid userId);
         Task<Dictionary<Guid, (int ProductCount, int OrderCount)>> GetStoreCountsAsync(List<Guid> storeIds);
         Task UpdateStoreRatingAsync(Guid storeId);
+        Task<IEnumerable<StoreBadge>> GetStoreBadgesAsync(Guid storeId);
     }
 }

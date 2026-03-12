@@ -26,6 +26,7 @@ namespace Aquarium.Infrastructure.Repositories
             return await _context.ProductReviews
                 .Include(r => r.User)
                 .Include(r => r.Product)
+                .Include(r => r.Media)
                 .FirstOrDefaultAsync(r => r.Id == reviewId);
         }
 
@@ -54,6 +55,7 @@ namespace Aquarium.Infrastructure.Repositories
         {
             var query = _context.ProductReviews
                 .Include(r => r.User)
+                .Include(r => r.Media)
                 .Where(r => r.ProductId == productId && r.Status == "Active");
 
             if (filter.Rating.HasValue)
@@ -127,6 +129,7 @@ namespace Aquarium.Infrastructure.Repositories
             return await _context.StoreReviews
                 .Include(r => r.User)
                 .Include(r => r.Store)
+                .Include(r => r.Media)
                 .FirstOrDefaultAsync(r => r.Id == reviewId);
         }
 
@@ -140,6 +143,7 @@ namespace Aquarium.Infrastructure.Repositories
         {
             var query = _context.StoreReviews
                 .Include(r => r.User)
+                .Include(r => r.Media)
                 .Where(r => r.StoreId == storeId && r.Status == "Active");
 
             if (filter.Rating.HasValue)
@@ -241,6 +245,33 @@ namespace Aquarium.Infrastructure.Repositories
                 .AnyAsync(r => r.UserId == userId && r.ProductId == productId && r.OrderId == eligibleOrder);
 
             return alreadyReviewed ? null : eligibleOrder;
+        }
+
+        // Media
+        public async Task AddProductReviewMediaAsync(IEnumerable<ProductReviewMedia> media)
+        {
+            await _context.ProductReviewMedias.AddRangeAsync(media);
+        }
+
+        public async Task AddStoreReviewMediaAsync(IEnumerable<StoreReviewMedia> media)
+        {
+            await _context.StoreReviewMedias.AddRangeAsync(media);
+        }
+
+        public async Task DeleteProductReviewMediaByReviewIdAsync(Guid reviewId)
+        {
+            var mediaItems = await _context.ProductReviewMedias
+                .Where(m => m.ProductReviewId == reviewId)
+                .ToListAsync();
+            _context.ProductReviewMedias.RemoveRange(mediaItems);
+        }
+
+        public async Task DeleteStoreReviewMediaByReviewIdAsync(Guid reviewId)
+        {
+            var mediaItems = await _context.StoreReviewMedias
+                .Where(m => m.StoreReviewId == reviewId)
+                .ToListAsync();
+            _context.StoreReviewMedias.RemoveRange(mediaItems);
         }
 
         public async Task<bool> SaveChangesAsync()

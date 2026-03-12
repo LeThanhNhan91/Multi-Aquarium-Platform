@@ -23,5 +23,7 @@ namespace Aquarium.Application.Interfaces.Reviews
         Task DeleteStoreReviewAsync(Guid storeId, Guid reviewId, Guid userId);
         Task<PagedResult<ReviewResponse>> GetStoreReviewsAsync(Guid storeId, GetReviewsFilter filter);
         Task<ReviewSummary> GetStoreReviewSummaryAsync(Guid storeId);
+        Task<ReviewResponse?> GetStoreReviewByOrderAsync(Guid storeId, Guid orderId, Guid userId);
+        Task<IEnumerable<StoreBadgeResponse>> GetStoreBadgesAsync(Guid storeId);
     }
 }
