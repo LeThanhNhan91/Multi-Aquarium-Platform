@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Domain.Entities;
@@ -16,6 +16,7 @@ namespace Aquarium.Application.Interfaces.Posts
         Task RemoveLikeAsync(PostLike like);
         Task AddCommentAsync(PostComment comment);
         Task<(List<PostComment> comments, int totalCount)> GetCommentsAsync(Guid postId, int pageIndex, int pageSize);
+        Task<(List<StorePost> posts, int totalCount)> GetLikedPostsAsync(Guid userId, int pageIndex, int pageSize);
         Task<bool> SaveChangesAsync();
     }
 }

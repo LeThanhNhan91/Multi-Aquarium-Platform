@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Store as StoreIcon,
   LogOut,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/utils/utils";
 import { Separator } from "@/components/ui/separator";
@@ -22,6 +23,7 @@ export const menuItems = [
   { id: "overview", label: "Tổng quan", icon: LayoutDashboard },
   { id: "orders", label: "Đơn hàng", icon: ShoppingBag },
   { id: "products", label: "Sản phẩm", icon: Package },
+  { id: "posts", label: "Bài viết", icon: FileText },
   { id: "customers", label: "Khách hàng", icon: Users },
   { id: "analytics", label: "Báo cáo", icon: BarChart3 },
   { id: "settings", label: "Cài đặt", icon: Settings },

@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Aquarium.Application.DTOs.Posts;
 using Aquarium.Application.Interfaces.Posts;
 using Aquarium.Application.Wrappers;
@@ -56,10 +56,23 @@ namespace Aquarium.Api.Controllers
 
         // Newsfeed (Infinite Scroll)
         [HttpGet("feed")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetNewsFeed([FromQuery] int page = 1, [FromQuery] int size = 10)
         {
+            Guid currentUserId = Guid.Empty;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null) currentUserId = Guid.Parse(userIdClaim.Value);
+
+            var result = await _postService.GetNewsFeedAsync(page, size, currentUserId);
+            return Ok(new ApiResponse<PagedResult<PostFeedDto>>(result));
+        }
+
+        // Liked Posts (Saved)
+        [HttpGet("liked")]
+        public async Task<IActionResult> GetLikedPosts([FromQuery] int page = 1, [FromQuery] int size = 10)
+        {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var result = await _postService.GetNewsFeedAsync(page, size, userId);
+            var result = await _postService.GetLikedPostsAsync(userId, page, size);
             return Ok(new ApiResponse<PagedResult<PostFeedDto>>(result));
         }
 

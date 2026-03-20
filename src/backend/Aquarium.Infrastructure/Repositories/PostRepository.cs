@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.Interfaces.Posts;
@@ -93,6 +93,30 @@ namespace Aquarium.Infrastructure.Repositories
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<(List<StorePost> posts, int totalCount)> GetLikedPostsAsync(Guid userId, int pageIndex, int pageSize)
+        {
+            var query = _context.PostLikes
+                .Where(l => l.UserId == userId)
+                .Join(_context.StorePosts
+                    .Include(p => p.Store)
+                    .Include(p => p.PostMedia)
+                    .Include(p => p.Likes)
+                    .Include(p => p.Comments),
+                    l => l.PostId,
+                    p => p.Id,
+                    (l, p) => p)
+                .OrderByDescending(p => p.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var posts = await query
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (posts, totalCount);
         }
     }
 }

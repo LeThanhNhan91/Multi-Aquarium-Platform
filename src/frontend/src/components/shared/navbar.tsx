@@ -70,6 +70,12 @@ export function Navbar() {
               Sản phẩm
             </Link>
             <Link
+              href="/feeds"
+              className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
+            >
+              Tin tức
+            </Link>
+            <Link
               href="#about"
               className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
             >

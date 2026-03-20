@@ -13,6 +13,7 @@ import ProductsTab from "./components/products/ProductsTab";
 import CustomersTab from "./components/customers/CustomersTab";
 import AnalyticsTab from "./components/analytic/AnalyticsTab";
 import SettingsTab from "./components/settings/SettingsTab";
+import { PostsTab } from "./components/posts/PostsTab";
 
 export default function StoreDashboard({ storeId }: { storeId: string }) {
   const searchParams = useSearchParams();
@@ -33,6 +34,8 @@ export default function StoreDashboard({ storeId }: { storeId: string }) {
         return <ProductsTab storeId={storeId} />;
       case "customers":
         return <CustomersTab storeId={storeId} />;
+      case "posts":
+        return <PostsTab storeId={storeId} />;
       case "analytics":
         return <AnalyticsTab storeId={storeId} />;
       case "settings":

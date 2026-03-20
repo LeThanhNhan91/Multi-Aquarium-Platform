@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Media;
@@ -205,9 +205,10 @@ namespace Aquarium.Application.Services
                 Id = p.Id,
                 StoreId = p.StoreId,
                 StoreName = p.Store.Name,
+                LogoUrl = p.Store.LogoUrl,
                 Content = p.Content,
                 CreatedAt = p.CreatedAt ?? DateTime.UtcNow,
-                Media = p.PostMedia.Select(m => new PostMediaDto { Url = m.MediaUrl, Type = m.MediaType }).ToList(),
+                Media = p.PostMedia.Select(m => new PostMediaDto { Url = m.MediaUrl, Type = m.MediaType, Id = m.Id }).ToList(),
 
                 // Stats
                 LikeCount = p.Likes.Count,
@@ -278,6 +279,27 @@ namespace Aquarium.Application.Services
             }).ToList();
 
             return new PagedResult<CommentDto>(items, totalCount, pageIndex, pageSize);
+        }
+
+        public async Task<PagedResult<PostFeedDto>> GetLikedPostsAsync(Guid userId, int pageIndex, int pageSize)
+        {
+            var (posts, totalCount) = await _postRepository.GetLikedPostsAsync(userId, pageIndex, pageSize);
+
+            var items = posts.Select(p => new PostFeedDto
+            {
+                Id = p.Id,
+                StoreId = p.StoreId,
+                StoreName = p.Store?.Name ?? "Unknown",
+                LogoUrl = p.Store?.LogoUrl,
+                Content = p.Content,
+                CreatedAt = p.CreatedAt ?? DateTime.UtcNow,
+                Media = p.PostMedia.Select(m => new PostMediaDto { Id = m.Id, Url = m.MediaUrl, Type = m.MediaType }).ToList(),
+                LikeCount = p.Likes.Count,
+                CommentCount = p.Comments.Count,
+                IsLikedByCurrentUser = true
+            }).ToList();
+
+            return new PagedResult<PostFeedDto>(items, totalCount, pageIndex, pageSize);
         }
     }
 }

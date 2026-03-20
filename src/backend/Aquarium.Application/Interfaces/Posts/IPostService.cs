@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Aquarium.Application.DTOs.Posts;
@@ -15,5 +15,6 @@ namespace Aquarium.Application.Interfaces.Posts
         Task<bool> ToggleLikeAsync(Guid postId, Guid userId); // True = Liked, False = Unliked
         Task<CommentDto> AddCommentAsync(Guid postId, string content, Guid userId);
         Task<PagedResult<CommentDto>> GetCommentsAsync(Guid postId, int pageIndex, int pageSize);
+        Task<PagedResult<PostFeedDto>> GetLikedPostsAsync(Guid userId, int pageIndex, int pageSize);
     }
 }
