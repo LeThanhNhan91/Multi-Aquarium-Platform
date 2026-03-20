@@ -64,7 +64,7 @@ export function PostCard({ post }: PostCardProps) {
             </p>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
-              {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: vi })}
+              {formatDistanceToNow(new Date(post.createdAt + (post.createdAt.endsWith('Z') ? '' : 'Z')), { addSuffix: true, locale: vi })}
             </div>
           </div>
         </Link>
@@ -130,6 +130,7 @@ export function PostCard({ post }: PostCardProps) {
       {commentsOpen && (
         <PostCommentDrawer
           postId={post.id}
+          commentCount={post.commentCount}
           open={commentsOpen}
           onOpenChange={setCommentsOpen}
         />
