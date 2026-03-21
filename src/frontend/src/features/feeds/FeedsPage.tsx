@@ -1,23 +1,75 @@
 "use client";
 
-import React, { useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useGetFeedQuery } from "@/services/postApi";
-import { PostCard } from "@/features/feeds/PostCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Newspaper } from "lucide-react";
-import { useState } from "react";
 import { PostFeed } from "@/types/post.type";
 
+const VirtualizedFeedList = dynamic(() => import("./VirtualizedFeedList"), {
+  ssr: false,
+});
+
+const PAGE_INITIAL = 1;
+
 export function FeedsPage() {
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(PAGE_INITIAL);
   const [posts, setPosts] = useState<PostFeed[]>([]);
   const [hasMore, setHasMore] = useState(true);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<any>(null);
+
+  // Refined for "See more" view
+  const BASE_HEIGHT = 160;
+  const COLLAPSED_TEXT_HEIGHT = 65; // ~3 lines
+  const MEDIA_HEIGHT = 450;
+
+  const [expandedIndices, setExpandedIndices] = useState<Set<number>>(
+    new Set(),
+  );
+
+  const getPostHeight = (index: number) => {
+    const post = posts[index];
+    if (!post) return 200;
+
+    let height = BASE_HEIGHT;
+
+    if (post.content) {
+      if (expandedIndices.has(index)) {
+        // Rough estimate for expanded text: 50 chars per line
+        //.replace(/<[^>]*>/g, "") => Remove HTML tags due to it can be richtext
+        const lineCount =
+          Math.ceil(post.content.replace(/<[^>]*>/g, "").length / 60) || 1;
+        height += lineCount * 18 + 32; // 18px per line, 32px for padding and margin
+      } else {
+        height += COLLAPSED_TEXT_HEIGHT;
+      }
+    }
+
+    if (post.media && post.media.length > 0) {
+      height += MEDIA_HEIGHT;
+    }
+
+    return height;
+  };
+
+  const handleToggleExpand = (index: number) => {
+    setExpandedIndices((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+
+    // Crucial: Reset react-window cache for this item and everyone after it
+    if (listRef.current) {
+      listRef.current.resetAfterIndex(index);
+    }
+  };
 
   const { data, isLoading, isFetching } = useGetFeedQuery(
     { page, size: 10 },
-    { skip: !hasMore && page > 1 }
+    { skip: !hasMore && page > 1 },
   );
 
   useEffect(() => {
@@ -25,7 +77,9 @@ export function FeedsPage() {
       const newPosts = data.data.items;
       setPosts((prev) => {
         const ids = new Set(prev.map((p) => p.id));
-        return [...prev, ...newPosts.filter((p) => !ids.has(p.id))];
+        const filtered = newPosts.filter((p) => !ids.has(p.id));
+        if (filtered.length === 0) return prev;
+        return [...prev, ...filtered];
       });
       if (posts.length + newPosts.length >= data.data.totalCount) {
         setHasMore(false);
@@ -33,70 +87,53 @@ export function FeedsPage() {
     }
   }, [data]);
 
-  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
-    const [target] = entries;
-    if (target.isIntersecting && hasMore && !isFetching) {
+  const onRowsRendered = ({ stopIndex }: { stopIndex: number }) => {
+    if (hasMore && !isFetching && stopIndex >= posts.length - 2) {
       setPage((p) => p + 1);
     }
-  }, [hasMore, isFetching]);
-
-  useEffect(() => {
-    const el = loadMoreRef.current;
-    if (!el) return;
-    observerRef.current = new IntersectionObserver(handleObserver, { threshold: 0.5 });
-    observerRef.current.observe(el);
-    return () => observerRef.current?.disconnect();
-  }, [handleObserver]);
+  };
 
   return (
-    <div className="max-w-xl mx-auto py-6 px-4 space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-6">
-        <div className="h-9 w-9 rounded-xl bg-linear-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-          <Newspaper className="h-5 w-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Tin tức</h1>
-          <p className="text-xs text-muted-foreground">Bài viết mới nhất từ các cửa hàng</p>
-        </div>
+    <div className="h-[calc(100vh-80px)] flex flex-col bg-background overflow-hidden">
+      {/* Virtualized List Container */}
+      <div className="flex-1 w-full overflow-hidden">
+        {isLoading && posts.length === 0 ? (
+          <div className="max-w-xl mx-auto px-4">
+            <FeedSkeletons />
+          </div>
+        ) : posts.length === 0 ? (
+          <EmptyFeed />
+        ) : (
+          <VirtualizedFeedList
+            listRef={listRef}
+            posts={posts}
+            height={window.innerHeight - 80}
+            itemSize={getPostHeight}
+            onRowsRendered={onRowsRendered}
+            onToggleExpand={handleToggleExpand}
+          />
+        )}
       </div>
 
-      {/* Posts */}
-      {isLoading ? (
-        <FeedSkeletons />
-      ) : posts.length === 0 ? (
-        <EmptyFeed />
-      ) : (
-        <>
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-
-          {/* Infinite scroll trigger */}
-          <div ref={loadMoreRef} className="h-6" />
-
-          {isFetching && (
-            <div className="space-y-4">
-              <FeedSkeletons count={2} />
-            </div>
-          )}
-
-          {!hasMore && posts.length > 0 && (
-            <p className="text-center text-sm text-muted-foreground py-4">
-              Bạn đã xem hết tất cả bài viết ✨
-            </p>
-          )}
-        </>
+      {isFetching && (
+        <div className="fixed bottom-4 right-4 bg-background/80 backdrop-blur-sm p-2 rounded-full shadow-lg border animate-pulse">
+          <div className="h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
       )}
     </div>
   );
 }
 
+const page_initial = 1;
+
 function FeedSkeletons({ count = 3 }: { count?: number }) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="bg-card rounded-2xl border border-border overflow-hidden">
+        <div
+          key={i}
+          className="bg-card rounded-2xl border border-border overflow-hidden mb-2"
+        >
           <div className="flex items-center gap-3 p-4">
             <Skeleton className="h-10 w-10 rounded-full" />
             <div className="space-y-1.5">
@@ -125,7 +162,9 @@ function EmptyFeed() {
       <div className="h-20 w-20 rounded-full bg-blue-50 flex items-center justify-center mb-4">
         <Newspaper className="h-10 w-10 text-blue-300" />
       </div>
-      <h3 className="text-lg font-semibold text-foreground">Chưa có bài viết nào</h3>
+      <h3 className="text-lg font-semibold text-foreground">
+        Chưa có bài viết nào
+      </h3>
       <p className="text-sm text-muted-foreground mt-1 max-w-xs">
         Các cửa hàng chưa đăng bài viết nào. Hãy quay lại sau!
       </p>
