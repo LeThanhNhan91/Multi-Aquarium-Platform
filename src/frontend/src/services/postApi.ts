@@ -14,15 +14,26 @@ export const postApi = createApi({
   tagTypes: ["Post", "PostComments", "LikedPosts"],
   endpoints: (builder) => ({
     // Feed
-    getFeed: builder.query<ApiResponse<PostFeedResponse>, { page: number; size: number }>({
+    getFeed: builder.query<
+      ApiResponse<PostFeedResponse>,
+      { page: number; size: number }
+    >({
       query: ({ page, size }) => `/post/feed?page=${page}&size=${size}`,
       providesTags: ["Post"],
     }),
 
     // Liked (saved) posts
-    getLikedPosts: builder.query<ApiResponse<PostFeedResponse>, { page: number; size: number }>({
+    getLikedPosts: builder.query<
+      ApiResponse<PostFeedResponse>,
+      { page: number; size: number }
+    >({
       query: ({ page, size }) => `/post/liked?page=${page}&size=${size}`,
       providesTags: ["LikedPosts"],
+    }),
+
+    getPostById: builder.query<ApiResponse<PostFeed>, string>({
+      query: (postId) => `/post/${postId}`,
+      providesTags: (result, error, id) => [{ type: "Post", id }],
     }),
 
     // Toggle like
@@ -47,7 +58,12 @@ export const postApi = createApi({
     }),
 
     addComment: builder.mutation<
-      ApiResponse<{ id: string; content: string; userName: string; createdAt: string }>,
+      ApiResponse<{
+        id: string;
+        content: string;
+        userName: string;
+        createdAt: string;
+      }>,
       { postId: string; content: string }
     >({
       query: ({ postId, content }) => ({
@@ -68,7 +84,9 @@ export const postApi = createApi({
         formData.append("storeId", request.storeId);
         formData.append("content", request.content);
         if (request.mediaFiles) {
-          request.mediaFiles.forEach((file) => formData.append("mediaFiles", file));
+          request.mediaFiles.forEach((file) =>
+            formData.append("mediaFiles", file),
+          );
         }
         return {
           url: "/post",
@@ -93,6 +111,7 @@ export const postApi = createApi({
 export const {
   useGetFeedQuery,
   useGetLikedPostsQuery,
+  useGetPostByIdQuery,
   useToggleLikeMutation,
   useGetCommentsQuery,
   useAddCommentMutation,

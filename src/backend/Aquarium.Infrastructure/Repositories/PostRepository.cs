@@ -29,6 +29,16 @@ namespace Aquarium.Infrastructure.Repositories
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
+        public async Task<StorePost?> GetPostDetailAsync(Guid id)
+        {
+            return await _context.StorePosts
+                .Include(p => p.Store)
+                .Include(p => p.PostMedia)
+                .Include(p => p.Likes)
+                .Include(p => p.Comments)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
         public async Task DeleteAsync(StorePost post)
         {
             _context.StorePosts.Remove(post);

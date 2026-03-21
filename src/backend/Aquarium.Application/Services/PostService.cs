@@ -220,6 +220,26 @@ namespace Aquarium.Application.Services
             return new PagedResult<PostFeedDto>(items, totalCount, pageIndex, pageSize);
         }
 
+        public async Task<PostFeedDto> GetPostByIdAsync(Guid postId, Guid currentUserId)
+        {
+            var p = await _postRepository.GetPostDetailAsync(postId);
+            if (p == null) throw new KeyNotFoundException("Post not found");
+
+            return new PostFeedDto
+            {
+                Id = p.Id,
+                StoreId = p.StoreId,
+                StoreName = p.Store?.Name ?? "Unknown",
+                LogoUrl = p.Store?.LogoUrl,
+                Content = p.Content,
+                CreatedAt = p.CreatedAt ?? DateTime.UtcNow,
+                Media = p.PostMedia.Select(m => new PostMediaDto { Id = m.Id, Url = m.MediaUrl, Type = m.MediaType }).ToList(),
+                LikeCount = p.Likes.Count,
+                CommentCount = p.Comments.Count,
+                IsLikedByCurrentUser = p.Likes.Any(l => l.UserId == currentUserId)
+            };
+        }
+
         public async Task<bool> ToggleLikeAsync(Guid postId, Guid userId)
         {
             var existingLike = await _postRepository.GetLikeAsync(postId, userId);

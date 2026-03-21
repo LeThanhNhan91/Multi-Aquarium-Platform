@@ -37,6 +37,18 @@ namespace Aquarium.Api.Controllers
             );
         }
 
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetPostById(Guid id)
+        {
+            Guid currentUserId = Guid.Empty;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null) currentUserId = Guid.Parse(userIdClaim.Value);
+
+            var result = await _postService.GetPostByIdAsync(id, currentUserId);
+            return Ok(new ApiResponse<PostFeedDto>(result));
+        }
+
         [HttpPut("{id}")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdatePost(Guid id, [FromForm] UpdatePostRequest request)
