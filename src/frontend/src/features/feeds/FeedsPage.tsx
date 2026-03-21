@@ -19,53 +19,20 @@ export function FeedsPage() {
   const [hasMore, setHasMore] = useState(true);
   const listRef = useRef<any>(null);
 
-  // Refined for "See more" view
-  const BASE_HEIGHT = 160;
-  const COLLAPSED_TEXT_HEIGHT = 65; // ~3 lines
-  const MEDIA_HEIGHT = 450;
-
   const [expandedIndices, setExpandedIndices] = useState<Set<number>>(
     new Set(),
   );
 
-  const getPostHeight = (index: number) => {
-    const post = posts[index];
-    if (!post) return 200;
-
-    let height = BASE_HEIGHT;
-
-    if (post.content) {
-      if (expandedIndices.has(index)) {
-        // Rough estimate for expanded text: 50 chars per line
-        //.replace(/<[^>]*>/g, "") => Remove HTML tags due to it can be richtext
-        const lineCount =
-          Math.ceil(post.content.replace(/<[^>]*>/g, "").length / 60) || 1;
-        height += lineCount * 18 + 32; // 18px per line, 32px for padding and margin
-      } else {
-        height += COLLAPSED_TEXT_HEIGHT;
-      }
-    }
-
-    if (post.media && post.media.length > 0) {
-      height += MEDIA_HEIGHT;
-    }
-
-    return height;
-  };
-
-  const handleToggleExpand = (index: number) => {
+  // Optimized: Only toggle the state, no manual height math or resetAfterIndex needed
+  // ResizeObserver in VirtualizedFeedList will handle the rest
+  const handleToggleExpand = React.useCallback((index: number) => {
     setExpandedIndices((prev) => {
       const next = new Set(prev);
       if (next.has(index)) next.delete(index);
       else next.add(index);
       return next;
     });
-
-    // Crucial: Reset react-window cache for this item and everyone after it
-    if (listRef.current) {
-      listRef.current.resetAfterIndex(index);
-    }
-  };
+  }, []);
 
   const { data, isLoading, isFetching } = useGetFeedQuery(
     { page, size: 10 },
@@ -87,11 +54,11 @@ export function FeedsPage() {
     }
   }, [data]);
 
-  const onRowsRendered = ({ stopIndex }: { stopIndex: number }) => {
+  const onRowsRendered = React.useCallback(({ stopIndex }: { stopIndex: number }) => {
     if (hasMore && !isFetching && stopIndex >= posts.length - 2) {
       setPage((p) => p + 1);
     }
-  };
+  }, [hasMore, isFetching, posts.length]);
 
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col bg-background overflow-hidden">
@@ -108,7 +75,6 @@ export function FeedsPage() {
             listRef={listRef}
             posts={posts}
             height={window.innerHeight - 80}
-            itemSize={getPostHeight}
             onRowsRendered={onRowsRendered}
             onToggleExpand={handleToggleExpand}
           />
@@ -116,8 +82,8 @@ export function FeedsPage() {
       </div>
 
       {isFetching && (
-        <div className="fixed bottom-4 right-4 bg-background/80 backdrop-blur-sm p-2 rounded-full shadow-lg border animate-pulse">
-          <div className="h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="fixed bottom-4 right-4 bg-background/80 backdrop-blur-sm p-2 rounded-full shadow-lg border animate-pulse z-50">
+          <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       )}
     </div>

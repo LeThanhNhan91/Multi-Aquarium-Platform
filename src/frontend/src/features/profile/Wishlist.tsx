@@ -1,9 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { Heart, ShoppingCart, Star, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import {
+  Heart,
+  ShoppingCart,
+  Star,
+  Trash2,
+  Package,
+  LayoutGrid,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/utils/utils";
+import SavedPostsGrid from "@/features/feeds/SavedPostsGrid";
 
 const wishlistItems = [
   {
@@ -49,97 +59,141 @@ const wishlistItems = [
 ];
 
 export function Wishlist() {
+  const [activeTab, setActiveTab] = useState<"products" | "posts">("products");
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold  text-foreground">Wishlist</h2>
+          <h2 className="text-xl font-bold text-foreground">Yêu thích</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {wishlistItems.length} items saved for later
+            Quản lý các sản phẩm và bài viết bạn đã lưu
           </p>
         </div>
-        <Button
-          size="sm"
-          className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-        >
-          <Heart className="h-4 w-4" />
-          Add All to Cart
-        </Button>
-      </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {wishlistItems.map((item) => (
-          <div
-            key={item.name}
-            className="flex gap-4 rounded-2xl border border-border/50 bg-card p-4 hover:shadow-md transition-shadow"
+        <div className="flex p-1 bg-muted/50 rounded-xl w-fit border border-border/50">
+          <button
+            onClick={() => setActiveTab("products")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+              activeTab === "products"
+                ? "bg-background text-primary shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
           >
-            <div className="h-24 w-24 relative rounded-xl overflow-hidden bg-muted shrink-0">
-              <Image
-                src={item.image || "/placeholder.svg"}
-                alt={item.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-
-            <div className="flex flex-1 flex-col min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{item.shop}</p>
-                  <h3 className="text-sm font-semibold text-foreground truncate">
-                    {item.name}
-                  </h3>
-                </div>
-                <button
-                  className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
-                  aria-label="Remove from wishlist"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                <span className="text-xs font-medium text-foreground">
-                  {item.rating}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  ({item.reviews})
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between mt-auto pt-2">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-base font-bold text-primary">
-                    {item.price}d
-                  </span>
-                  {item.originalPrice && (
-                    <span className="text-xs text-muted-foreground line-through">
-                      {item.originalPrice}d
-                    </span>
-                  )}
-                </div>
-                {item.inStock ? (
-                  <Button
-                    size="sm"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 gap-1.5 text-xs"
-                  >
-                    <ShoppingCart className="h-3.5 w-3.5" />
-                    Add
-                  </Button>
-                ) : (
-                  <Badge
-                    variant="outline"
-                    className="text-xs text-muted-foreground border-border"
-                  >
-                    Out of Stock
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
+            <Package className="h-4 w-4" />
+            Sản phẩm
+          </button>
+          <button
+            onClick={() => setActiveTab("posts")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+              activeTab === "posts"
+                ? "bg-background text-primary shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <LayoutGrid className="h-4 w-4" />
+            Bài đăng
+          </button>
+        </div>
       </div>
+
+      {activeTab === "products" ? (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-muted-foreground">
+              {wishlistItems.length} sản phẩm đã lưu
+            </p>
+            <Button
+              size="sm"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 h-9 rounded-xl"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Thêm tất cả
+            </Button>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {wishlistItems.map((item) => (
+              <div
+                key={item.name}
+                className="flex gap-4 rounded-2xl border border-border/50 bg-card p-4 hover:shadow-md transition-shadow group"
+              >
+                <div className="h-24 w-24 relative rounded-xl overflow-hidden bg-muted shrink-0">
+                  <Image
+                    src={item.image || "/placeholder.svg"}
+                    alt={item.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+
+                <div className="flex flex-1 flex-col min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase tracking-wider font-bold text-primary mb-0.5">
+                        {item.shop}
+                      </p>
+                      <h3 className="text-sm font-bold text-foreground truncate">
+                        {item.name}
+                      </h3>
+                    </div>
+                    <button
+                      className="p-1.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all shrink-0"
+                      aria-label="Remove from wishlist"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    <span className="text-xs font-bold text-foreground">
+                      {item.rating}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-medium">
+                      ({item.reviews} đánh giá)
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-auto pt-2">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-sm font-black text-primary">
+                        {item.price}đ
+                      </span>
+                      {item.originalPrice && (
+                        <span className="text-[11px] text-muted-foreground line-through decoration-muted-foreground/50">
+                          {item.originalPrice}đ
+                        </span>
+                      )}
+                    </div>
+                    {item.inStock ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-primary hover:text-primary hover:bg-primary/5 h-8 px-2 rounded-lg gap-1.5 text-xs font-bold"
+                      >
+                        <ShoppingCart className="h-3.5 w-3.5" />
+                        Mua ngay
+                      </Button>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] uppercase font-bold text-muted-foreground border-border bg-muted/30"
+                      >
+                        Hết hàng
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <SavedPostsGrid />
+      )}
     </div>
   );
 }

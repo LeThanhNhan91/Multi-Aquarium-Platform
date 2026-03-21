@@ -21,7 +21,7 @@ interface PostCardProps {
   onToggleExpand?: () => void;
 }
 
-export function PostCard({ post, onToggleExpand }: PostCardProps) {
+export const PostCard = React.memo(({ post, onToggleExpand }: PostCardProps) => {
   const [toggleLike] = useToggleLikeMutation();
   const [isLiked, setIsLiked] = useState(post.isLikedByCurrentUser);
   const [likeCount, setLikeCount] = useState(post.likeCount);
@@ -37,12 +37,12 @@ export function PostCard({ post, onToggleExpand }: PostCardProps) {
     }
     const newLiked = !isLiked;
     setIsLiked(newLiked);
-    setLikeCount((c) => (newLiked ? c + 1 : c - 1));
+    setLikeCount((c: number) => (newLiked ? c + 1 : c - 1));
     try {
       await toggleLike(post.id).unwrap();
     } catch {
       setIsLiked(!newLiked);
-      setLikeCount((c) => (newLiked ? c - 1 : c + 1));
+      setLikeCount((c: number) => (newLiked ? c - 1 : c + 1));
     }
   };
 
@@ -154,4 +154,4 @@ export function PostCard({ post, onToggleExpand }: PostCardProps) {
       )}
     </article>
   );
-}
+});
