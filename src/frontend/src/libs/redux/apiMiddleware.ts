@@ -8,6 +8,7 @@ import { fishInstanceApi } from "@/services/fishInstanceApi";
 import { chatApi } from "@/services/chatApi";
 import { reviewApi } from "@/services/reviewApi";
 import { postApi } from "@/services/postApi";
+import { cartApi } from "@/services/cartApi";
 import { Middleware } from "@reduxjs/toolkit";
 
 export const apiMiddlewares: Middleware[] = [
@@ -21,4 +22,5 @@ export const apiMiddlewares: Middleware[] = [
   chatApi.middleware,
   reviewApi.middleware,
   postApi.middleware,
+  cartApi.middleware,
 ];

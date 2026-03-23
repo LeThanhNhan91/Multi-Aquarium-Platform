@@ -90,6 +90,12 @@ const cartSlice = createSlice({
     toggleCart: (state) => {
       state.isOpen = !state.isOpen;
     },
+    setItems: (state, action: PayloadAction<CartItem[]>) => {
+      state.items = action.payload;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cart", JSON.stringify(state.items));
+      }
+    },
   },
 });
 
@@ -100,7 +106,8 @@ export const {
   clearStoreItems, 
   clearCart, 
   setCartOpen, 
-  toggleCart 
+  toggleCart,
+  setItems
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

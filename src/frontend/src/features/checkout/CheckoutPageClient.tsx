@@ -24,6 +24,7 @@ import {
   useCreateOrderMutation,
   useCreatePaymentUrlMutation,
 } from "@/services/orderApi";
+import { useRemoveStoreItemsMutation } from "@/services/cartApi";
 import { cn } from "@/utils/utils";
 import { useAppDispatch, useAppSelector } from "@/libs/redux/hook";
 import { clearStoreItems } from "@/libs/redux/features/cartSlice";
@@ -90,6 +91,7 @@ export default function CheckoutPageClient() {
   const [createOrder, { isLoading: orderLoading }] = useCreateOrderMutation();
   const [createPaymentUrl, { isLoading: paymentLoading }] =
     useCreatePaymentUrlMutation();
+  const [removeStoreItems] = useRemoveStoreItemsMutation();
 
   const [shippingAddress, setShippingAddress] = useState("");
   const [note, setNote] = useState("");
@@ -137,6 +139,13 @@ export default function CheckoutPageClient() {
       // Clear cart items for this store
       if (source === "cart") {
         dispatch(clearStoreItems(orderStoreId));
+        if (isAuthenticated) {
+          try {
+            await removeStoreItems(orderStoreId).unwrap();
+          } catch (error) {
+            console.error("Failed to clear backend cart:", error);
+          }
+        }
       }
 
       const paymentResult = await createPaymentUrl({

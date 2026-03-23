@@ -5,6 +5,7 @@ import StoreProvider from "@/libs/redux/StoreProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { Navbar } from "@/components/shared/navbar";
 import { CartSheet } from "@/components/shared/CartSheet";
+import { CartSyncProvider } from "@/providers/CartSyncProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,8 +41,10 @@ export default function RootLayout({
         className={`${beVietnam.variable} font-sans`}
       >
         <StoreProvider>
-          {children}
-          <CartSheet />
+          <CartSyncProvider>
+            {children}
+            <CartSheet />
+          </CartSyncProvider>
         </StoreProvider>
         <Toaster />
       </body>

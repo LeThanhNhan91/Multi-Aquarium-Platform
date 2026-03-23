@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using Aquarium.Domain.Entities;
@@ -38,6 +38,7 @@ public partial class MultiStoreAquariumDBContext : DbContext
     public virtual DbSet<StorePost> StorePosts { get; set; }
 
     public virtual DbSet<StoreUser> StoreUsers { get; set; }
+    public virtual DbSet<CartItem> CartItems { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -360,6 +361,29 @@ public partial class MultiStoreAquariumDBContext : DbContext
                 .IsRequired()
                 .HasMaxLength(50)
                 .HasDefaultValue("Active");
+        });
+
+        modelBuilder.Entity<CartItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.Quantity).HasDefaultValue(1);
+
+            entity.HasOne(d => d.User).WithMany(p => p.CartItems)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_CartItems_Users");
+
+            entity.HasOne(d => d.Product).WithMany()
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_CartItems_Products");
+
+            entity.HasOne(d => d.FishInstance).WithMany()
+                .HasForeignKey(d => d.FishInstanceId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_CartItems_FishInstances");
         });
 
         modelBuilder.Entity<ProductReviewMedia>(entity =>
