@@ -100,12 +100,8 @@ export default function ProductDetailPage({ productId }: Props) {
                 />
 
                 <PurchaseActions
-                  productId={product.id}
-                  storeId={product.storeId}
-                  isLiveFish={isLiveFish}
-                  availableStock={product.availableStock ?? 0}
+                  product={product}
                   selectedFish={selectedFish}
-                  isOwner={product.isOwner}
                 />
 
                 <StoreInfo
@@ -121,13 +117,9 @@ export default function ProductDetailPage({ productId }: Props) {
             {/* Mobile Sticky Purchase Actions */}
             <div className="lg:hidden mb-28">
               <PurchaseActions
-                productId={product.id}
-                storeId={product.storeId}
-                isLiveFish={isLiveFish}
-                availableStock={product.availableStock ?? 0}
+                product={product}
                 selectedFish={selectedFish}
                 isSticky
-                isOwner={product.isOwner}
               />
             </div>
 

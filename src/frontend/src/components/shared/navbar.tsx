@@ -18,13 +18,18 @@ import { tokenCookies } from "@/utils/cookies";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { logout } from "@/libs/redux/features/authSlice";
+import { toggleCart } from "@/libs/redux/features/cartSlice";
 import { ChatInbox } from "../../features/chat/ChatInbox";
+import { useAppSelector } from "@/libs/redux/hook";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [inboxOpen, setInboxOpen] = useState(false);
   const dispatch = useDispatch();
   const router = useRouter();
+
+  const cartItems = useAppSelector((state) => state.cart.items);
+  const cartItemCount = cartItems.length;
 
   // Check if user has token and fetch profile
   const hasToken = tokenCookies.hasTokens();
@@ -95,9 +100,15 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-foreground/70 hover:text-primary"
+              className="text-foreground/70 hover:text-primary relative"
+              onClick={() => dispatch(toggleCart())}
             >
               <ShoppingCart className="h-5 w-5" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground animate-in zoom-in">
+                  {cartItemCount}
+                </span>
+              )}
               <span className="sr-only">Cart</span>
             </Button>
 

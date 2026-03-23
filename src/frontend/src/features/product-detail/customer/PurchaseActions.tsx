@@ -6,27 +6,33 @@ import { ShoppingCart, Heart, Share2, Minus, Plus, Fish } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/utils/utils";
-import { FishInstance } from "@/types/product.type";
+import { FishInstance, ProductItem } from "@/types/product.type";
+import { useAppDispatch } from "@/libs/redux/hook";
+import { addItem } from "@/libs/redux/features/cartSlice";
+import { toast } from "sonner";
 
 interface PurchaseActionsProps {
-  productId: string;
-  storeId: string;
-  isLiveFish: boolean;
-  availableStock: number;
+  product: ProductItem;
   selectedFish: FishInstance | null;
   isSticky?: boolean;
-  isOwner?: boolean;
 }
 
 export function PurchaseActions({
-  productId,
-  storeId,
-  isLiveFish,
-  availableStock,
+  product,
   selectedFish,
   isSticky = false,
-  isOwner = false,
 }: PurchaseActionsProps) {
+  const {
+    id: productId,
+    storeId,
+    storeName,
+    productType,
+    isOwner = false,
+  } = product;
+  const availableStock = product.availableStock ?? 0;
+
+  const isLiveFish = productType === "LiveFish";
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -38,22 +44,46 @@ export function PurchaseActions({
     !isOwner;
 
   const handleQuantityChange = (value: number) => {
-    setQuantity(Math.max(1, Math.min(value, availableStock || 1)));
+    setQuantity(Math.max(1, Math.min(value, (availableStock ?? 0) || 1)));
   };
 
   const handleAddToCart = async () => {
     if (isOwner) return;
     setIsAdding(true);
     try {
-      const params = new URLSearchParams({
+      const cartId = isLiveFish && selectedFish 
+        ? `${productId}-${selectedFish.id}` 
+        : productId;
+      
+      const price = isLiveFish && selectedFish 
+        ? selectedFish.price 
+        : (product.basePrice ?? 0);
+
+      const image = isLiveFish && selectedFish && selectedFish.images?.length 
+        ? selectedFish.images[0] 
+        : (product.images?.[0] ?? "");
+
+      const name = isLiveFish && selectedFish 
+        ? `${product.name} (${selectedFish.size} - ${selectedFish.color})`
+        : product.name;
+
+      dispatch(addItem({
+        cartId,
         productId,
+        fishInstanceId: selectedFish?.id,
+        productType,
+        name,
+        price,
+        quantity: isLiveFish ? 1 : quantity,
+        image,
         storeId,
-        quantity: quantity.toString(),
-      });
-      if (isLiveFish && selectedFish) {
-        params.set("fishInstanceId", selectedFish.id);
-      }
-      router.push(`/checkout?${params.toString()}`);
+        storeName,
+        availableStock: isLiveFish ? 1 : availableStock
+      }));
+
+      toast.success("Đã thêm vào giỏ hàng");
+    } catch {
+      toast.error("Không thể thêm vào giỏ hàng");
     } finally {
       setIsAdding(false);
     }
@@ -114,13 +144,13 @@ export function PurchaseActions({
                 }
                 className="w-12 bg-transparent text-center font-semibold text-foreground outline-none"
                 min="1"
-                max={availableStock}
+                max={availableStock ?? 0}
                 disabled={isOwner}
               />
               <button
                 onClick={() => handleQuantityChange(quantity + 1)}
                 className="p-1 hover:bg-secondary rounded transition-colors"
-                disabled={quantity >= availableStock || isOwner}
+                disabled={quantity >= (availableStock ?? 0) || isOwner}
               >
                 <Plus className="h-4 w-4 text-foreground/70" />
               </button>
@@ -199,7 +229,7 @@ export function PurchaseActions({
         </div>
 
         {/* Stock warning (non-live-fish) */}
-        {!isLiveFish && availableStock <= 10 && availableStock > 0 && (
+        {!isLiveFish && (availableStock ?? 0) <= 10 && (availableStock ?? 0) > 0 && (
           <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
             <p className="text-xs font-semibold text-orange-600">
               ⚠️ Chỉ còn {availableStock} sản phẩm, đặt hàng ngay!

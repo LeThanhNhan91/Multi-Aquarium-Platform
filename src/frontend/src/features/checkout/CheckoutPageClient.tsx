@@ -25,21 +25,67 @@ import {
   useCreatePaymentUrlMutation,
 } from "@/services/orderApi";
 import { cn } from "@/utils/utils";
-import { useAppSelector } from "@/libs/redux/hook";
+import { useAppDispatch, useAppSelector } from "@/libs/redux/hook";
+import { clearStoreItems } from "@/libs/redux/features/cartSlice";
 
 export default function CheckoutPageClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const cartItems = useAppSelector((state) => state.cart.items);
 
   const productId = searchParams.get("productId") ?? "";
   const storeId = searchParams.get("storeId") ?? "";
-  const fishInstanceId = searchParams.get("fishInstanceId") ?? undefined;
-  const quantity = parseInt(searchParams.get("quantity") ?? "1", 10);
+  const fishInstanceId = searchParams.get("fishInstanceId") || undefined;
+  const quantity = parseInt(searchParams.get("quantity") || "1", 10);
+  const source = searchParams.get("source");
 
+  // Determine items to order
   const { data: productResponse, isLoading: productLoading } =
-    useGetProductByIdQuery(productId, { skip: !productId });
-  const product = productResponse?.data;
+    useGetProductByIdQuery(productId, {
+      skip: !productId || source === "cart",
+    });
+
+  let itemsToOrder: any[] = [];
+  let displayTotal = 0;
+  let orderStoreId = storeId;
+  let orderStoreName = "";
+
+  if (source === "cart") {
+    itemsToOrder = cartItems.filter((item) => item.storeId === storeId);
+    displayTotal = itemsToOrder.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0,
+    );
+    orderStoreName = itemsToOrder[0]?.storeName || "Cửa hàng";
+  } else if (productId) {
+    const product = productResponse?.data;
+    const isLiveFish = product?.productType === "LiveFish";
+    const fishInstance = product?.fishInstances?.find(
+      (f) => f.id === fishInstanceId,
+    );
+    const unitPrice = isLiveFish
+      ? (fishInstance?.price ?? 0)
+      : (product?.basePrice ?? 0);
+
+    itemsToOrder = [
+      {
+        productId,
+        fishInstanceId,
+        quantity,
+        price: unitPrice,
+        name: product?.name,
+        image: isLiveFish
+          ? fishInstance?.images?.[0] || product?.images?.[0]
+          : product?.images?.[0],
+        productType: product?.productType,
+      },
+    ];
+    displayTotal = unitPrice * quantity;
+    orderStoreId = product?.storeId || storeId;
+    orderStoreName = product?.storeName || "";
+  }
 
   const [createOrder, { isLoading: orderLoading }] = useCreateOrderMutation();
   const [createPaymentUrl, { isLoading: paymentLoading }] =
@@ -49,21 +95,7 @@ export default function CheckoutPageClient() {
   const [note, setNote] = useState("");
   const [addressError, setAddressError] = useState("");
 
-  // Stable UUID for idempotency — generated once per page mount
   const idempotencyKey = useRef<string>(crypto.randomUUID()).current;
-
-  const isLiveFish = product?.productType === "LiveFish";
-
-  // Resolve the price for display
-  const fishInstance = product?.fishInstances?.find(
-    (f) => f.id === fishInstanceId,
-  );
-  const unitPrice = isLiveFish
-    ? (fishInstance?.price ?? 0)
-    : (product?.basePrice ?? 0);
-
-  const totalPrice = unitPrice * quantity;
-
   const isProcessing = orderLoading || paymentLoading;
 
   const validateAddress = () => {
@@ -81,22 +113,19 @@ export default function CheckoutPageClient() {
 
   const handlePlaceOrder = async () => {
     if (!validateAddress()) return;
-    if (!productId || !storeId) {
-      toast.error("Thông tin sản phẩm không hợp lệ");
+    if (itemsToOrder.length === 0 || !orderStoreId) {
+      toast.error("Thông tin đơn hàng không hợp lệ");
       return;
     }
 
     try {
-      // Step 1: Create the order
       const orderResult = await createOrder({
-        storeId,
-        items: [
-          {
-            productId,
-            fishInstanceId: fishInstanceId || undefined,
-            quantity,
-          },
-        ],
+        storeId: orderStoreId,
+        items: itemsToOrder.map((item) => ({
+          productId: item.productId,
+          fishInstanceId: item.fishInstanceId,
+          quantity: item.quantity,
+        })),
         shippingAddress: shippingAddress.trim(),
         note: note.trim() || undefined,
         idempotencyKey,
@@ -105,16 +134,19 @@ export default function CheckoutPageClient() {
       const orderId = orderResult.data.id;
       toast.success("Tạo đơn hàng thành công!");
 
-      // Step 2: Create payment URL
+      // Clear cart items for this store
+      if (source === "cart") {
+        dispatch(clearStoreItems(orderStoreId));
+      }
+
       const paymentResult = await createPaymentUrl({
         orderId,
         paymentMethod: "VNPay",
       }).unwrap();
 
-      // Step 3: Redirect to payment gateway
       window.location.href = paymentResult.paymentUrl;
     } catch {
-      // Errors are handled globally by baseQueryWithReauth via toast
+      // Handled globally
     }
   };
 
@@ -312,86 +344,79 @@ export default function CheckoutPageClient() {
                     <div className="h-4 rounded bg-muted w-3/4" />
                     <div className="h-4 rounded bg-muted w-1/2" />
                   </div>
-                ) : product ? (
+                ) : itemsToOrder.length > 0 ? (
                   <div className="space-y-4">
-                    {/* Product row */}
-                    <div className="flex gap-3">
-                      {product.images?.[0] ? (
-                        <div className="relative h-16 w-16 shrink-0">
-                          <Image
-                            src={product.images[0]}
-                            alt={product.name}
-                            fill
-                            className="rounded-xl object-cover border border-border/50"
-                          />
+                    {/* Items list */}
+                    <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
+                      {itemsToOrder.map((item, idx) => (
+                        <div key={item.cartId || idx} className="flex gap-3">
+                          {item.image ? (
+                            <div className="relative h-16 w-16 shrink-0">
+                              <Image
+                                src={item.image}
+                                alt={item.name}
+                                fill
+                                className="rounded-xl object-cover border border-border/50"
+                              />
+                            </div>
+                          ) : (
+                            <div className="h-16 w-16 rounded-xl bg-secondary/30 flex items-center justify-center shrink-0">
+                              <Fish className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-foreground line-clamp-2">
+                              {item.name}
+                            </p>
+                            {item.productType === "LiveFish" && (
+                              <p className="text-[10px] text-primary font-medium mt-0.5">
+                                Cá cảnh
+                              </p>
+                            )}
+                            <div className="flex justify-between items-center mt-1">
+                              <p className="text-xs text-muted-foreground">
+                                SL: {item.quantity}
+                              </p>
+                              <p className="text-sm font-bold text-primary">
+                                {(item.price * item.quantity).toLocaleString(
+                                  "vi-VN",
+                                )}
+                                đ
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                      ) : (
-                        <div className="h-16 w-16 rounded-xl bg-secondary/30 flex items-center justify-center shrink-0">
-                          <Fish className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-foreground line-clamp-2">
-                          {product.name}
-                        </p>
-                        {fishInstance && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {fishInstance.size} · {fishInstance.color} ·{" "}
-                            {fishInstance.gender}
-                          </p>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {product.storeName}
-                        </p>
-                        {!isLiveFish && (
-                          <p className="text-xs text-muted-foreground">
-                            Số lượng: {quantity}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <Separator className="bg-border/30" />
-
-                    {/* Pricing */}
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Đơn giá</span>
-                        <span className="font-medium">
-                          {unitPrice.toLocaleString("vi-VN")}đ
-                        </span>
-                      </div>
-                      {!isLiveFish && quantity > 1 && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Số lượng
-                          </span>
-                          <span className="font-medium">{quantity}</span>
-                        </div>
-                      )}
+                      ))}
                     </div>
 
                     <Separator className="bg-border/30" />
 
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold text-foreground">
-                        Tổng cộng
-                      </span>
+                      <div className="space-y-0.5">
+                        <span className="text-sm font-semibold text-foreground">
+                          Tổng cộng
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">
+                          {itemsToOrder.length} sản phẩm từ {orderStoreName}
+                        </p>
+                      </div>
                       <span className="text-xl font-bold text-primary">
-                        {totalPrice.toLocaleString("vi-VN")}đ
+                        {displayTotal.toLocaleString("vi-VN")}đ
                       </span>
                     </div>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    Không thể tải thông tin sản phẩm
+                    Không tìm thấy thông tin sản phẩm để thanh toán
                   </p>
                 )}
               </Card>
 
               <Button
                 onClick={handlePlaceOrder}
-                disabled={isProcessing || productLoading || !product}
+                disabled={
+                  isProcessing || productLoading || itemsToOrder.length === 0
+                }
                 className="w-full py-6 text-base font-semibold rounded-xl bg-linear-to-r from-primary to-accent hover:shadow-lg transition-all"
               >
                 {isProcessing ? (

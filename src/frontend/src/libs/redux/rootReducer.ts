@@ -1,6 +1,7 @@
 import { authApi } from "@/services/authApi";
 import { combineReducers, Action } from "@reduxjs/toolkit";
 import authReducer from "./features/authSlice";
+import cartReducer from "./features/cartSlice";
 import { logout } from "./features/authSlice";
 import { productApi } from "@/services/productApi";
 import { userApi } from "@/services/userApi";
@@ -14,6 +15,7 @@ import { postApi } from "@/services/postApi";
 
 const appReducer = combineReducers({
   auth: authReducer,
+  cart: cartReducer,
 
   [authApi.reducerPath]: authApi.reducer,
   [productApi.reducerPath]: productApi.reducer,
