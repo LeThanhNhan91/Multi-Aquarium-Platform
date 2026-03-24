@@ -22,6 +22,7 @@ export function CartSyncProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (backendCart?.data) {
       const mappedItems: CartItem[] = backendCart.data.map((item: any) => ({
+        id: item.id,
         cartId: item.fishInstanceId
           ? `${item.productId}-${item.fishInstanceId}`
           : item.productId,

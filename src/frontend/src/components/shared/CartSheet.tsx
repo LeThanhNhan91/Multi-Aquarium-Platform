@@ -13,7 +13,14 @@ import {
   updateQuantity,
   toggleCart,
   setCartOpen,
+  clearCart,
+  CartItem,
 } from "@/libs/redux/features/cartSlice";
+import {
+  useUpdateCartItemMutation,
+  useRemoveFromCartMutation,
+  useClearCartMutation,
+} from "@/services/cartApi";
 import { ShoppingBag, X, Plus, Minus, Trash2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -31,9 +38,51 @@ export function CartSheet() {
     0,
   );
 
+  const { accessToken } = useAppSelector((state) => state.auth);
+  const [updateCartItem] = useUpdateCartItemMutation();
+  const [removeFromCart] = useRemoveFromCartMutation();
+  const [clearCartBackend] = useClearCartMutation();
+
   const handleCheckout = () => {
     dispatch(setCartOpen(false));
     router.push("/cart");
+  };
+
+  const handleUpdateQuantity = async (item: CartItem, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    dispatch(updateQuantity({ cartId: item.cartId, quantity: newQuantity }));
+
+    if (accessToken && item.id) {
+      try {
+        await updateCartItem({ id: item.id, quantity: newQuantity }).unwrap();
+      } catch (error) {
+        console.error("Failed to sync quantity update:", error);
+      }
+    }
+  };
+
+  const handleRemove = async (item: CartItem) => {
+    dispatch(removeItem(item.cartId));
+
+    if (accessToken && item.id) {
+      try {
+        await removeFromCart(item.id).unwrap();
+      } catch (error) {
+        console.error("Failed to sync removal:", error);
+      }
+    }
+  };
+
+  const handleClearCart = async () => {
+    dispatch(clearCart());
+
+    if (accessToken) {
+      try {
+        await clearCartBackend().unwrap();
+      } catch (error) {
+        console.error("Failed to clear backend cart:", error);
+      }
+    }
   };
 
   return (
@@ -93,7 +142,7 @@ export function CartSheet() {
                           {item.name}
                         </h4>
                         <button
-                          onClick={() => dispatch(removeItem(item.cartId))}
+                          onClick={() => handleRemove(item)}
                           className="p-1 text-muted-foreground hover:text-destructive transition-colors"
                         >
                           <X className="h-4 w-4" />
@@ -118,12 +167,7 @@ export function CartSheet() {
                         <div className="flex items-center border border-border/50 rounded-lg bg-secondary/10 overflow-hidden h-8">
                           <button
                             onClick={() =>
-                              dispatch(
-                                updateQuantity({
-                                  cartId: item.cartId,
-                                  quantity: item.quantity - 1,
-                                }),
-                              )
+                              handleUpdateQuantity(item, item.quantity - 1)
                             }
                             className="px-2 hover:bg-secondary/30 transition-colors disabled:opacity-30"
                             disabled={item.quantity <= 1}
@@ -135,12 +179,7 @@ export function CartSheet() {
                           </span>
                           <button
                             onClick={() =>
-                              dispatch(
-                                updateQuantity({
-                                  cartId: item.cartId,
-                                  quantity: item.quantity + 1,
-                                }),
-                              )
+                              handleUpdateQuantity(item, item.quantity + 1)
                             }
                             className="px-2 hover:bg-secondary/30 transition-colors disabled:opacity-30"
                             disabled={
@@ -201,6 +240,16 @@ export function CartSheet() {
               Thanh toán ngay
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
+            {items.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearCart}
+                className="w-full h-12 text-white text-base font-bold rounded-xl hover:bg-destructive/80 bg-destructive"
+              >
+                Xóa tất cả
+              </Button>
+            )}
             <p className="text-[10px] text-center text-muted-foreground italic">
               *Đơn hàng sẽ được chia theo từng cửa hàng để thuận tiện xử lý
             </p>

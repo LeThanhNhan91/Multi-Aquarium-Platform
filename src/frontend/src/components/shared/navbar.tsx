@@ -39,6 +39,7 @@ export function Navbar() {
 
   const handleLogout = () => {
     dispatch(logout());
+    localStorage.removeItem("cart");
     router.replace("/");
   };
 

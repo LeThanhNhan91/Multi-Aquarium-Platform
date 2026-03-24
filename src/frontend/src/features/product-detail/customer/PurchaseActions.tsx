@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/utils/utils";
 import { FishInstance, ProductItem } from "@/types/product.type";
-import { useAppDispatch } from "@/libs/redux/hook";
+import { useAppDispatch, useAppSelector } from "@/libs/redux/hook";
 import { addItem } from "@/libs/redux/features/cartSlice";
+import { useAddToCartMutation } from "@/services/cartApi";
 import { toast } from "sonner";
 
 interface PurchaseActionsProps {
@@ -34,6 +35,8 @@ export function PurchaseActions({
   const isLiveFish = productType === "LiveFish";
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { accessToken } = useAppSelector((state) => state.auth);
+  const [addToCart, { isLoading: isSyncing }] = useAddToCartMutation();
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -63,11 +66,11 @@ export function PurchaseActions({
         ? selectedFish.images[0] 
         : (product.images?.[0] ?? "");
 
-      const name = isLiveFish && selectedFish 
+      const name = (isLiveFish && selectedFish 
         ? `${product.name} (${selectedFish.size} - ${selectedFish.color})`
-        : product.name;
+        : product.name) || "Sản phẩm";
 
-      dispatch(addItem({
+      const newItem = {
         cartId,
         productId,
         fishInstanceId: selectedFish?.id,
@@ -78,8 +81,23 @@ export function PurchaseActions({
         image,
         storeId,
         storeName,
-        availableStock: isLiveFish ? 1 : availableStock
-      }));
+        availableStock: isLiveFish ? 1 : availableStock,
+      };
+
+      dispatch(addItem(newItem));
+
+      if (accessToken) {
+        try {
+          await addToCart({
+            productId,
+            fishInstanceId: selectedFish?.id,
+            quantity: isLiveFish ? 1 : quantity,
+          }).unwrap();
+        } catch (error) {
+          console.error("Failed to sync cart to backend:", error);
+          // We keep local state as optimistic
+        }
+      }
 
       toast.success("Đã thêm vào giỏ hàng");
     } catch {

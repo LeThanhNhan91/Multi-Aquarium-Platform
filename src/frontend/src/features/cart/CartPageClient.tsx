@@ -5,7 +5,13 @@ import {
   removeItem,
   updateQuantity,
   clearCart,
+  CartItem,
 } from "@/libs/redux/features/cartSlice";
+import {
+  useUpdateCartItemMutation,
+  useRemoveFromCartMutation,
+  useClearCartMutation,
+} from "@/services/cartApi";
 import {
   ShoppingBag,
   Trash2,
@@ -48,6 +54,48 @@ export default function CartPageClient() {
     (acc, item) => acc + item.price * item.quantity,
     0,
   );
+
+  const { accessToken } = useAppSelector((state) => state.auth);
+  const [updateCartItem] = useUpdateCartItemMutation();
+  const [removeFromCart] = useRemoveFromCartMutation();
+  const [clearCartBackend] = useClearCartMutation();
+
+  const handleUpdateQuantity = async (item: CartItem, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    dispatch(updateQuantity({ cartId: item.cartId, quantity: newQuantity }));
+
+    if (accessToken && item.id) {
+      try {
+        await updateCartItem({ id: item.id, quantity: newQuantity }).unwrap();
+      } catch (error) {
+        console.error("Failed to sync quantity update:", error);
+      }
+    }
+  };
+
+  const handleRemove = async (item: CartItem) => {
+    dispatch(removeItem(item.cartId));
+
+    if (accessToken && item.id) {
+      try {
+        await removeFromCart(item.id).unwrap();
+      } catch (error) {
+        console.error("Failed to sync removal:", error);
+      }
+    }
+  };
+
+  const handleClearCart = async () => {
+    dispatch(clearCart());
+
+    if (accessToken) {
+      try {
+        await clearCartBackend().unwrap();
+      } catch (error) {
+        console.error("Failed to clear backend cart:", error);
+      }
+    }
+  };
 
   const handleCheckoutStore = (storeId: string) => {
     router.push(`/checkout?storeId=${storeId}&source=cart`);
@@ -134,7 +182,7 @@ export default function CartPageClient() {
                             {item.name}
                           </h3>
                           <button
-                            onClick={() => dispatch(removeItem(item.cartId))}
+                            onClick={() => handleRemove(item)}
                             className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -174,14 +222,7 @@ export default function CartPageClient() {
                         ) : (
                           <div className="flex items-center border border-border/50 rounded-xl bg-background shadow-xs overflow-hidden h-10">
                             <button
-                              onClick={() =>
-                                dispatch(
-                                  updateQuantity({
-                                    cartId: item.cartId,
-                                    quantity: item.quantity - 1,
-                                  }),
-                                )
-                              }
+                              onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
                               className="px-3 hover:bg-secondary/20 transition-colors disabled:opacity-20"
                               disabled={item.quantity <= 1}
                             >
@@ -191,14 +232,7 @@ export default function CartPageClient() {
                               {item.quantity}
                             </span>
                             <button
-                              onClick={() =>
-                                dispatch(
-                                  updateQuantity({
-                                    cartId: item.cartId,
-                                    quantity: item.quantity + 1,
-                                  }),
-                                )
-                              }
+                              onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
                               className="px-3 hover:bg-secondary/20 transition-colors disabled:opacity-20"
                               disabled={
                                 item.availableStock !== undefined &&
@@ -265,7 +299,7 @@ export default function CartPageClient() {
               <Button
                 variant="outline"
                 className="w-full h-12 text-base font-bold rounded-xl border-primary/20 text-primary hover:bg-primary/5"
-                onClick={() => dispatch(clearCart())}
+                onClick={handleClearCart}
               >
                 Xóa toàn bộ giỏ hàng
               </Button>

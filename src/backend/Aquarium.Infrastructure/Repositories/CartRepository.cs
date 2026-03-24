@@ -23,14 +23,24 @@ namespace Aquarium.Infrastructure.Repositories
             return await _context.CartItems
                 .Include(c => c.Product)
                     .ThenInclude(p => p.Store)
+                .Include(c => c.Product)
+                    .ThenInclude(p => p.ProductMedia)
                 .Include(c => c.FishInstance)
+                    .ThenInclude(f => f.FishInstanceMedia)
                 .Where(c => c.UserId == userId)
                 .ToListAsync();
         }
 
         public async Task<CartItem> GetByIdAsync(Guid id)
         {
-            return await _context.CartItems.FindAsync(id);
+            return await _context.CartItems
+                .Include(c => c.Product)
+                    .ThenInclude(p => p.Store)
+                .Include(c => c.Product)
+                    .ThenInclude(p => p.ProductMedia)
+                .Include(c => c.FishInstance)
+                    .ThenInclude(f => f.FishInstanceMedia)
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task<CartItem> GetByProductAsync(Guid userId, Guid productId, Guid? fishInstanceId)

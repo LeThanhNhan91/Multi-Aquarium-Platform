@@ -36,6 +36,7 @@ export function UserMenu({ user }: UserMenuProps) {
 
   const handleLogout = () => {
     dispatch(logout());
+    localStorage.removeItem("cart");
     setIsOpen(false);
     router.replace("/");
   };

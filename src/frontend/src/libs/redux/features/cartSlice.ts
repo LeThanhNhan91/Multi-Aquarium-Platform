@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface CartItem {
+  id?: string; // Backend database ID
   cartId: string; // unique identifier (productID + fishInstanceId)
   productId: string;
   fishInstanceId?: string;
