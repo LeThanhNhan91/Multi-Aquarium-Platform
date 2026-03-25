@@ -11,6 +11,7 @@ import {
   useUpdateCartItemMutation,
   useRemoveFromCartMutation,
   useClearCartMutation,
+  useValidateCheckoutMutation,
 } from "@/services/cartApi";
 import {
   ShoppingBag,
@@ -21,6 +22,7 @@ import {
   Store,
   ChevronRight,
   Info,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -29,11 +31,90 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import WarningModal from "@/components/shared/WarningModal";
 
 export default function CartPageClient() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { items } = useAppSelector((state) => state.cart);
+  const { accessToken } = useAppSelector((state) => state.auth);
+
+  // Inventory validation state
+  const [unavailableItems, setUnavailableItems] = useState<Set<string>>(new Set());
+  const [validationMessage, setValidationMessage] = useState<string>("");
+  const [validateCheckout] = useValidateCheckoutMutation();
+  const [updateCartItem] = useUpdateCartItemMutation();
+  const [removeFromCart] = useRemoveFromCartMutation();
+  const [clearCartBackend] = useClearCartMutation();
+
+  // Validate inventory whenever items change
+  useEffect(() => {
+    const validateInventory = async () => {
+      if (!items.length || !accessToken) {
+        setUnavailableItems(new Set());
+        setValidationMessage("");
+        return;
+      }
+
+      // Group by store and validate each store's items
+      const groupedByStore = items.reduce(
+        (acc, item) => {
+          if (!acc[item.storeId]) {
+            acc[item.storeId] = [];
+          }
+          acc[item.storeId].push({
+            productId: item.productId,
+            fishInstanceId: item.fishInstanceId,
+            quantity: item.quantity,
+          });
+          return acc;
+        },
+        {} as Record<string, any[]>
+      );
+
+      const unavailable = new Set<string>();
+
+      for (const [storeId, storeItems] of Object.entries(groupedByStore)) {
+        try {
+          const result = await validateCheckout({
+            storeId,
+            items: storeItems,
+          }).unwrap();
+
+          if (!result.isValid && result.items) {
+            result.items.forEach((item) => {
+              if (!item.isAvailable) {
+                const key = `${item.productId}_${item.fishInstanceId || ""}`;
+                unavailable.add(key);
+              }
+            });
+          }
+        } catch (error) {
+          console.error(`Failed to validate store ${storeId}:`, error);
+        }
+      }
+
+      setUnavailableItems(unavailable);
+      if (unavailable.size > 0) {
+        setValidationMessage(
+          "Một số sản phẩm đã hết hàng hoặc không đủ số lượng yêu cầu."
+        );
+      } else {
+        setValidationMessage("");
+      }
+    };
+
+    validateInventory();
+  }, [items, accessToken, validateCheckout]);
+
+  const [showWarning, setShowWarning] = useState(false);
+
+  useEffect(() => {
+    if (validationMessage) {
+      setShowWarning(true);
+    }
+  }, [validationMessage]);
 
   // Group items by store
   const groupedItems = items.reduce(
@@ -54,11 +135,6 @@ export default function CartPageClient() {
     (acc, item) => acc + item.price * item.quantity,
     0,
   );
-
-  const { accessToken } = useAppSelector((state) => state.auth);
-  const [updateCartItem] = useUpdateCartItemMutation();
-  const [removeFromCart] = useRemoveFromCartMutation();
-  const [clearCartBackend] = useClearCartMutation();
 
   const handleUpdateQuantity = async (item: CartItem, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -98,6 +174,19 @@ export default function CartPageClient() {
   };
 
   const handleCheckoutStore = (storeId: string) => {
+    const storeItems = groupedItems[storeId]?.items || [];
+    const hasUnavailable = storeItems.some((item) => {
+      const key = `${item.productId}_${item.fishInstanceId || ""}`;
+      return unavailableItems.has(key);
+    });
+
+    if (hasUnavailable) {
+      setValidationMessage(
+        "Vui lòng xóa các sản phẩm hết hàng trước khi thanh toán."
+      );
+      return;
+    }
+
     router.push(`/checkout?storeId=${storeId}&source=cart`);
   };
 
@@ -124,6 +213,11 @@ export default function CartPageClient() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
+      <WarningModal
+        open={showWarning && !!validationMessage}
+        message={validationMessage}
+        onClose={() => setShowWarning(false)}
+      />
       <div className="flex items-center gap-3 mb-8">
         <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
           <ShoppingBag className="h-6 w-6 text-primary-foreground" />
@@ -161,92 +255,121 @@ export default function CartPageClient() {
               </div>
 
               <div className="divide-y divide-border/30">
-                {group.items.map((item) => (
-                  <div
-                    key={item.cartId}
-                    className="p-6 flex gap-6 group hover:bg-secondary/5 transition-colors"
-                  >
-                    <div className="relative h-24 w-24 shrink-0 rounded-2xl overflow-hidden border border-border/50 bg-secondary/10">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
+                {group.items.map((item) => {
+                  const itemKey = `${item.productId}_${item.fishInstanceId || ""}`;
+                  const isUnavailable = unavailableItems.has(itemKey);
 
-                    <div className="flex-1 flex flex-col justify-between">
-                      <div>
-                        <div className="flex justify-between items-start mb-1">
-                          <h3 className="font-bold text-lg text-foreground line-clamp-1">
-                            {item.name}
-                          </h3>
-                          <button
-                            onClick={() => handleRemove(item)}
-                            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                  return (
+                    <div
+                      key={item.cartId}
+                      className={`p-6 flex gap-6 group relative transition-all ${
+                        isUnavailable
+                          ? "opacity-60 bg-secondary/20"
+                          : "hover:bg-secondary/5"
+                      }`}
+                    >
+                      {/* Out of stock overlay */}
+                      {isUnavailable && (
+                        <div className="absolute inset-0 bg-black/40 rounded-lg flex flex-col items-center justify-center gap-2 z-10">
+                          <AlertCircle className="h-6 w-6 text-white" />
+                          <span className="text-white font-bold text-sm text-center px-4">
+                            Sản phẩm hết hàng
+                          </span>
                         </div>
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] font-medium border-border/50 capitalize text-muted-foreground"
-                          >
-                            {item.productType === "LiveFish"
-                              ? "Cá cảnh"
-                              : "Thiết bị"}
-                          </Badge>
-                          {item.productType === "LiveFish" && (
-                            <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-[10px]">
-                              Độc bản
+                      )}
+
+                      <div className="relative h-24 w-24 shrink-0 rounded-2xl overflow-hidden border border-border/50 bg-secondary/10">
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          className={`object-cover ${isUnavailable ? "grayscale" : "group-hover:scale-105"} transition-transform duration-300`}
+                        />
+                      </div>
+
+                      {/* FIX: restored proper nesting for flex-1 div */}
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-start mb-1">
+                            <h3 className="font-bold text-lg text-foreground line-clamp-1">
+                              {item.name}
+                            </h3>
+                            <button
+                              onClick={() => handleRemove(item)}
+                              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {isUnavailable && (
+                              <Badge className="bg-destructive/10 text-destructive border-0 text-[10px]">
+                                Hết hàng
+                              </Badge>
+                            )}
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] font-medium border-border/50 capitalize ${
+                                isUnavailable
+                                  ? "text-muted-foreground/50"
+                                  : "text-muted-foreground"
+                              }`}
+                            >
+                              {item.productType === "LiveFish"
+                                ? "Cá cảnh"
+                                : "Thiết bị"}
                             </Badge>
+                            {item.productType === "LiveFish" && (
+                              <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-[10px]">
+                                Độc bản
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-end justify-between">
+                          <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">
+                              Đơn giá
+                            </p>
+                            <p className="font-black text-xl text-primary">
+                              {item.price.toLocaleString("vi-VN")}đ
+                            </p>
+                          </div>
+
+                          {item.productType === "LiveFish" ? (
+                            <div className="text-xs font-medium text-muted-foreground bg-secondary/20 px-3 py-1.5 rounded-lg border border-border/50">
+                              Số lượng cố định: 1
+                            </div>
+                          ) : (
+                            <div className="flex items-center border border-border/50 rounded-xl bg-background shadow-xs overflow-hidden h-10">
+                              <button
+                                onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
+                                className="px-3 hover:bg-secondary/20 transition-colors disabled:opacity-20"
+                                disabled={item.quantity <= 1 || isUnavailable}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </button>
+                              <span className="w-10 text-center font-bold tabular-nums">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
+                                className="px-3 hover:bg-secondary/20 transition-colors disabled:opacity-20"
+                                disabled={
+                                  (item.availableStock !== undefined &&
+                                  item.quantity >= item.availableStock) || isUnavailable
+                                }
+                              >
+                                <Plus className="h-4 w-4" />
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
-
-                      <div className="flex items-end justify-between">
-                        <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground">
-                            Đơn giá
-                          </p>
-                          <p className="font-black text-xl text-primary">
-                            {item.price.toLocaleString("vi-VN")}đ
-                          </p>
-                        </div>
-
-                        {item.productType === "LiveFish" ? (
-                          <div className="text-xs font-medium text-muted-foreground bg-secondary/20 px-3 py-1.5 rounded-lg border border-border/50">
-                            Số lượng cố định: 1
-                          </div>
-                        ) : (
-                          <div className="flex items-center border border-border/50 rounded-xl bg-background shadow-xs overflow-hidden h-10">
-                            <button
-                              onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
-                              className="px-3 hover:bg-secondary/20 transition-colors disabled:opacity-20"
-                              disabled={item.quantity <= 1}
-                            >
-                              <Minus className="h-4 w-4" />
-                            </button>
-                            <span className="w-10 text-center font-bold tabular-nums">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
-                              className="px-3 hover:bg-secondary/20 transition-colors disabled:opacity-20"
-                              disabled={
-                                item.availableStock !== undefined &&
-                                item.quantity >= item.availableStock
-                              }
-                            >
-                              <Plus className="h-4 w-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </Card>
           ))}

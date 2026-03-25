@@ -1,25 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { RootState } from "@/libs/redux/store";
-
-export interface CartItemBackend {
-  id: string;
-  productId: string;
-  fishInstanceId?: string;
-  productName: string;
-  productType: string;
-  price: number;
-  quantity: number;
-  imageUrl: string;
-  storeId: string;
-  storeName: string;
-  availableStock?: number;
-}
-
-export interface AddToCartRequest {
-  productId: string;
-  fishInstanceId?: string;
-  quantity: number;
-}
+import { AddToCartRequest, CheckoutValidationResult } from "@/types/cart.type";
 
 export const cartApi = createApi({
   reducerPath: "cartApi",
@@ -84,6 +65,16 @@ export const cartApi = createApi({
       }),
       invalidatesTags: ["Cart"],
     }),
+    validateCheckout: builder.mutation<
+      CheckoutValidationResult,
+      { storeId: string; items: Array<{ productId: string; fishInstanceId?: string; quantity: number }> }
+    >({
+      query: ({ storeId, items }) => ({
+        url: `/orders/validate-checkout?storeId=${storeId}`,
+        method: "POST",
+        body: items,
+      }),
+    }),
   }),
 });
 
@@ -95,4 +86,5 @@ export const {
   useClearCartMutation,
   useMergeCartMutation,
   useRemoveStoreItemsMutation,
+  useValidateCheckoutMutation,
 } = cartApi;

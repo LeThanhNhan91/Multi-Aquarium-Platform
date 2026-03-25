@@ -43,6 +43,15 @@ namespace Aquarium.Api.Controllers
             return Ok(new ApiResponse<PagedResult<OrderResponse>>(response));
         }
 
+        [HttpPost("validate-checkout")]
+        [Authorize]
+        public async Task<IActionResult> ValidateCheckout([FromBody] ValidateCheckoutRequest request)
+        {
+            var userId = GetCurrentUserId();
+            var response = await _orderService.ValidateCheckoutAsync(request.StoreId, request.Items, userId);
+            return Ok(response);
+        }
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)

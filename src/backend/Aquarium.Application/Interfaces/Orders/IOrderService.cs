@@ -22,5 +22,7 @@ namespace Aquarium.Application.Interfaces.Orders
         Task CancelOrderAsync(Guid orderId, Guid userId, string reason);
         
         Task UpdateOrderStatusAsync(Guid orderId, UpdateOrderStatusRequest request, Guid userId);
+
+        Task<CheckoutValidationResult> ValidateCheckoutAsync(Guid storeId, List<CreateOrderItemRequest> items, Guid userId);
     }
 }

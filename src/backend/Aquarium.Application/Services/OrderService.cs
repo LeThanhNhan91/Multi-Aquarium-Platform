@@ -609,5 +609,128 @@ namespace Aquarium.Application.Services
             await _orderRepository.SaveChangesAsync();
             _logger.LogInformation($"Order {orderId} status updated to {request.Status} by user {userId}.");
         }
+
+        public async Task<CheckoutValidationResult> ValidateCheckoutAsync(Guid storeId, List<CreateOrderItemRequest> items, Guid userId)
+        {
+            var result = new CheckoutValidationResult { Items = new List<InventoryCheckItem>() };
+
+            try
+            {
+                // Get all products at once
+                var productIds = items.Select(i => i.ProductId).Distinct().ToList();
+                var products = await _productRepository.GetByIdsAsync(productIds);
+
+                if (products.Count != productIds.Count)
+                {
+                    result.IsValid = false;
+                    result.Message = "Some products do not exist.";
+                    return result;
+                }
+
+                var invalidProduct = products.FirstOrDefault(p => p.StoreId != storeId);
+                if (invalidProduct != null)
+                {
+                    result.IsValid = false;
+                    result.Message = $"Product '{invalidProduct.Name}' does not belong to this store.";
+                    return result;
+                }
+
+                // Check each item's availability
+                foreach (var itemRequest in items)
+                {
+                    var product = products.First(p => p.Id == itemRequest.ProductId);
+                    
+                    // Determine if LiveFish
+                    var rootCategory = await _categoryRepository.GetRootCategoryAsync(product.CategoryId);
+                    string baseSlug = Helper.GetBaseSlug(rootCategory?.Slug ?? "");
+                    bool isLiveFish = baseSlug == "ca-canh";
+
+                    if (isLiveFish)
+                    {
+                        // For LiveFish, check if the specific instance exists and is available
+                        if (!itemRequest.FishInstanceId.HasValue)
+                        {
+                            var checkItem = new InventoryCheckItem
+                            {
+                                ProductId = product.Id,
+                                ProductName = product.Name,
+                                RequestedQuantity = 1,
+                                AvailableQuantity = 0,
+                                IsAvailable = false,
+                                Reason = "Fish instance not specified"
+                            };
+                            result.Items.Add(checkItem);
+                            result.IsValid = false;
+                            continue;
+                        }
+
+                        var fishInstance = await _fishInstanceRepository.GetByIdAsync(itemRequest.FishInstanceId.Value);
+                        if (fishInstance == null || fishInstance.Status != "Available")
+                        {
+                            var checkItem = new InventoryCheckItem
+                            {
+                                ProductId = product.Id,
+                                FishInstanceId = itemRequest.FishInstanceId,
+                                ProductName = $"{product.Name} (specific fish)",
+                                RequestedQuantity = 1,
+                                AvailableQuantity = fishInstance?.Status == "Available" ? 1 : 0,
+                                IsAvailable = false,
+                                Reason = fishInstance?.Status == "Available" ? "Fish not found" : "Fish already sold or reserved"
+                            };
+                            result.Items.Add(checkItem);
+                            result.IsValid = false;
+                        }
+                        else
+                        {
+                            result.Items.Add(new InventoryCheckItem
+                            {
+                                ProductId = product.Id,
+                                FishInstanceId = itemRequest.FishInstanceId,
+                                ProductName = $"{product.Name} (specific fish)",
+                                RequestedQuantity = 1,
+                                AvailableQuantity = 1,
+                                IsAvailable = true
+                            });
+                        }
+                    }
+                    else
+                    {
+                        // For Equipment, check inventory quantity
+                        int availableStock = product.Inventory?.AvailableStock ?? 0;
+                        bool isAvailable = product.Inventory != null && product.Inventory.CanPurchase(itemRequest.Quantity);
+
+                        result.Items.Add(new InventoryCheckItem
+                        {
+                            ProductId = product.Id,
+                            ProductName = product.Name,
+                            RequestedQuantity = itemRequest.Quantity,
+                            AvailableQuantity = availableStock,
+                            IsAvailable = isAvailable,
+                            Reason = isAvailable ? null : $"Only {availableStock} available"
+                        });
+
+                        if (!isAvailable)
+                            result.IsValid = false;
+                    }
+                }
+
+                if (result.IsValid && result.Items.Any(i => !i.IsAvailable))
+                    result.IsValid = false;
+
+                if (!result.IsValid)
+                    result.Message = "Some items are not available in the requested quantity.";
+                else
+                    result.Message = "All items are available for checkout.";
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating checkout");
+                result.IsValid = false;
+                result.Message = "An error occurred while validating your cart.";
+                return result;
+            }
+        }
     }
 }
