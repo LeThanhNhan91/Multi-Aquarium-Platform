@@ -220,6 +220,27 @@ namespace Aquarium.Application.Services
             return new PagedResult<PostFeedDto>(items, totalCount, pageIndex, pageSize);
         }
 
+        public async Task<PagedResult<PostFeedDto>> GetStorePostsAsync(Guid storeId, int pageIndex, int pageSize, Guid currentUserId)
+        {
+            var (posts, totalCount) = await _postRepository.GetStorePostsAsync(storeId, pageIndex, pageSize);
+
+            var items = posts.Select(p => new PostFeedDto
+            {
+                Id = p.Id,
+                StoreId = p.StoreId,
+                StoreName = p.Store?.Name ?? "Unknown",
+                LogoUrl = p.Store?.LogoUrl,
+                Content = p.Content,
+                CreatedAt = p.CreatedAt ?? DateTime.UtcNow,
+                Media = p.PostMedia.Select(m => new PostMediaDto { Url = m.MediaUrl, Type = m.MediaType, Id = m.Id }).ToList(),
+                LikeCount = p.Likes.Count,
+                CommentCount = p.Comments.Count,
+                IsLikedByCurrentUser = p.Likes.Any(l => l.UserId == currentUserId)
+            }).ToList();
+
+            return new PagedResult<PostFeedDto>(items, totalCount, pageIndex, pageSize);
+        }
+
         public async Task<PostFeedDto> GetPostByIdAsync(Guid postId, Guid currentUserId)
         {
             var p = await _postRepository.GetPostDetailAsync(postId);

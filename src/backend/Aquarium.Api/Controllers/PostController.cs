@@ -79,6 +79,19 @@ namespace Aquarium.Api.Controllers
             return Ok(new ApiResponse<PagedResult<PostFeedDto>>(result));
         }
 
+        // Store Posts
+        [HttpGet("store/{storeId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetStorePosts(Guid storeId, [FromQuery] int page = 1, [FromQuery] int size = 10)
+        {
+            Guid currentUserId = Guid.Empty;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null) currentUserId = Guid.Parse(userIdClaim.Value);
+
+            var result = await _postService.GetStorePostsAsync(storeId, page, size, currentUserId);
+            return Ok(new ApiResponse<PagedResult<PostFeedDto>>(result));
+        }
+
         // Liked Posts (Saved)
         [HttpGet("liked")]
         public async Task<IActionResult> GetLikedPosts([FromQuery] int page = 1, [FromQuery] int size = 10)

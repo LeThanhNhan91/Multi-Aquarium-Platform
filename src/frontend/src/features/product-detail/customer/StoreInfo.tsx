@@ -95,7 +95,7 @@ export function StoreInfo({
 
         {/* Store Actions */}
         <div>
-          <Link href={`/shop/${storeId}`}>
+          <Link href={`/stores/${storeId}`}>
             <Button
               variant="outline"
               className="w-full rounded-lg border-primary/30 text-primary hover:bg-primary/5 mb-4"

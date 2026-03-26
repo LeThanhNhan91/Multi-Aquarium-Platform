@@ -22,6 +22,17 @@ export const postApi = createApi({
       providesTags: ["Post"],
     }),
 
+    // Store Posts
+    getStorePosts: builder.query<
+      ApiResponse<PostFeedResponse>,
+      { storeId: string; page: number; size: number }
+    >({
+      query: ({ storeId, page, size }) => `/post/store/${storeId}?page=${page}&size=${size}`,
+      providesTags: (result, error, { storeId }) => [
+        { type: "Post", id: `STORE_${storeId}` },
+      ],
+    }),
+
     // Liked (saved) posts
     getLikedPosts: builder.query<
       ApiResponse<PostFeedResponse>,
@@ -110,6 +121,7 @@ export const postApi = createApi({
 
 export const {
   useGetFeedQuery,
+  useGetStorePostsQuery,
   useGetLikedPostsQuery,
   useGetPostByIdQuery,
   useToggleLikeMutation,

@@ -56,7 +56,7 @@ export const PostCard = React.memo(({ post, onToggleExpand }: PostCardProps) => 
         <Link href={`/stores/${post.storeId}`} className="flex items-center gap-3 group/store">
           <div className="relative h-10 w-10 rounded-full overflow-hidden bg-linear-to-br from-blue-400 to-cyan-500 flex items-center justify-center shrink-0 ring-2 ring-offset-2 ring-blue-200 group-hover/store:ring-blue-400 transition-all">
             {post.logoUrl ? (
-              <Image src={post.logoUrl} alt={post.storeName} fill className="object-cover" />
+              <Image src={post.logoUrl} alt={post.storeName || "Store"} fill className="object-cover" />
             ) : (
               <Store className="h-5 w-5 text-white" />
             )}

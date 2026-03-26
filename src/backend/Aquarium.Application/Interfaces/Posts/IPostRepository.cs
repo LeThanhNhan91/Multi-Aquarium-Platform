@@ -12,6 +12,7 @@ namespace Aquarium.Application.Interfaces.Posts
         Task<StorePost?> GetPostDetailAsync(Guid id);
         Task DeleteAsync(StorePost post);
         Task<(List<StorePost> posts, int totalCount)> GetNewsFeedAsync(int pageIndex, int pageSize);
+        Task<(List<StorePost> posts, int totalCount)> GetStorePostsAsync(Guid storeId, int pageIndex, int pageSize);
         Task<PostLike?> GetLikeAsync(Guid postId, Guid userId);
         Task AddLikeAsync(PostLike like);
         Task RemoveLikeAsync(PostLike like);

@@ -63,6 +63,26 @@ namespace Aquarium.Infrastructure.Repositories
             return (posts, totalCount);
         }
 
+        public async Task<(List<StorePost> posts, int totalCount)> GetStorePostsAsync(Guid storeId, int pageIndex, int pageSize)
+        {
+            var query = _context.StorePosts
+                .Include(p => p.Store)
+                .Include(p => p.PostMedia)
+                .Include(p => p.Likes)
+                .Include(p => p.Comments)
+                .Where(p => p.StoreId == storeId)
+                .OrderByDescending(p => p.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var posts = await query
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (posts, totalCount);
+        }
+
         public async Task<PostLike?> GetLikeAsync(Guid postId, Guid userId)
         {
             return await _context.PostLikes.FindAsync(postId, userId);
