@@ -6,6 +6,7 @@ import { useGetFeedQuery } from "@/services/postApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Newspaper } from "lucide-react";
 import { PostFeed } from "@/types/post.type";
+import { PostDetailModal } from "@/features/posts/PostDetailModal";
 
 const VirtualizedFeedList = dynamic(() => import("./VirtualizedFeedList"), {
   ssr: false,
@@ -19,19 +20,10 @@ export function FeedsPage() {
   const [hasMore, setHasMore] = useState(true);
   const listRef = useRef<any>(null);
 
-  const [expandedIndices, setExpandedIndices] = useState<Set<number>>(
-    new Set(),
-  );
+  const [selectedPostIndex, setSelectedPostIndex] = useState<number | null>(null);
 
-  // Optimized: Only toggle the state, no manual height math or resetAfterIndex needed
-  // ResizeObserver in VirtualizedFeedList will handle the rest
-  const handleToggleExpand = React.useCallback((index: number) => {
-    setExpandedIndices((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
-      return next;
-    });
+  const handleOpenDetail = React.useCallback((index: number) => {
+    setSelectedPostIndex(index);
   }, []);
 
   const { data, isLoading, isFetching } = useGetFeedQuery(
@@ -76,7 +68,7 @@ export function FeedsPage() {
             posts={posts}
             height={window.innerHeight - 80}
             onRowsRendered={onRowsRendered}
-            onToggleExpand={handleToggleExpand}
+            onOpenDetail={handleOpenDetail}
           />
         )}
       </div>

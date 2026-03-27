@@ -18,15 +18,14 @@ import DOMPurify from "dompurify";
 
 interface PostCardProps {
   post: PostFeed;
-  onToggleExpand?: () => void;
+  onOpenDetail?: () => void;
 }
 
-export const PostCard = React.memo(({ post, onToggleExpand }: PostCardProps) => {
+export const PostCard = React.memo(({ post, onOpenDetail }: PostCardProps) => {
   const [toggleLike] = useToggleLikeMutation();
   const [isLiked, setIsLiked] = useState(post.isLikedByCurrentUser);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [commentsOpen, setCommentsOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
   const auth = useSelector((state: RootState) => state.auth);
   const isLoggedIn = !!auth?.accessToken;
 
@@ -83,21 +82,15 @@ export const PostCard = React.memo(({ post, onToggleExpand }: PostCardProps) => 
             }
           `}</style>
           <div 
-            className={cn(
-              "post-content text-sm text-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1",
-              !isExpanded && "line-clamp-3"
-            )}
+            className="post-content text-sm text-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 line-clamp-3"
             dangerouslySetInnerHTML={{ __html: sanitizedContent }}
           />
           {hasLongContent && (
             <button 
-              onClick={() => {
-                setIsExpanded(!isExpanded);
-                onToggleExpand?.();
-              }}
+              onClick={onOpenDetail}
               className="mt-1 text-sm font-semibold text-blue-500 hover:text-blue-600 transition-colors"
             >
-              {isExpanded ? "Ẩn bớt" : "...Xem thêm"}
+              ...Xem thêm
             </button>
           )}
         </div>

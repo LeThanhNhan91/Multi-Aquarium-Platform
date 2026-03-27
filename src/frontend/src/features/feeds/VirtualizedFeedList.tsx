@@ -7,32 +7,27 @@ import { PostCard } from "@/features/feeds/PostCard";
 
 interface RowProps {
   posts: PostFeed[];
-  onToggleExpand: (index: number) => void;
+  onOpenDetail: (index: number) => void;
 }
 
 /**
  * Row component optimized with React.memo to prevent unnecessary re-renders.
  * Standardizes the data-react-window-index attribute for useDynamicRowHeight.
  */
-const RowInner = React.memo(({ index, style, posts, onToggleExpand }: RowComponentProps<RowProps>) => {
-  const post = posts[index];
-  if (!post) return <div style={style} />; // Ensure we always return a valid element with style
+const RowInner = React.memo(
+  ({ index, style, posts, onOpenDetail }: RowComponentProps<RowProps>) => {
+    const post = posts[index];
+    if (!post) return <div style={style} />; // Ensure always return a valid element with style
 
-  return (
-    <div 
-      style={style} 
-      className="px-4" 
-      data-react-window-index={index}
-    >
-      <div className="pb-4 max-w-xl mx-auto">
-        <PostCard 
-          post={post} 
-          onToggleExpand={() => onToggleExpand(index)}
-        />
+    return (
+      <div style={style} className="px-4" data-react-window-index={index}>
+        <div className="pb-4 max-w-xl mx-auto">
+          <PostCard post={post} onOpenDetail={() => onOpenDetail(index)} />
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 RowInner.displayName = "VirtualizedFeedRowInner";
 
@@ -43,7 +38,7 @@ interface VirtualizedFeedListProps {
   posts: PostFeed[];
   height: number;
   onRowsRendered: (rows: { startIndex: number; stopIndex: number }) => void;
-  onToggleExpand: (index: number) => void;
+  onOpenDetail: (index: number) => void;
   listRef: React.RefObject<any>;
 }
 
@@ -55,14 +50,13 @@ export default function VirtualizedFeedList({
   posts,
   height,
   onRowsRendered,
-  onToggleExpand,
-  listRef
+  onOpenDetail,
+  listRef,
 }: VirtualizedFeedListProps) {
-  
-  // Senior implementation: useDynamicRowHeight for zero-config auto-measurement
+  // useDynamicRowHeight for zero-config auto-measurement
   // defaultRowHeight should be a reasonable initial estimate
   const dynamicRowHeight = useDynamicRowHeight({
-    defaultRowHeight: 400
+    defaultRowHeight: 400,
   });
 
   return (
@@ -72,7 +66,7 @@ export default function VirtualizedFeedList({
         rowCount={posts.length}
         rowHeight={dynamicRowHeight} // Use the auto-measurement hook
         rowComponent={Row}
-        rowProps={{ posts, onToggleExpand }}
+        rowProps={{ posts, onOpenDetail }}
         onRowsRendered={onRowsRendered}
         overscanCount={5} // Strategic overscan for smoother massive lists
         className="custom-scrollbar"

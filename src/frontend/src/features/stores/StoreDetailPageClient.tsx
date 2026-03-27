@@ -20,12 +20,16 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PostCard } from "@/features/feeds/PostCard";
 import { ProductCard } from "@/features/products/ProductCard";
+import { PostDetailModal } from "@/features/posts/PostDetailModal";
+import { useState } from "react";
 
 export default function StoreDetailPageClient({
   storeId,
 }: {
   storeId: string;
 }) {
+  const [selectedPostIndex, setSelectedPostIndex] = useState<number | null>(null);
+
   const { data: store, isLoading: isStoreLoading } =
     useGetStoreByIdQuery(storeId);
 
@@ -195,8 +199,8 @@ export default function StoreDetailPageClient({
                   </div>
                 ) : posts.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {posts.map((post) => (
-                      <PostCard key={post.id} post={post} />
+                    {posts.map((post, index) => (
+                      <PostCard key={post.id} post={post} onOpenDetail={() => setSelectedPostIndex(index)} />
                     ))}
                   </div>
                 ) : (
@@ -225,7 +229,7 @@ export default function StoreDetailPageClient({
                         slug: "product",
                         name: p.name,
                         shop: store.name,
-                        price: p.basePrice ?? 0,
+                        price: p.basePrice ?? p.minPrice ?? 0,
                         rating: p.averageRating,
                         reviews: p.totalReviews,
                         image: image,
@@ -314,6 +318,14 @@ export default function StoreDetailPageClient({
           </Tabs>
         </div>
       </div>
+
+      {selectedPostIndex !== null && posts.length > 0 && (
+        <PostDetailModal 
+          posts={posts} 
+          initialIndex={selectedPostIndex} 
+          onClose={() => setSelectedPostIndex(null)} 
+        />
+      )}
     </div>
   );
 }
