@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PostCard } from "@/features/feeds/PostCard";
 import { ProductCard } from "@/features/products/ProductCard";
 import { PostDetailModal } from "@/features/posts/PostDetailModal";
+import { ChatDrawer } from "@/features/chat/ChatDrawer";
 import { useState } from "react";
 
 export default function StoreDetailPageClient({
@@ -29,6 +30,7 @@ export default function StoreDetailPageClient({
   storeId: string;
 }) {
   const [selectedPostIndex, setSelectedPostIndex] = useState<number | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const { data: store, isLoading: isStoreLoading } =
     useGetStoreByIdQuery(storeId);
@@ -156,6 +158,7 @@ export default function StoreDetailPageClient({
               </Button>
               <Button
                 variant="outline"
+                onClick={() => setChatOpen(true)}
                 className="flex-1 font-semibold gap-2 border-primary/20 hover:bg-primary/5 text-primary"
               >
                 <MessageSquare className="h-4 w-4" /> Nhắn tin
@@ -324,6 +327,16 @@ export default function StoreDetailPageClient({
           posts={posts} 
           initialIndex={selectedPostIndex} 
           onClose={() => setSelectedPostIndex(null)} 
+        />
+      )}
+
+      {store && (
+        <ChatDrawer
+          key={store.id}
+          open={chatOpen}
+          onClose={() => setChatOpen(false)}
+          storeId={store.id}
+          storeName={store.name}
         />
       )}
     </div>
