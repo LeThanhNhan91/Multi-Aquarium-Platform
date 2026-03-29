@@ -34,8 +34,10 @@ import {
   Tag,
   FileText,
   Images,
+  Settings2,
 } from "lucide-react";
 import Image from "next/image";
+import { ProductAttributeForm } from "./ProductAttributeForm";
 
 const editProductSchema = z.object({
   name: z.string().min(2, "Tên sản phẩm phải có ít nhất 2 ký tự"),
@@ -314,6 +316,22 @@ export function EditProductDialog({
                   </label>
                 </div>
               </div>
+
+              {/* Compatibility Attributes Section */}
+              {isLiveFish && product?.id && (
+                <div className="pt-6 border-t border-border/50 space-y-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Settings2 className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground">Thuộc tính chuyên sâu</h4>
+                      <p className="text-[10px] text-muted-foreground">Các thuộc tính giúp hệ thống kiểm tra tính tương thích</p>
+                    </div>
+                  </div>
+                  <ProductAttributeForm productId={product.id} />
+                </div>
+              )}
             </form>
           </Form>
         </div>

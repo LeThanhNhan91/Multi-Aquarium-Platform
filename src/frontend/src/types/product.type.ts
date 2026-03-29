@@ -14,6 +14,18 @@ export interface FishInstance {
   reservedUntil: string | null;
 }
 
+export interface ProductAttribute {
+  id: string;
+  productId: string;
+  attributeKey: string;
+  attributeValue: string;
+}
+
+export interface AttributeInput {
+  attributeKey: string;
+  attributeValue: string;
+}
+
 export interface ProductItem {
   id: string;
   name: string;
@@ -37,6 +49,7 @@ export interface ProductItem {
   maxPrice?: number | null;
   fishInstances?: FishInstance[];
   isOwner?: boolean;
+  attributes?: ProductAttribute[];
 }
 
 export interface CreateProductRequest {

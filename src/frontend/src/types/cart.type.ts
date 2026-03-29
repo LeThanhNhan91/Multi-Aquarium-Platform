@@ -33,3 +33,17 @@ export interface CheckoutValidationResult {
   items: InventoryCheckItem[];
   message?: string;
 }
+
+export interface CompatibilityWarning {
+  productId: string;
+  productName: string;
+  conflictWithProductId: string;
+  conflictWithProductName: string;
+  warningType: "WaterType" | "Temperament" | "Temperature" | string;
+  message: string;
+}
+
+export interface AddToCartResponse {
+  cartItem: CartItemBackend;
+  warnings: CompatibilityWarning[];
+}

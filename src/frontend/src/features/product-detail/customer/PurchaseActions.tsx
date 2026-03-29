@@ -11,6 +11,16 @@ import { useAppDispatch, useAppSelector } from "@/libs/redux/hook";
 import { addItem } from "@/libs/redux/features/cartSlice";
 import { useAddToCartMutation } from "@/services/cartApi";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { AlertCircle, TriangleAlert, Thermometer, Droplets, Zap } from "lucide-react";
+import { CompatibilityWarning } from "@/types/cart.type";
 
 interface PurchaseActionsProps {
   product: ProductItem;
@@ -40,6 +50,8 @@ export function PurchaseActions({
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [warnings, setWarnings] = useState<CompatibilityWarning[]>([]);
+  const [showWarningDialog, setShowWarningDialog] = useState(false);
 
   // For live fish: enabled only when a fish is selected and it's available
   const canBuy =
@@ -88,18 +100,26 @@ export function PurchaseActions({
 
       if (accessToken) {
         try {
-          await addToCart({
+          const response = await addToCart({
             productId,
             fishInstanceId: selectedFish?.id,
             quantity: isLiveFish ? 1 : quantity,
           }).unwrap();
+
+          if (response.data?.warnings && response.data.warnings.length > 0) {
+            setWarnings(response.data.warnings);
+            setShowWarningDialog(true);
+          } else {
+            toast.success("Đã thêm vào giỏ hàng");
+          }
         } catch (error) {
           console.error("Failed to sync cart to backend:", error);
           // We keep local state as optimistic
+          toast.success("Đã thêm vào giỏ hàng (chế độ offline)");
         }
+      } else {
+        toast.success("Đã thêm vào giỏ hàng");
       }
-
-      toast.success("Đã thêm vào giỏ hàng");
     } catch {
       toast.error("Không thể thêm vào giỏ hàng");
     } finally {
@@ -255,6 +275,62 @@ export function PurchaseActions({
           </div>
         )}
       </Card>
+
+      {/* Compatibility Warning Dialog */}
+      <Dialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
+        <DialogContent className="max-w-md rounded-2xl border-none shadow-2xl overflow-hidden p-0">
+          <div className="bg-orange-500/10 p-6 flex items-center gap-4 border-b border-orange-500/20">
+            <div className="p-3 bg-orange-500 rounded-2xl shadow-lg shadow-orange-500/30">
+              <TriangleAlert className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-bold text-orange-700">Cảnh báo tương thích</DialogTitle>
+              <DialogDescription className="text-orange-600/80 font-medium">
+                Phát hiện xung khắc với các loài cá trong giỏ
+              </DialogDescription>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-4 max-h-[400px] overflow-y-auto">
+            {warnings.map((warning, index) => (
+              <div 
+                key={index} 
+                className="p-4 bg-muted/50 rounded-2xl border border-border/50 space-y-2 hover:bg-muted transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  {warning.warningType === "WaterType" && <Droplets className="h-4 w-4 text-blue-500" />}
+                  {warning.warningType === "Temperament" && <Zap className="h-4 w-4 text-yellow-500" />}
+                  {warning.warningType === "Temperature" && <Thermometer className="h-4 w-4 text-red-500" />}
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    {warning.warningType === "WaterType" ? "Môi trường" : 
+                     warning.warningType === "Temperament" ? "Tính cách" : "Nhiệt độ"}
+                  </span>
+                </div>
+                <p className="text-sm font-medium leading-relaxed text-foreground/90">
+                  {warning.message}
+                </p>
+                <div className="flex items-center gap-2 pt-1">
+                  <div className="text-[10px] px-2 py-0.5 bg-background rounded-full border border-border/50 text-muted-foreground">
+                    Xung đột với: <span className="text-foreground font-semibold">{warning.conflictWithProductName}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="p-6 bg-muted/20 border-t border-border/50 flex flex-col gap-3">
+            <p className="text-[11px] text-center text-muted-foreground px-4">
+              Bạn vẫn có thể tiếp tục mua, nhưng hãy đảm bảo bạn có hồ riêng biệt cho các loài xung khắc này.
+            </p>
+            <Button 
+              onClick={() => setShowWarningDialog(false)}
+              className="w-full h-12 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold"
+            >
+              Tôi đã hiểu, vẫn tiếp tục
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

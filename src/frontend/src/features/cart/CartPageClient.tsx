@@ -12,7 +12,9 @@ import {
   useRemoveFromCartMutation,
   useClearCartMutation,
   useValidateCheckoutMutation,
+  useCheckCompatibilityQuery,
 } from "@/services/cartApi";
+import { CompatibilityWarningBanner } from "./CompatibilityWarningBanner";
 import {
   ShoppingBag,
   Trash2,
@@ -47,6 +49,11 @@ export default function CartPageClient() {
   const [updateCartItem] = useUpdateCartItemMutation();
   const [removeFromCart] = useRemoveFromCartMutation();
   const [clearCartBackend] = useClearCartMutation();
+
+  const { data: compatibilityResponse } = useCheckCompatibilityQuery(undefined, {
+    skip: !accessToken || items.length === 0,
+  });
+  const compatibilityWarnings = compatibilityResponse?.data || [];
 
   // Validate inventory whenever items change
   useEffect(() => {
@@ -230,6 +237,13 @@ export default function CartPageClient() {
           {items.length} sản phẩm
         </Badge>
       </div>
+
+      {compatibilityWarnings.length > 0 && (
+        <CompatibilityWarningBanner 
+          warnings={compatibilityWarnings} 
+          className="mb-8"
+        />
+      )}
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">

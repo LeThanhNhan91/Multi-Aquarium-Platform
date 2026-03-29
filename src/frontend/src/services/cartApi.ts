@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { RootState } from "@/libs/redux/store";
-import { AddToCartRequest, CheckoutValidationResult } from "@/types/cart.type";
+import { AddToCartRequest, AddToCartResponse, CheckoutValidationResult, CompatibilityWarning } from "@/types/cart.type";
+import { ApiResponse } from "@/types/baseModel";
 
 export const cartApi = createApi({
   reducerPath: "cartApi",
@@ -14,13 +15,13 @@ export const cartApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Cart"],
+  tagTypes: ["Cart", "Compatibility"],
   endpoints: (builder) => ({
-    getCart: builder.query<any, void>({
+    getCart: builder.query<ApiResponse<any>, void>({
       query: () => "/cart",
       providesTags: ["Cart"],
     }),
-    addToCart: builder.mutation<any, AddToCartRequest>({
+    addToCart: builder.mutation<ApiResponse<AddToCartResponse>, AddToCartRequest>({
       query: (item) => ({
         url: "/cart",
         method: "POST",
@@ -75,6 +76,10 @@ export const cartApi = createApi({
         body: items,
       }),
     }),
+    checkCompatibility: builder.query<ApiResponse<CompatibilityWarning[]>, void>({
+      query: () => "/cart/compatibility",
+      providesTags: ["Compatibility"],
+    }),
   }),
 });
 
@@ -87,4 +92,5 @@ export const {
   useMergeCartMutation,
   useRemoveStoreItemsMutation,
   useValidateCheckoutMutation,
+  useCheckCompatibilityQuery,
 } = cartApi;
