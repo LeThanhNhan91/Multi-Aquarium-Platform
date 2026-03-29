@@ -69,6 +69,14 @@ namespace Aquarium.Api.Controllers
             return Ok(response);
         }
 
+        [HttpGet("compatibility")]
+        public async Task<IActionResult> CheckCompatibility()
+        {
+            var userId = GetUserId();
+            var response = await _cartService.CheckCartCompatibilityAsync(userId);
+            return Ok(response);
+        }
+
         private Guid GetUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

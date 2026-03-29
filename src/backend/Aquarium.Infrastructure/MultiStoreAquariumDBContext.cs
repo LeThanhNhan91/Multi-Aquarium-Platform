@@ -64,6 +64,8 @@ public partial class MultiStoreAquariumDBContext : DbContext
 
     public virtual DbSet<DoaRequestMedia> DoaRequestMedias { get; set; }
 
+    public virtual DbSet<ProductAttribute> ProductAttributes { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -514,6 +516,24 @@ public partial class MultiStoreAquariumDBContext : DbContext
                 .HasForeignKey(d => d.DoaRequestId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_DoaRequestMedias_DoaRequests");
+        });
+
+        modelBuilder.Entity<ProductAttribute>(entity =>
+        {
+            entity.ToTable("ProductAttributes");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+            entity.Property(e => e.AttributeKey).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.AttributeValue).IsRequired().HasMaxLength(255);
+
+            entity.HasIndex(e => new { e.ProductId, e.AttributeKey }).IsUnique();
+
+            entity.HasOne(d => d.Product)
+                .WithMany(p => p.Attributes)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_ProductAttributes_Products");
         });
 
         OnModelCreatingPartial(modelBuilder);

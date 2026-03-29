@@ -48,6 +48,7 @@ namespace Aquarium.Infrastructure.Repositories
                 .Include(p => p.Inventory)
                 .Include(p => p.FishInstances)
                 .Include(p => p.OrderItems)
+                .Include(p => p.Attributes)
                 .Include(p => p.ProductReviews.Where(r => r.Status == "Active"))
                 .FirstOrDefaultAsync(p => p.Id == id);
         }

@@ -25,6 +25,8 @@ namespace Aquarium.Infrastructure.Repositories
                     .ThenInclude(p => p.Store)
                 .Include(c => c.Product)
                     .ThenInclude(p => p.ProductMedia)
+                .Include(c => c.Product)
+                    .ThenInclude(p => p.Attributes)
                 .Include(c => c.FishInstance)
                     .ThenInclude(f => f.FishInstanceMedia)
                 .Where(c => c.UserId == userId)
@@ -38,6 +40,8 @@ namespace Aquarium.Infrastructure.Repositories
                     .ThenInclude(p => p.Store)
                 .Include(c => c.Product)
                     .ThenInclude(p => p.ProductMedia)
+                .Include(c => c.Product)
+                    .ThenInclude(p => p.Attributes)
                 .Include(c => c.FishInstance)
                     .ThenInclude(f => f.FishInstanceMedia)
                 .FirstOrDefaultAsync(c => c.Id == id);

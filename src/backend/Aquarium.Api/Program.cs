@@ -32,6 +32,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Aquarium.Application.Services.Cart;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,6 +94,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IFishInstanceService, FishInstanceService>();
 builder.Services.AddScoped<IDoaService, DoaService>();
+builder.Services.AddSingleton<CompatibilityChecker>();
 builder.Services.AddScoped<ICartService, CartService>();
 
 builder.Services.AddSignalR();
